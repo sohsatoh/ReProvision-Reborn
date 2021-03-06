@@ -232,7 +232,7 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"com.matchstic.reprovision/signingUpdate" object:nil userInfo:userInfo];
     
-    NSString *applicationName = [[[RPVApplicationDatabase sharedInstance] getApplicationWithBundleIdentifier:bundleIdentifier] applicationName];
+    NSString *applicationName = [[[RPVApplicationDatabase sharedInstance] getApplicationContainsBundleIdentifier:bundleIdentifier] applicationName];
     
     switch (percent) {
         case 100:
@@ -259,7 +259,7 @@
 - (void)applicationSigningDidEncounterError:(NSError *)error forBundleIdentifier:(NSString *)bundleIdentifier {
     NSLog(@"'%@' had error: %@", bundleIdentifier, error);
     
-    NSString *applicationName = [[[RPVApplicationDatabase sharedInstance] getApplicationWithBundleIdentifier:bundleIdentifier] applicationName];
+    NSString *applicationName = [[[RPVApplicationDatabase sharedInstance] getApplicationContainsBundleIdentifier:bundleIdentifier] applicationName];
     [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"Error" body:[NSString stringWithFormat:@"For '%@':\n%@", applicationName, error.localizedDescription] isDebugMessage:NO isUrgentMessage:YES andNotificationID:nil];
     
     // Ensure the UI goes back to when signing was not occuring

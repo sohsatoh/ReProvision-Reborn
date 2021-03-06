@@ -73,6 +73,20 @@ static RPVApplicationDatabase *sharedDatabase;
     return [[RPVApplication alloc] initWithApplicationProxy:proxy];
 }
 
+- (RPVApplication*)getApplicationContainsBundleIdentifier:(NSString*)bundleIdentifier {
+    RPVApplication *application = nil;
+    
+    for (LSApplicationProxy *proxy in [[LSApplicationWorkspace defaultWorkspace] allApplications]) {
+        if ([[proxy applicationIdentifier] containsString:bundleIdentifier]) {
+            // Success!
+            application = [[RPVApplication alloc] initWithApplicationProxy:proxy];
+        }
+    }
+    
+    return application;
+}
+
+
 - (NSArray*)getAllSideloadedApplicationsNotMatchingTeamID:(NSString*)teamID {
     NSMutableArray *applications = [NSMutableArray array];
     

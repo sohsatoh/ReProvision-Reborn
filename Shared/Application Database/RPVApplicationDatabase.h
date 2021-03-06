@@ -31,6 +31,13 @@
 - (RPVApplication*)getApplicationWithBundleIdentifier:(NSString*)bundleIdentifier;
 
 /**
+ Creates a new RPVApplication object for the given bundle identifier. This method is for partial match.
+ @param bundleIdentifier Bundle identifier of the application
+ @return New abstract object for the application.
+ */
+- (RPVApplication*)getApplicationContainsBundleIdentifier:(NSString*)bundleIdentifier;
+
+/**
  beforeApplications will end up containing all applications that expire before the given date, and
  afterApplications has those expiring after the given date.
  
