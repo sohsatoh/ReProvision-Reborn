@@ -281,6 +281,7 @@
 		C9FDB29B20518712005934CD /* RPVAccountFinalController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FDB29A20518712005934CD /* RPVAccountFinalController.m */; };
 		C9FDB2A2205195E8005934CD /* libMobileGestalt.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */; };
 		C9FF57A923902CEC00296719 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9446A2215F72700F5C556 /* Security.framework */; };
+		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
 		DAE0BDC9DC0389DB581AA13D /* libPods-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */; };
 		FDC46406FBD5ED313E3C450E /* libPods-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56C208AF9B386EA848EA9D18 /* libPods-macOS.a */; };
 /* End PBXBuildFile section */
@@ -625,6 +626,7 @@
 		C9FDB29A20518712005934CD /* RPVAccountFinalController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAccountFinalController.m; sourceTree = "<group>"; };
 		C9FDB29C2051941D005934CD /* libMobileGestalt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libMobileGestalt.h; sourceTree = "<group>"; };
 		C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libMobileGestalt.tbd; path = usr/lib/libMobileGestalt.tbd; sourceTree = SDKROOT; };
+		CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ccsrp.m; sourceTree = "<group>"; };
 		DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -1111,6 +1113,7 @@
 		C9C6EA752004280A00211FDD /* libProvision */ = {
 			isa = PBXGroup;
 			children = (
+				CF3B6AAD25F2EDCF008D3CA2 /* CoreCrypt */,
 				C9C6EA762004280A00211FDD /* Apple Services */,
 				C9C6EA7B2004280A00211FDD /* Certificates */,
 				C9C6EA812004280A00211FDD /* EEBackend.h */,
@@ -1432,6 +1435,14 @@
 			path = iPad;
 			sourceTree = "<group>";
 		};
+		CF3B6AAD25F2EDCF008D3CA2 /* CoreCrypt */ = {
+			isa = PBXGroup;
+			children = (
+				CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */,
+			);
+			path = CoreCrypt;
+			sourceTree = "<group>";
+		};
 		DCE41DBEB53648B12AD3BE45 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1496,8 +1507,6 @@
 				C96CCE2E211A2838008A249A /* Frameworks */,
 				C96CCE2F211A2838008A249A /* Resources */,
 				C9C5922721207CA200DF2E19 /* Sign application and create .deb */,
-				3AFF23D8EA9A28077B7CD5AE /* [CP] Embed Pods Frameworks */,
-				4C4F0726D7C015B69BD062F5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1536,7 +1545,6 @@
 				C9C6EA3F2004257E00211FDD /* Frameworks */,
 				C9C6EA402004257E00211FDD /* Resources */,
 				38659AA49377400431BBBE6E /* [CP] Copy Pods Resources */,
-				00CA779635D0B66A25D616D7 /* [CP] Embed Pods Frameworks */,
 				C974027723B234E700BA9B25 /* Embed App Extensions */,
 				C996746420EE30EB00EEFBD2 /* Sign application and create .deb */,
 			);
@@ -1559,8 +1567,6 @@
 				C9C6EB302004282900211FDD /* Sources */,
 				C9C6EB312004282900211FDD /* Frameworks */,
 				C9C6EB322004282900211FDD /* Resources */,
-				A10A472302331D7FE00D9C8A /* [CP] Embed Pods Frameworks */,
-				9726577BCA674A5320611896 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1706,28 +1712,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		00CA779635D0B66A25D616D7 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iOS/Pods-iOS-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		38659AA49377400431BBBE6E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-iOS/Pods-iOS-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-iOS/Pods-iOS-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/MBCircularProgressBar/MBCircularProgressBar.bundle",
 				"${PODS_ROOT}/RMessage/RMessage/Resources/RMessageView.xib",
 				"${PODS_ROOT}/RMessage/RMessage/Assets/NotificationBackgroundErrorIcon.png",
@@ -1756,67 +1747,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iOS/Pods-iOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		3AFF23D8EA9A28077B7CD5AE /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-tvOS/Pods-tvOS-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4C4F0726D7C015B69BD062F5 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-tvOS/Pods-tvOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9726577BCA674A5320611896 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-macOS/Pods-macOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A10A472302331D7FE00D9C8A /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-macOS/Pods-macOS-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iOS/Pods-iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C996746420EE30EB00EEFBD2 /* Sign application and create .deb */ = {
@@ -2081,6 +2012,7 @@
 				C9C6EB292004280A00211FDD /* ioapi.c in Sources */,
 				C9C6EB162004280A00211FDD /* Structure.cpp in Sources */,
 				C9C6EB202004280A00211FDD /* aescrypt.c in Sources */,
+				CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */,
 				C96FBFF120EBD287007E2EC3 /* RPVInstalledTableViewCell.m in Sources */,
 				C9E7C2B220ED016000FDF3B0 /* RPVTroubleshootingCertificatesViewController.m in Sources */,
 				C9C6EB192004280A00211FDD /* xplist.c in Sources */,
@@ -2568,6 +2500,7 @@
 					"$(PROJECT_DIR)/iOS",
 					"$(PROJECT_DIR)/Shared",
 				);
+				OTHER_CFLAGS = "-DCORECRYPTO_DONOT_USE_TRANSPARENT_UNION=1";
 				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.ios;
 				PRODUCT_NAME = ReProvision;
 				SDKROOT = iphoneos;
@@ -2601,6 +2534,7 @@
 					"$(PROJECT_DIR)/iOS",
 					"$(PROJECT_DIR)/Shared",
 				);
+				OTHER_CFLAGS = "-DCORECRYPTO_DONOT_USE_TRANSPARENT_UNION=1";
 				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.ios;
 				PRODUCT_NAME = ReProvision;
 				SDKROOT = iphoneos;

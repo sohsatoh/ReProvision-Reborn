@@ -21,7 +21,7 @@
  * security characteristics and correct functioning of the Apple Software; provided
  * that you must retain this notice and the following text and disclaimers in all
  * copies of the Apple Software that you make. You may not, directly or indirectly,
- * redistribute the Apple Software or any portions thereof. The Apple Software is only
+ * redistribute the Apple Software or any portions thereof. The Apple Software is only
  * licensed and intended for use as expressly stated above and may not be used for other
  * purposes or in other contexts without Apple's prior written permission.  Except as
  * expressly stated in this notice, no other rights or licenses, express or implied, are
@@ -53,10 +53,10 @@
  * governed and construed in accordance with the laws of the State of California, without
  * regard to its choice of law rules.
  *
- * You may report security issues about Apple products to product-security@apple.com,
- * as described here:  https://www.apple.com/support/security/.  Non-security bugs and
- * enhancement requests can be made via https://bugreport.apple.com as described
- * here: https://developer.apple.com/bug-reporting/
+ * You may report security issues about Apple products to product-security@apple.com,
+ * as described here:  https://www.apple.com/support/security/.  Non-security bugs and
+ * enhancement requests can be made via https://bugreport.apple.com as described
+ * here: https://developer.apple.com/bug-reporting/
  *
  * EA1350
  * 10/5/15
@@ -128,13 +128,29 @@ struct ccsrp_ctx {
         unsigned int sessionkey:1;
         unsigned int variant:16;
     } flags;
+    cc_unit              ccn[1];
+}  CC_ALIGNED(16);
+typedef struct ccsrp_ctx *ccsrp_ctx_t;
+
+struct ccsrp_ctx_legacy {
+    const struct ccdigest_info *di;
+    ccsrp_const_gp_t gp;
+    struct ccrng_state *blinding_rng;
+    struct {
+        unsigned int authenticated:1;
+        unsigned int noUsernameInX:1;
+        unsigned int sessionkey:1;
+        unsigned int variant:16;
+    } flags;
     uint8_t           pad[CCSRP_HDR_PAD - (sizeof(struct ccdigest_info *)+
                                            sizeof(ccsrp_const_gp_t)+
                                            sizeof(struct ccrng_state *)+
                                            sizeof(bool))];
     cc_unit              ccn[1];
 }  CC_ALIGNED(16);
-typedef struct ccsrp_ctx *ccsrp_ctx_t;
+typedef struct ccsrp_ctx_legacy *ccsrp_ctx_t_legacy;
+
+cc_unit *srp_ccn(void *srp);
 
 #endif
 
@@ -175,7 +191,7 @@ typedef struct ccsrp_ctx *ccsrp_ctx_t;
 #define ccsrp_ctx_gp_l(KEY)   (ccdh_gp_l(ccsrp_ctx_gp(KEY)))
 #define ccsrp_ctx_n(KEY)      (ccdh_gp_n(ccsrp_ctx_gp(KEY)))
 #define ccsrp_ctx_prime(KEY)  (ccdh_gp_prime(ccsrp_ctx_gp(KEY)))
-#define ccsrp_ctx_ccn(KEY)    SRP_CCN((ccsrp_ctx_t)(KEY))
+#define ccsrp_ctx_ccn(KEY)    srp_ccn(KEY)
 #define ccsrp_ctx_pki_key(KEY,_N_) (ccsrp_ctx_ccn(KEY) + ccsrp_ctx_n(KEY) * _N_)
 #define ccsrp_ctx_public(KEY)           (ccsrp_ctx_pki_key(KEY,0))
 #define ccsrp_ctx_private(KEY)          (ccsrp_ctx_pki_key(KEY,1))
@@ -297,8 +313,8 @@ ccsrp_ctx_init_option(ccsrp_ctx_t srp,
 // Legacy function, initialize for the RFC5054 variant.
 CC_NONNULL_TU((1,3)) CC_NONNULL((2))
 CC_INLINE void
-ccsrp_ctx_init(ccsrp_ctx_t srp, const struct ccdigest_info *di, ccsrp_const_gp_t gp, struct ccrng_state *blinding_rng) {
-    ccsrp_ctx_init_option(srp,di,gp,CCSRP_OPTION_SRP6a_HASH,blinding_rng);
+ccsrp_ctx_init(ccsrp_ctx_t srp, const struct ccdigest_info *di, ccsrp_const_gp_t gp) {
+    ccsrp_ctx_init_option(srp,di,gp,CCSRP_OPTION_SRP6a_HASH,ccrng(NULL));
 }
 
 /******************************************************************************
@@ -632,4 +648,3 @@ ccsrp_test_calculations(const struct ccdigest_info *di, ccsrp_const_gp_t gp,
                         );
 
 #endif /* Include Guard */
-

@@ -515,17 +515,10 @@ static NSData *createAppTokensChecksum(NSData *sk, NSString *adsid, NSArray<NSSt
             // MARK: AppleIDAuthSupport`stateClientNeg1
             
             const struct ccdigest_info *srp_di = ccsha256_di();
-            struct ccsrp_ctx_body *srp_ctx = (struct ccsrp_ctx_body *)malloc(ccsrp_sizeof_srp(di_info, gp));
-
-#if TARGET_OS_IOS
-            ccsrp_ctx_init(srp_ctx, srp_di, gp, self.rngState);
-            srp_ctx->hdr.blinding_rng = self.rngState;
-#else
-            ccsrp_ctx_init(srp_ctx, srp_di, gp, ccrng(NULL));
-            srp_ctx->hdr.blinding_rng = ccrng(NULL);
-#endif
-            
-            srp_ctx->hdr.flags.noUsernameInX = true;
+            struct ccsrp_ctx *srp_ctx = (struct ccsrp_ctx *)malloc(ccsrp_sizeof_srp(di_info, gp));
+            ccsrp_ctx_init(srp_ctx, srp_di, gp);
+            ccsrp_client_set_noUsernameInX(srp_ctx, true);
+            SRP_RNG(srp_ctx) = ccrng(NULL);
 
             NSArray<NSString *> *ps = @[@"s2k", @"s2k_fo"];
             for (int i = 0; i < ps.count; i++) {
