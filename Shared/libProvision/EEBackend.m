@@ -117,8 +117,8 @@
     // 1. Read Info.plist to gain the applicationId and binaryLocation.
     // 2. Get provisioning profile and certificate info
     // 3. Sign bundle
-    
-    NSDictionary *infoplist = [NSDictionary dictionaryWithContentsOfFile:[NSString stringWithFormat:@"%@/Info.plist", path]];
+    NSString *plistPath = [NSString stringWithFormat:@"%@/Info.plist", path];
+    NSMutableDictionary *infoplist = [NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
     
     if (!infoplist || [infoplist allKeys].count == 0) {
         NSError *error = [self _errorFromString:@"Failed to open Info.plist!"];
@@ -143,13 +143,31 @@
     NSLog(@"Platform: %@ for bundle: %@", platformName, [path lastPathComponent]);
     
     NSString *applicationId = [infoplist objectForKey:@"CFBundleIdentifier"];
-    NSString *binaryLocation = [path stringByAppendingFormat:@"/%@", [infoplist objectForKey:@"CFBundleExecutable"]];
+    if(![applicationId hasSuffix:teamId]) {
+        if([infoplist objectForKey:@"ALTBundleIdentifier"] != nil) applicationId = [infoplist objectForKey:@"ALTBundleIdentifier"];
+        else if ([infoplist objectForKey:@"REBundleIdentifier"] != nil) applicationId = [infoplist objectForKey:@"REBundleIdentifier"];
+        else [infoplist setObject:applicationId forKey:@"REBundleIdentifier"];
+
+        applicationId = [applicationId stringByAppendingFormat:@".%@", teamId];
+        [infoplist setObject:applicationId forKey:@"CFBundleIdentifier"];
+
+        NSError *error = nil;
+        [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] error:&error];
+
+        if(error) {
+            NSLog(@"%@", error);
+            return;
+        }
+    }
     
+    NSString *applicationName = [infoplist objectForKey:@"CFBundleName"];
+    NSString *binaryLocation = [path stringByAppendingFormat:@"/%@", [infoplist objectForKey:@"CFBundleExecutable"]];
+
     // We get entitlements from the binary using ldid::Analyze() during provisioning, updating them as needed
     // for the current Team ID.
     
     EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity :gsToken];
-    [provisioner downloadProvisioningProfileForApplicationIdentifier:applicationId binaryLocation:(NSString*)binaryLocation withTeamIDCheck:^ NSString* (NSArray* teams) {
+    [provisioner downloadProvisioningProfileForApplicationIdentifier:applicationId applicationName:applicationName binaryLocation:(NSString*)binaryLocation withTeamIDCheck:^ NSString* (NSArray* teams) {
         
         // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
         // When integrated into an app, this backend can assume that this choice has been prior made, and so

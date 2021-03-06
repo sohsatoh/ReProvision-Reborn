@@ -48,6 +48,6 @@
  then this shall be the associated error message. If YES, then it is the profile, and the third is the development
  certificate to sign binaries with.
  */
-- (void)downloadProvisioningProfileForApplicationIdentifier:(NSString*)identifier binaryLocation:(NSString*)binaryLocation withTeamIDCheck:(NSString* (^)(NSArray*))teamIDCallback systemType:(EESystemType)systemType andCallback:(void (^)(NSError *, NSData*, NSString*, NSDictionary*, NSDictionary*))completionHandler;
+- (void)downloadProvisioningProfileForApplicationIdentifier:(NSString*)identifier applicationName:(NSString*)applicationName binaryLocation:(NSString*)binaryLocation withTeamIDCheck:(NSString* (^)(NSArray*))teamIDCallback systemType:(EESystemType)systemType andCallback:(void (^)(NSError *, NSData*, NSString*, NSDictionary*, NSDictionary*))completionHandler;
 
 @end
