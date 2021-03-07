@@ -152,7 +152,12 @@
         [infoplist setObject:applicationId forKey:@"CFBundleIdentifier"];
 
         NSError *error = nil;
-        [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] error:&error];
+        if (@available(iOS 11.0, *)) {
+            [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] error:&error];
+        } else {
+            // Fallback on earlier versions
+            [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] atomically:YES];
+        }
 
         if(error) {
             NSLog(@"%@", error);
