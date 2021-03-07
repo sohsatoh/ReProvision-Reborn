@@ -270,7 +270,8 @@
     if (indexPath.section == 4 && indexPath.row < 4) {
         // handle credits tap.
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
-        [self _openTwitterForUser:indexPath.row > [_contributers count] ? nil : _contributers[@"userNames"][indexPath.row]];
+        if(indexPath.row != 1) // don't bother the original developer
+            [self _openTwitterForUser:indexPath.row > [_contributers count] ? nil : _contributers[@"userNames"][indexPath.row]];
     } else {
         [super tableView:tableView didSelectRowAtIndexPath:indexPath];
     }
