@@ -1,12 +1,22 @@
-## ReProvision
+## ReProvision Reborn
 
 This project provides automatic re-provisioning of iOS and tvOS applications to avoid the 7-day expiration associated with free certificates, along with a macOS application to manually provision a given `.ipa` file.
 
-### DEPRECATION NOTICE
+### Why 'Reborn'?
 
-This project is currently functional, but I won't be providing further updates.
+This project had been EOL and I have resurrected it.
+One thing to note is that there is no support for this version. Use it only if you can solve the problem yourself.
 
-Users: if you want automatic re-signing, it is strongly recommended to look at AltServer/AltStore.
+**Please don't bother the original developer about issues on this version.**
+
+#### Changes
+
+- Add support for iOS 14
+- Add support for arm64e devices
+- Fix errors related to certificate (Thanks: [@nyuszika7h](https://github.com/nyuszika7h))
+- Fix signing issues (Thanks: AltSign by [@rileytestut](https://github.com/rileytestut/))
+
+This tool uses the code taken from [AltSign](https://github.com/rileytestut/AltSign) by [@rileytestut](https://github.com/rileytestut/).
 
 ### Features
 
@@ -44,7 +54,7 @@ CocoaPods is also utilised.
 
 To build this project, make sure to have the above pre-requisites installed.
 
-1. Clone the project; `git clone https://github.com/Matchstic/ReProvision.git`
+1. Clone the project; `git clone https://github.com/sohsatoh/ReProvision.git`
 2. Update CocoaPods, by running `pod install` in the project's root directory.
 3. Open `ReProvision.xcworkspace`, and roll from there.
 
@@ -52,7 +62,7 @@ To build this project, make sure to have the above pre-requisites installed.
 
 **iOS**
 
-A third-party library notice can be found [here](https://raw.githubusercontent.com/Matchstic/ReProvision/master/iOS/HTML/openSourceLicenses.html).
+A third-party library notice can be found [here](https://raw.githubusercontent.com/sohsatoh/ReProvision/master/iOS/HTML/openSourceLicenses.html).
 
 ### License
 
