@@ -1,11 +1,11 @@
 ---
-archs:                 [ armv7, armv7s, arm64, x86_64 ]
+archs:                 [ armv7, armv7s, arm64, arm64e, x86_64 ]
 platform:              ios, macos
 install-name:          /System/Library/PrivateFrameworks/AuthKitUI.framework/AuthKitUI
 current-version:       1
 compatibility-version: 1
 exports:
-  - archs:              [ armv7, armv7s, arm64, x86_64 ]
+  - archs:              [ armv7, armv7s, arm64, arm64e, x86_64 ]
     symbols:            [ _AKSecondFactorCodeEntryContentViewControllerDidEnterCodeNotification,
                           _AKServerPresentationActionModal, _AKServerPresentationActionPush, _AuthKitUIVersionNumber,
                           _AuthKitUIVersionString, __AKUIMainBundle ]

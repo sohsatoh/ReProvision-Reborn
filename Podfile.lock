@@ -1,10 +1,7 @@
 PODS:
-  - CocoaLumberjack (3.3.0):
-    - CocoaLumberjack/Default (= 3.3.0)
-    - CocoaLumberjack/Extensions (= 3.3.0)
-  - CocoaLumberjack/Default (3.3.0)
-  - CocoaLumberjack/Extensions (3.3.0):
-    - CocoaLumberjack/Default
+  - CocoaLumberjack (3.7.0):
+    - CocoaLumberjack/Core (= 3.7.0)
+  - CocoaLumberjack/Core (3.7.0)
   - HexColors (4.0.0)
   - MarqueeLabel (3.1.4):
     - MarqueeLabel/ObjC (= 3.1.4)
@@ -37,7 +34,7 @@ SPEC REPOS:
     - TORoundedTableView
 
 SPEC CHECKSUMS:
-  CocoaLumberjack: 3c8c74683302f9012bb168e1c4b7ae3c0b558431
+  CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
   HexColors: 5f95843ef89aff6a72e1fd3a8ebabf205cc43379
   MarqueeLabel: bf768455fe88d427f71476ebb23f9092b660f40b
   MBCircularProgressBar: 0b795b722a5eb5b0923822f90474e2576a1a7855
@@ -48,4 +45,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: f97239f7db56cfa860e5b0a4c700a882d21b1889
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.1
