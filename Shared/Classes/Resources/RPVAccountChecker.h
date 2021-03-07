@@ -24,4 +24,6 @@
 
 - (void)registerCurrentWatchForTeamID:(NSString*)teamID withIdentity:(NSString*)username gsToken:(NSString*)password andCompletionHandler:(void (^)(NSError*))completionHandler;
 
+- (void)listAllApplicationsWithCompletionHandler:(void (^)(NSError*, NSDictionary *))completionHandler;
+
 @end

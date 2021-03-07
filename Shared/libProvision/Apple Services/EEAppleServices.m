@@ -78,7 +78,6 @@
 }
 
 - (void)_doActionWithName:(NSString*)action systemType:(EESystemType)systemType extraDictionary:(NSDictionary*)extra andCompletionHandler:(void (^)(NSError*, NSDictionary *))completionHandler {
-    
     NSString *os = @"";
     
     if (systemType != EESystemTypeUndefined)
@@ -431,7 +430,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 - (void)listAllApplicationsForTeamID:(NSString*)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError*, NSDictionary *))completionHandler {
-    
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
     [extra setObject:teamID forKey:@"teamId"];
     

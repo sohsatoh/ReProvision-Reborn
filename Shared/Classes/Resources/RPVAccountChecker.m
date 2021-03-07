@@ -170,4 +170,25 @@
     }];
 }
 
+- (void)listAllApplicationsWithCompletionHandler:(void (^)(NSError*, NSDictionary *))completionHandler {
+    if(![RPVResources getUsername] || ![RPVResources getPassword] || ![RPVResources getTeamID]) {
+        // username, password or teamID is nil
+        completionHandler(nil, nil);
+        return;
+    }
+    
+    [[EEAppleServices sharedInstance] ensureSessionWithIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error, NSDictionary *plist) {
+        if(!error && plist) {
+            [[EEAppleServices sharedInstance] listAllApplicationsForTeamID:[RPVResources getTeamID] systemType:[self platformTypeForCurrentDevice] withCompletionHandler:^(NSError *error, NSDictionary *dict) {
+                if(!error) completionHandler(nil, dict);
+                else completionHandler(error, nil);
+            }];
+        } else {
+            if(error) completionHandler(error, nil);
+            else completionHandler(nil, nil);
+        }
+    }];
+
+}
+
 @end

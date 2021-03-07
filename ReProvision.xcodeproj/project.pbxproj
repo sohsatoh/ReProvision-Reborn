@@ -282,6 +282,7 @@
 		C9FDB2A2205195E8005934CD /* libMobileGestalt.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */; };
 		C9FF57A923902CEC00296719 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9446A2215F72700F5C556 /* Security.framework */; };
 		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
+		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
 		DAE0BDC9DC0389DB581AA13D /* libPods-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */; };
 		FDC46406FBD5ED313E3C450E /* libPods-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56C208AF9B386EA848EA9D18 /* libPods-macOS.a */; };
 /* End PBXBuildFile section */
@@ -627,6 +628,8 @@
 		C9FDB29C2051941D005934CD /* libMobileGestalt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libMobileGestalt.h; sourceTree = "<group>"; };
 		C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libMobileGestalt.tbd; path = usr/lib/libMobileGestalt.tbd; sourceTree = SDKROOT; };
 		CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ccsrp.m; sourceTree = "<group>"; };
+		CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsLabel.m; sourceTree = "<group>"; };
+		CFFBA88925F5751400C93D9F /* RPVAppIdsLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsLabel.h; sourceTree = "<group>"; };
 		DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -745,6 +748,7 @@
 		C90C2218200533B300255B08 /* Installed Pane */ = {
 			isa = PBXGroup;
 			children = (
+				CFFBA88625F574D700C93D9F /* Others */,
 				C96FBFEB20EBA52A007E2EC3 /* Table View */,
 				C96FBFEA20EBA51E007E2EC3 /* Collection View */,
 				C96FBFE320EB9EED007E2EC3 /* Section Headers */,
@@ -1443,6 +1447,15 @@
 			path = CoreCrypt;
 			sourceTree = "<group>";
 		};
+		CFFBA88625F574D700C93D9F /* Others */ = {
+			isa = PBXGroup;
+			children = (
+				CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */,
+				CFFBA88925F5751400C93D9F /* RPVAppIdsLabel.h */,
+			);
+			path = Others;
+			sourceTree = "<group>";
+		};
 		DCE41DBEB53648B12AD3BE45 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -2049,6 +2062,7 @@
 				C9C6EB082004280A00211FDD /* hashtable.c in Sources */,
 				C9C6EAFE2004280A00211FDD /* ldid.cpp in Sources */,
 				C9C6EB0A2004280A00211FDD /* Key.cpp in Sources */,
+				CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */,
 				C96B0CDB2005782A00F713AF /* RPVApplicationSigning.m in Sources */,
 				C9C6EB122004280A00211FDD /* plist.c in Sources */,
 				C9C6EAFD2004280A00211FDD /* EEBackend.m in Sources */,

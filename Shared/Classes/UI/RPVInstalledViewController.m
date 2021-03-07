@@ -22,6 +22,8 @@
 
 #if TARGET_OS_TV
 #import "RPVStickyScrollView.h"
+#else
+#import "RPVAppIdsLabel.h"
 #endif
 
 // Fake data source stuff...
@@ -49,6 +51,7 @@
 @property (nonatomic, strong) UICollectionView *expiringCollectionView;
 @property (nonatomic, strong) UITableView *recentTableView;
 @property (nonatomic, strong) UITableView *otherApplicationsTableView;
+@property (nonatomic, strong) RPVAppIdsLabel *appIdsLabel;
 
 #if TARGET_OS_TV
 @property (nonatomic, strong) RPVInstalledSectionHeaderViewController *expiringSectionHeader;
@@ -241,6 +244,13 @@
 #endif
     self.otherApplicationsTableView.allowsSelectionDuringEditing = YES;
     [self.rootScrollView addSubview:self.otherApplicationsTableView];
+    
+    // UILabel to show the count of App IDs
+#if TARGET_OS_TV
+#else
+    self.appIdsLabel = [[RPVAppIdsLabel alloc] init];
+    [self.rootScrollView addSubview:self.appIdsLabel];
+#endif
 }
 
 - (void)viewDidLayoutSubviews {
@@ -346,6 +356,12 @@
     
     yOffset += otherAppsHeight + 15;
     
+#if TARGET_OS_TV
+#else
+    self.appIdsLabel.frame = CGRectMake(0, yOffset, self.view.bounds.size.width, sectionHeaderHeight);
+    yOffset += sectionHeaderHeight + 5;
+#endif
+    
     // Finally, set content size for overall scrolling region.
     self.rootScrollView.contentSize = CGSizeMake(self.view.bounds.size.width, yOffset);
     
@@ -425,6 +441,7 @@
     [self.recentSectionHeaderView requestNewButtonEnabledState];
     [self.expiringSectionHeaderView requestNewButtonEnabledState];
     [self.otherApplicationsSectionHeaderView requestNewButtonEnabledState];
+    [self.appIdsLabel updateText];
 #endif
 }
 
@@ -724,6 +741,7 @@
                 [self.recentSectionHeaderView requestNewButtonEnabledState];
                 [self.expiringSectionHeaderView requestNewButtonEnabledState];
                 [self.otherApplicationsSectionHeaderView requestNewButtonEnabledState];
+                [self.appIdsLabel updateText];
 #endif
                 
                 return;
