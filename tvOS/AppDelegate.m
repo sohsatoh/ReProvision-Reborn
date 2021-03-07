@@ -77,7 +77,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 - (void)applicationSigningDidStart {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.matchstic.reprovision/signingInProgress" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision/signingInProgress" object:nil];
     NSLog(@"Started signing...");
 }
 
@@ -88,7 +88,7 @@
     [userInfo setObject:bundleIdentifier forKey:@"bundleIdentifier"];
     [userInfo setObject:[NSNumber numberWithInt:percent] forKey:@"percent"];
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.matchstic.reprovision/signingUpdate" object:nil userInfo:userInfo];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision/signingUpdate" object:nil userInfo:userInfo];
     
     switch (percent) {
         case 100:
@@ -121,12 +121,12 @@
     [userInfo setObject:bundleIdentifier forKey:@"bundleIdentifier"];
     [userInfo setObject:[NSNumber numberWithInt:100] forKey:@"percent"];
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.matchstic.reprovision/signingUpdate" object:nil userInfo:userInfo];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision/signingUpdate" object:nil userInfo:userInfo];
 }
 
 - (void)applicationSigningCompleteWithError:(NSError *)error {
     NSLog(@"Completed signing, with error: %@", error);
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.matchstic.reprovision/signingComplete" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision/signingComplete" object:nil];
     
     // Display any errors if needed.
     if (error) {
@@ -150,7 +150,7 @@
     static char first = 0;
     
     if (!first) {
-        status = notify_register_check("com.matchstic.reprovision.ios/applicationNotification", &_daemonNotificationToken);
+        status = notify_register_check("jp.soh.reprovision.ios/applicationNotification", &_daemonNotificationToken);
         if (status != NOTIFY_STATUS_OK) {
             fprintf(stderr, "registration failed (%u)\n", status);
             return;
@@ -160,7 +160,7 @@
     }
     
     // Handle when we're open and get a background request come through.
-    status = notify_register_dispatch("com.matchstic.reprovision.ios/applicationNotification", &_daemonNotificationToken, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0l), ^(int info) {
+    status = notify_register_dispatch("jp.soh.reprovision.ios/applicationNotification", &_daemonNotificationToken, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0l), ^(int info) {
         
         NSLog(@"*** [ReProvision] :: Got a background signing request when open.");
         
@@ -210,7 +210,7 @@
 
 - (void)_notifyDaemonOfMessageHandled {
     // Let the daemon know to release the background assertion.
-    notify_post("com.matchstic.reprovision.ios/didFinishBackgroundTask");
+    notify_post("jp.soh.reprovision.ios/didFinishBackgroundTask");
 }
 
 - (void)daemonDidRequestNewBackgroundSigning {

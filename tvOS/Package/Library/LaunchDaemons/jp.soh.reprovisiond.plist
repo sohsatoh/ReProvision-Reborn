@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.matchstic.reprovisiond</string>
+	<string>jp.soh.reprovisiond</string>
 	<key>MachServices</key>
 	<dict>
-		<key>com.matchstic.reprovisiond</key>
+		<key>jp.soh.reprovisiond</key>
 		<true/>
 	</dict>
 	<key>ProgramArguments</key>

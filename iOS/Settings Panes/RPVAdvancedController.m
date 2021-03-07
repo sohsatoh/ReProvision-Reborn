@@ -28,7 +28,7 @@
     [[self navigationItem] setTitle:@"Advanced"];
     
     // Register token for daemon notifications.
-    int status = notify_register_check("com.matchstic.reprovision.ios/debugStartBackgroundSign", &_daemonNotificationToken);
+    int status = notify_register_check("jp.soh.reprovision.ios/debugStartBackgroundSign", &_daemonNotificationToken);
     if (status != NOTIFY_STATUS_OK) {
         fprintf(stderr, "registration failed (%u)\n", status);
         return;

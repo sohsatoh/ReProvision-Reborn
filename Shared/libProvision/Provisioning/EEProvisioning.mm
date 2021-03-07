@@ -314,8 +314,8 @@
           */
 
          NSString *privateKeyAccount = @"privateKey";
-         NSString *privateKey = [SAMKeychain passwordForService:@"com.matchstic.reprovision" account:privateKeyAccount];
-         NSString *privateKeyAssociatedTeamID = [SAMKeychain passwordForService:@"com.matchstic.reprovision" account:@"privateKeyTeamID"];
+         NSString *privateKey = [SAMKeychain passwordForService:@"jp.soh.reprovision" account:privateKeyAccount];
+         NSString *privateKeyAssociatedTeamID = [SAMKeychain passwordForService:@"jp.soh.reprovision" account:@"privateKeyTeamID"];
 
          BOOL hasValidCertificate = NO;
          NSDate *now = [NSDate date];
@@ -379,8 +379,8 @@
 
                            // Store new private key into the keychain for future usage.
                            NSString *privateKeyAccount = @"privateKey";
-                           [SAMKeychain setPassword:privateKey forService:@"com.matchstic.reprovision" account:privateKeyAccount];
-                           [SAMKeychain setPassword:[[EEAppleServices sharedInstance] currentTeamID] forService:@"com.matchstic.reprovision" account:@"privateKeyTeamID"];
+                           [SAMKeychain setPassword:privateKey forService:@"jp.soh.reprovision" account:privateKeyAccount];
+                           [SAMKeychain setPassword:[[EEAppleServices sharedInstance] currentTeamID] forService:@"jp.soh.reprovision" account:@"privateKeyTeamID"];
 
                            // Read certificate from result, and pass back to caller with the private key too.
                            completionHandler(nil, privateKey, certificate);
@@ -406,8 +406,8 @@
 
                   // Store new private key into the keychain for future usage.
                   NSString *privateKeyAccount = @"privateKey";
-                  [SAMKeychain setPassword:privateKey forService:@"com.matchstic.reprovision" account:privateKeyAccount];
-                  [SAMKeychain setPassword:[[EEAppleServices sharedInstance] currentTeamID] forService:@"com.matchstic.reprovision" account:@"privateKeyTeamID"];
+                  [SAMKeychain setPassword:privateKey forService:@"jp.soh.reprovision" account:privateKeyAccount];
+                  [SAMKeychain setPassword:[[EEAppleServices sharedInstance] currentTeamID] forService:@"jp.soh.reprovision" account:@"privateKeyTeamID"];
 
                   // Read certificate from result, and pass back to caller with the private key too.
                   completionHandler(nil, privateKey, certificate);
@@ -433,10 +433,10 @@
 
 - (NSString*)_identifierForCurrentMachine {
     // We're using a persistent UUID here, not a UDID or anything.
-    NSString *uuid = [SAMKeychain passwordForService:@"com.matchstic.reprovision" account:@"uuid"];
+    NSString *uuid = [SAMKeychain passwordForService:@"jp.soh.reprovision" account:@"uuid"];
     if (!uuid || [uuid isEqualToString:@""]) {
         uuid = [[NSUUID UUID] UUIDString];
-        [SAMKeychain setPassword:uuid forService:@"com.matchstic.reprovision" account:@"uuid"];
+        [SAMKeychain setPassword:uuid forService:@"jp.soh.reprovision" account:@"uuid"];
     }
     return uuid;
 }

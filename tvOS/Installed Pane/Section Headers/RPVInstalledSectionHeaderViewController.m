@@ -39,8 +39,8 @@
         [self.view addSubview:self.button];
     }
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_signingDidBegin:) name:@"com.matchstic.reprovision/signingInProgress" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_signingDidComplete:) name:@"com.matchstic.reprovision/signingComplete" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_signingDidBegin:) name:@"jp.soh.reprovision/signingInProgress" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_signingDidComplete:) name:@"jp.soh.reprovision/signingComplete" object:nil];
     
     // Setup focus guide for our button.
     [self _setupFocusGuide];

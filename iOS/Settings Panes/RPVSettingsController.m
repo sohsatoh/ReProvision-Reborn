@@ -23,6 +23,18 @@
         self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeAlways;
     }
     
+    NSArray *names = @[@"soh", @"Matchstic", @"Riles", @"Aesign"];
+    NSArray *titles = @[@"Developer of Reborn Version", @"Developer of Original Version", @"Developer of AltStore", @"Designer"];
+    NSArray *imagePaths = @[@"developer_of_reborn", @"author", @"developer_of_altstore", @"designer"];
+    NSArray *userNames = @[@"soh_satoh", @"_Matchstic", @"rileytestut", @"aesign_"];
+    
+    NSDictionary *contributers = @{@"names" : names,
+                                   @"titles" : titles,
+                                   @"imagePaths" : imagePaths,
+                                   @"userNames" : userNames};
+    
+    _contributers = contributers;
+    
     self.view.tintColor = [UIApplication sharedApplication].delegate.window.tintColor;
     [[self navigationItem] setTitle:@"Settings"];
 }
@@ -105,7 +117,7 @@
     threshold.shortTitleDictionary = threshold.titleDictionary;
     [threshold setProperty:@"thresholdForResigning" forKey:@"key"];
     [threshold setProperty:@"For example, setting \"2 Days Left\" will cause an application to be re-signed when it is 2 days away from expiring." forKey:@"staticTextMessage"];
-    [threshold setProperty:@"com.matchstic.reprovision.ios/resigningThresholdDidChange" forKey:@"PostNotification"];
+    [threshold setProperty:@"jp.soh.reprovision.ios/resigningThresholdDidChange" forKey:@"PostNotification"];
     
     [array addObject:threshold];
     
@@ -140,6 +152,16 @@
     // Credits
     PSSpecifier *group4 = [PSSpecifier groupSpecifierWithName:@"Credits"];
     [array addObject:group4];
+
+    PSSpecifier* developer = [PSSpecifier preferenceSpecifierNamed:@"developer"
+                                                               target:self
+                                                                  set:nil
+                                                                  get:nil
+                                                               detail:nil
+                                                                 cell:PSLinkCell
+                                                                 edit:nil];
+    
+    [array addObject:developer];
     
     PSSpecifier* author = [PSSpecifier preferenceSpecifierNamed:@"author"
                                                                target:self
@@ -150,6 +172,16 @@
                                                                  edit:nil];
     
     [array addObject:author];
+    
+    PSSpecifier* altStoreDeveloper = [PSSpecifier preferenceSpecifierNamed:@"altStoreDeveloper"
+                                                               target:self
+                                                                  set:nil
+                                                                  get:nil
+                                                               detail:nil
+                                                                 cell:PSLinkCell
+                                                                 edit:nil];
+    
+    [array addObject:altStoreDeveloper];
     
     PSSpecifier* designer = [PSSpecifier preferenceSpecifierNamed:@"designer"
                                                          target:self
@@ -177,7 +209,7 @@
 }
 
 - (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 4 && indexPath.row < 2) {
+    if (indexPath.section == 4 && indexPath.row < 4) {
         static NSString *cellIdentifier = @"credits.cell";
         
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
@@ -185,9 +217,9 @@
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
         }
         
-        cell.textLabel.text = indexPath.row == 0 ? @"Matchstic" : @"Aesign";
-        cell.detailTextLabel.text = indexPath.row == 0 ? @"Developer" : @"Designer";
-        cell.imageView.image = [UIImage imageNamed:indexPath.row == 0 ? @"author" : @"designer"];
+        cell.textLabel.text = indexPath.row > [_contributers count] ? nil : _contributers[@"names"][indexPath.row];
+        cell.detailTextLabel.text = indexPath.row > [_contributers count] ? nil : _contributers[@"titles"][indexPath.row];
+        cell.imageView.image = [UIImage imageNamed:indexPath.row > [_contributers count] ? nil : _contributers[@"imagePaths"][indexPath.row]];
         
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         
@@ -231,14 +263,14 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return indexPath.section == 4 && indexPath.row < 2 ? 60.0 : UITableViewAutomaticDimension;
+    return indexPath.section == 4 && indexPath.row < 4 ? 60.0 : UITableViewAutomaticDimension;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 4 && indexPath.row < 2) {
+    if (indexPath.section == 4 && indexPath.row < 4) {
         // handle credits tap.
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
-        [self _openTwitterForUser:indexPath.row == 0 ? @"_Matchstic" : @"aesign_"];
+        [self _openTwitterForUser:indexPath.row > [_contributers count] ? nil : _contributers[@"userNames"][indexPath.row]];
     } else {
         [super tableView:tableView didSelectRowAtIndexPath:indexPath];
     }

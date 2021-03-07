@@ -117,7 +117,7 @@ static CGFloat inset = 20;
 
 - (void)_setupUIIfNecessary {
     if (!self.isObserving) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_onSigningStatusUpdate:) name:@"com.matchstic.reprovision/signingUpdate" object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_onSigningStatusUpdate:) name:@"jp.soh.reprovision/signingUpdate" object:nil];
     }
     
     if (!self.expiryUpdateTimer) {

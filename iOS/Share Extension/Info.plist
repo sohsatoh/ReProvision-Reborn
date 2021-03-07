@@ -31,7 +31,7 @@
     SUBQUERY (
         $extensionItem.attachments,
         $attachment,
-        ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO &quot;com.matchstic.reprovision.ipa&quot;
+        ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO &quot;jp.soh.reprovision.ipa&quot;
     ).@count == $extensionItem.attachments.@count
 ).@count &gt; 0</string>
 		</dict>

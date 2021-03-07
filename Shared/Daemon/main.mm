@@ -23,7 +23,7 @@ int main(int argc, const char *argv[])
     // Bypass compiler prohibited errors
     Class NSXPCListenerClass = NSClassFromString(@"NSXPCListener");
     
-    NSXPCListener *listener = [[NSXPCListenerClass alloc] initWithMachServiceName:@"com.matchstic.reprovisiond"];
+    NSXPCListener *listener = [[NSXPCListenerClass alloc] initWithMachServiceName:@"jp.soh.reprovisiond"];
     listener.delegate = daemon;
     [listener resume];
     

@@ -14,6 +14,7 @@
     NSArray *_loggedOutAppleSpecifiers;
     PSSpecifier *_loggedInSpec;
     BOOL _hasCachedUser;
+    NSDictionary *_contributers;
 }
 
 @end

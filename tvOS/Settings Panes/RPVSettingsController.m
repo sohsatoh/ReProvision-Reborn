@@ -114,7 +114,7 @@
     threshold.shortTitleDictionary = threshold.titleDictionary;
     [threshold setProperty:@"thresholdForResigning" forKey:@"key"];
     [threshold setProperty:@"For example, setting \"2 Days Left\" will cause an application to be re-signed when it is 2 days away from expiring." forKey:@"staticTextMessage"];
-    [threshold setProperty:@"com.matchstic.reprovision.ios/resigningThresholdDidChange" forKey:@"PostNotification"];
+    [threshold setProperty:@"jp.soh.reprovision.ios/resigningThresholdDidChange" forKey:@"PostNotification"];
     
     [array addObject:threshold];
     

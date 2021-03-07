@@ -9,16 +9,16 @@
 	<key>com.apple.private.skip-library-validation</key>
 	<true/>
 	<key>application-identifier</key>
-	<string>AAAAAAAAAA.com.matchstic.reprovisiond</string>
+	<string>AAAAAAAAAA.jp.soh.reprovisiond</string>
 	<key>com.apple.developer.team-identifier</key>
 	<string>AAAAAAAAAA</string>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.matchstic.reprovision.ios</string>
+		<string>group.jp.soh.reprovision.ios</string>
 	</array>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>AAAAAAAAAA.com.matchstic.reprovision.ios</string>
+		<string>AAAAAAAAAA.jp.soh.reprovision.ios</string>
 	</array>
 	<key>com.apple.backboardd.launchapplications</key>
 	<true/>

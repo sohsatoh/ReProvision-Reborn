@@ -73,7 +73,7 @@
         self.lockWhenInstalling = NO;
         
         // Signing Notifications.
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_onSigningStatusUpdate:) name:@"com.matchstic.reprovision/signingUpdate" object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_onSigningStatusUpdate:) name:@"jp.soh.reprovision/signingUpdate" object:nil];
     }
     
     return self;

@@ -6,11 +6,11 @@ uicache
 
 # Handle the daemon
 echo "(Re)-loading daemon..."
-chown root /Library/LaunchDaemons/com.matchstic.reprovisiond.plist
+chown root /Library/LaunchDaemons/jp.soh.reprovisiond.plist
 
 # Unload for an upgrade. - Might spew an error, so hide that.
-/bin/launchctl unload /Library/LaunchDaemons/com.matchstic.reprovisiond.plist 2>/dev/null
-/bin/launchctl load /Library/LaunchDaemons/com.matchstic.reprovisiond.plist
+/bin/launchctl unload /Library/LaunchDaemons/jp.soh.reprovisiond.plist 2>/dev/null
+/bin/launchctl load /Library/LaunchDaemons/jp.soh.reprovisiond.plist
 
 # Classic easter egg
 echo "Do, or do not. There is no try."

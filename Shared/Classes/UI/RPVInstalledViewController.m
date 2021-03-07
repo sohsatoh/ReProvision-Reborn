@@ -94,9 +94,9 @@
 #endif
     
     // Handle reloading data when the user has signed in.
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadDataForUserDidSignIn:) name:@"com.matchstic.reprovision.ios/userDidSignIn" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadDataForUserDidSignIn:) name:@"jp.soh.reprovision.ios/userDidSignIn" object:nil];
     // Reload data when the resign threshold changes.
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadDataForUserDidSignIn:) name:@"com.matchstic.reprovision.ios/resigningThresholdDidChange" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadDataForUserDidSignIn:) name:@"jp.soh.reprovision.ios/resigningThresholdDidChange" object:nil];
     
 #if TARGET_OS_TV
     [[self navigationItem] setTitle:@"Installed"];
@@ -483,9 +483,9 @@
     
     for (int i = 0; i < 2; i++) {
 #if TARGET_OS_TV
-        LSApplicationProxy *proxy = [LSApplicationProxy applicationProxyForIdentifier:@"com.matchstic.reprovision.tvos"];
+        LSApplicationProxy *proxy = [LSApplicationProxy applicationProxyForIdentifier:@"jp.soh.reprovision.tvos"];
 #else
-        LSApplicationProxy *proxy = [LSApplicationProxy applicationProxyForIdentifier:@"com.matchstic.reprovision.ios"];
+        LSApplicationProxy *proxy = [LSApplicationProxy applicationProxyForIdentifier:@"jp.soh.reprovision.ios"];
 #endif
         RPVApplication *application = [[RPVApplication alloc] initWithApplicationProxy:proxy];
         

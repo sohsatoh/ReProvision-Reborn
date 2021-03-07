@@ -5,7 +5,27 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>ReProvision</string>
+	<string>ReProvision Reborn</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array>
+				<string>doc_22</string>
+				<string>doc_44</string>
+				<string>doc_64</string>
+				<string>doc_320</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>iPhone Application</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>jp.soh.reprovision.ipa</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -18,6 +38,17 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>jp.soh.reprovision</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>reprovision</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -26,6 +57,17 @@
 	<true/>
 	<key>SBContinuousAssertionAllowsIdleBand</key>
 	<true/>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Expiring applications</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Re-sign</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>resignExpiringNow</string>
+		</dict>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -59,37 +101,6 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.matchstic.reprovision</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>reprovision</string>
-			</array>
-		</dict>
-	</array>
-	<key>CFBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>iPhone Application</string>
-			<key>CFBundleTypeIconFiles</key>
-			<array>
-				<string>doc_22</string>
-				<string>doc_44</string>
-				<string>doc_64</string>
-				<string>doc_320</string>
-			</array>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.matchstic.reprovision.ipa</string>
-			</array>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-		</dict>
-	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
@@ -100,7 +111,7 @@
 			<key>UTTypeDescription</key>
 			<string>iPhone Application</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.matchstic.reprovision.ipa</string>
+			<string>jp.soh.reprovision.ipa</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -108,17 +119,6 @@
 					<string>ipa</string>
 				</array>
 			</dict>
-		</dict>
-	</array>
-	<key>UIApplicationShortcutItems</key>
-	<array>
-		<dict>
-			<key>UIApplicationShortcutItemTitle</key>
-			<string>Re-sign</string>
-			<key>UIApplicationShortcutItemSubtitle</key>
-			<string>Expiring applications</string>
-			<key>UIApplicationShortcutItemType</key>
-			<string>resignExpiringNow</string>
 		</dict>
 	</array>
 </dict>

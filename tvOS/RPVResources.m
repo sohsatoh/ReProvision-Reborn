@@ -89,11 +89,11 @@ static dispatch_once_t nanoRegistryOnceToken;
     [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
     
     // Write to CFPreferences
-    CFPreferencesSetValue ((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, CFSTR("com.matchstic.reprovision.ios"), kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    CFPreferencesAppSynchronize(CFSTR("com.matchstic.reprovision.ios"));
+    CFPreferencesSetValue ((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, CFSTR("jp.soh.reprovision.ios"), kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    CFPreferencesAppSynchronize(CFSTR("jp.soh.reprovision.ios"));
     
     // Notify daemon of new preferences.
-    notify_post("com.matchstic.reprovision.ios/updatePreferences");
+    notify_post("jp.soh.reprovision.ios/updatePreferences");
     
     // Broadcast notification as Darwin
     [self _broadcastNotification:notification withUserInfo:nil];

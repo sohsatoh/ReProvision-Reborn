@@ -237,7 +237,7 @@
     });
     
     // Notify throughout the app that the user did sign in.
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.matchstic.reprovision.ios/userDidSignIn" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision.ios/userDidSignIn" object:nil];
 }
 
 - (IBAction)_dismissAccountModal:(id)sender {

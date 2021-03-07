@@ -2289,7 +2289,7 @@
 					"$(PROJECT_DIR)/tvOS/lib",
 					"$(PROJECT_DIR)/Shared",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.tvos;
 				PRODUCT_NAME = ReProvision;
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -2322,7 +2322,7 @@
 					"$(PROJECT_DIR)/tvOS/lib",
 					"$(PROJECT_DIR)/Shared",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.tvos;
 				PRODUCT_NAME = ReProvision;
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -2345,7 +2345,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.ios.share;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.ios.share;
 				PRODUCT_NAME = Share;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2365,7 +2365,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.ios.share;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.ios.share;
 				PRODUCT_NAME = Share;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2512,7 +2512,7 @@
 					"$(PROJECT_DIR)/Shared",
 				);
 				OTHER_CFLAGS = "-DCORECRYPTO_DONOT_USE_TRANSPARENT_UNION=1";
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.ios;
 				PRODUCT_NAME = ReProvision;
 				SDKROOT = iphoneos;
 				SYSTEM_HEADER_SEARCH_PATHS = "";
@@ -2549,7 +2549,7 @@
 					"$(PROJECT_DIR)/Shared",
 				);
 				OTHER_CFLAGS = "-DCORECRYPTO_DONOT_USE_TRANSPARENT_UNION=1";
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.ios;
 				PRODUCT_NAME = ReProvision;
 				SDKROOT = iphoneos;
 				SYSTEM_HEADER_SEARCH_PATHS = "";
@@ -2574,7 +2574,7 @@
 					"$(PROJECT_DIR)/Shared",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.macos;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.macos;
 				PRODUCT_NAME = ReProvision;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
@@ -2597,7 +2597,7 @@
 					"$(PROJECT_DIR)/Shared",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_BUNDLE_IDENTIFIER = com.matchstic.reprovision.macos;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.macos;
 				PRODUCT_NAME = ReProvision;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;

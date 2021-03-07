@@ -11,9 +11,9 @@
 #import <notify.h>
 
 #if TARGET_OS_TV
-#define APPLICATION_IDENTIFIER "com.matchstic.reprovision.tvos"
+#define APPLICATION_IDENTIFIER "jp.soh.reprovision.tvos"
 #else
-#define APPLICATION_IDENTIFIER "com.matchstic.reprovision.ios"
+#define APPLICATION_IDENTIFIER "jp.soh.reprovision.ios"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////

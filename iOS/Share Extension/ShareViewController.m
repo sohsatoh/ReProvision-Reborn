@@ -46,8 +46,8 @@
     NSExtensionItem *firstItem = [self.extensionContext.inputItems firstObject];
     NSItemProvider *firstAttachment = [firstItem.attachments firstObject];
     
-    if ([firstAttachment hasItemConformingToTypeIdentifier:@"com.matchstic.reprovision.ipa"]) {
-        [firstAttachment loadItemForTypeIdentifier:@"com.matchstic.reprovision.ipa"
+    if ([firstAttachment hasItemConformingToTypeIdentifier:@"jp.soh.reprovision.ipa"]) {
+        [firstAttachment loadItemForTypeIdentifier:@"jp.soh.reprovision.ipa"
                                            options:nil
                                  completionHandler:^(NSURL*  _Nullable item, NSError * _Null_unspecified error) {
             
