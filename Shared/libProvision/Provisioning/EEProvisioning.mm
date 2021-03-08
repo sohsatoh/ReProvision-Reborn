@@ -701,6 +701,9 @@ free_all:
 
          // Setup values for this application.
          NSString *name = applicationName;
+         // Strip non-alphanumerical characters
+         NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+         name = [[name componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@" "];
 
          NSString *identifier = applicationIdentifier;
 
