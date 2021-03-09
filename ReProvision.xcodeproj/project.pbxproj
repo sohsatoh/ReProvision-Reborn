@@ -281,7 +281,9 @@
 		C9FDB29B20518712005934CD /* RPVAccountFinalController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FDB29A20518712005934CD /* RPVAccountFinalController.m */; };
 		C9FDB2A2205195E8005934CD /* libMobileGestalt.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */; };
 		C9FF57A923902CEC00296719 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9446A2215F72700F5C556 /* Security.framework */; };
+		CF39DF7825F79B7800D25BE0 /* RPVAppIdsTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */; };
 		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
+		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
 		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
 		DAE0BDC9DC0389DB581AA13D /* libPods-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */; };
 		FDC46406FBD5ED313E3C450E /* libPods-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56C208AF9B386EA848EA9D18 /* libPods-macOS.a */; };
@@ -627,7 +629,11 @@
 		C9FDB29A20518712005934CD /* RPVAccountFinalController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAccountFinalController.m; sourceTree = "<group>"; };
 		C9FDB29C2051941D005934CD /* libMobileGestalt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libMobileGestalt.h; sourceTree = "<group>"; };
 		C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libMobileGestalt.tbd; path = usr/lib/libMobileGestalt.tbd; sourceTree = SDKROOT; };
+		CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsTableViewCell.m; sourceTree = "<group>"; };
+		CF39DF7925F79B8F00D25BE0 /* RPVAppIdsTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsTableViewCell.h; sourceTree = "<group>"; };
 		CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ccsrp.m; sourceTree = "<group>"; };
+		CF7C2CE925F7A68500083AB2 /* RPVAppID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppID.m; sourceTree = "<group>"; };
+		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
 		CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsLabel.m; sourceTree = "<group>"; };
 		CFFBA88925F5751400C93D9F /* RPVAppIdsLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsLabel.h; sourceTree = "<group>"; };
 		DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1022,7 +1028,9 @@
 		C99C883323D0C34600CC48BB /* Fullscreen Alert */ = {
 			isa = PBXGroup;
 			children = (
+				CF7C2CE625F7A61D00083AB2 /* Table View */,
 				C99C883423D0C36500CC48BB /* RPVFullscreenAlertController.h */,
+				CF7C2CE825F7A65A00083AB2 /* App ID */,
 				C99C883523D0C36500CC48BB /* RPVFullscreenAlertController.m */,
 			);
 			path = "Fullscreen Alert";
@@ -1445,6 +1453,24 @@
 				CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */,
 			);
 			path = CoreCrypt;
+			sourceTree = "<group>";
+		};
+		CF7C2CE625F7A61D00083AB2 /* Table View */ = {
+			isa = PBXGroup;
+			children = (
+				CF39DF7925F79B8F00D25BE0 /* RPVAppIdsTableViewCell.h */,
+				CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */,
+			);
+			path = "Table View";
+			sourceTree = "<group>";
+		};
+		CF7C2CE825F7A65A00083AB2 /* App ID */ = {
+			isa = PBXGroup;
+			children = (
+				CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */,
+				CF7C2CE925F7A68500083AB2 /* RPVAppID.m */,
+			);
+			path = "App ID";
 			sourceTree = "<group>";
 		};
 		CFFBA88625F574D700C93D9F /* Others */ = {
@@ -1991,6 +2017,7 @@
 				C96FBFEE20EBA57B007E2EC3 /* RPVInstalledCollectionViewCell.m in Sources */,
 				C9C6EB012004280A00211FDD /* base64.c in Sources */,
 				C9C6EB2A2004280A00211FDD /* ioapi_buf.c in Sources */,
+				CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */,
 				C9F3F41E2103B0D500A27256 /* RPVIpaBundleApplication.m in Sources */,
 				C9C6EAF62004280A00211FDD /* EEAppleServices.m in Sources */,
 				C9E9BB7D20C5D38D00EE27D9 /* RPVRootViewController.m in Sources */,
@@ -2025,6 +2052,7 @@
 				C9C6EB292004280A00211FDD /* ioapi.c in Sources */,
 				C9C6EB162004280A00211FDD /* Structure.cpp in Sources */,
 				C9C6EB202004280A00211FDD /* aescrypt.c in Sources */,
+				CF39DF7825F79B7800D25BE0 /* RPVAppIdsTableViewCell.m in Sources */,
 				CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */,
 				C96FBFF120EBD287007E2EC3 /* RPVInstalledTableViewCell.m in Sources */,
 				C9E7C2B220ED016000FDF3B0 /* RPVTroubleshootingCertificatesViewController.m in Sources */,

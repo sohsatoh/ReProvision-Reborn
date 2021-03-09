@@ -10,5 +10,6 @@
 
 @interface RPVAppIdsLabel : UILabel
 @property (nonatomic, getter=isUpdating) BOOL updating;
+@property (nonatomic, strong) UIWindow *alertWindow;
 -(void)updateText;
 @end

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface RPVFullscreenAlertController : UIViewController
+@interface RPVFullscreenAlertController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, copy) void (^onDismiss)();
 
