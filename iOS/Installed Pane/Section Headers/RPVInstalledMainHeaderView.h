@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "RPVInstalledViewController.h"
 
 @interface RPVInstalledMainHeaderView : UIView
-
+@property(nonatomic,weak) RPVInstalledViewController *delegate;
 - (void)configureWithTitle:(NSString*)title;
 
 @end

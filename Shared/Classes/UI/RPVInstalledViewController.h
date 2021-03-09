@@ -16,6 +16,6 @@
 
 #import "RPVApplicationSigning.h"
 
-@interface RPVInstalledViewController : UIViewController <RPVInstalledSectionHeaderDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UITableViewDelegate, UITableViewDataSource, RPVApplicationSigningProtocol>
-
+@interface RPVInstalledViewController : UIViewController <RPVInstalledSectionHeaderDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UITableViewDelegate, UITableViewDataSource, RPVApplicationSigningProtocol, UIDocumentPickerDelegate>
+-(void)installButtonTapped;
 @end
