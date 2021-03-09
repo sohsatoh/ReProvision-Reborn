@@ -14,6 +14,9 @@
 #define TABLE_VIEWS_INSET 20
 
 @interface RPVFullscreenAlertController ()
+@property (nonatomic, strong) UIView *topBackgroundView;
+@property (nonatomic, strong) CAGradientLayer *topBackgroundGradientLayer;
+
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *bodyLabel;
 @property (nonatomic, strong) UITableView *appIdsTableView;
@@ -21,7 +24,7 @@
 
 @property (nonatomic, strong) NSMutableArray *appIdsDataSource;
 
-@property (nonatomic, asign) BOOL loaded;
+@property (nonatomic, assign) BOOL loaded;
 @end
 
 @implementation RPVFullscreenAlertController
@@ -35,16 +38,28 @@
 }
 
 - (void)loadView {
-    // [UIColor colorWithWhite:0.96 alpha:1.0];
-
     self.view = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+    self.topBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    [self.view addSubview:self.topBackgroundView];
+
+    self.topBackgroundGradientLayer = [CAGradientLayer layer];
+    self.topBackgroundGradientLayer.frame = CGRectZero;
+
+    UIColor *startColor = [UIColor colorWithRed:147.0/255.0 green:99.0/255.0 blue:207.0/255.0 alpha:1.0];
+    UIColor *endColor = [UIColor colorWithRed:116.0/255.0 green:158.0/255.0 blue:201.0/255.0 alpha:1.0];
+    self.topBackgroundGradientLayer.colors = @[(id)startColor.CGColor, (id)endColor.CGColor];
+    self.topBackgroundGradientLayer.startPoint = CGPointMake(0.75, 0.75);
+    self.topBackgroundGradientLayer.endPoint = CGPointMake(0.25, 0.25);
+
+    [self.topBackgroundView.layer insertSublayer:self.topBackgroundGradientLayer atIndex:0];
 
     self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     self.titleLabel.text = @"What's App ID?";
     self.titleLabel.textAlignment = NSTextAlignmentCenter;
     self.titleLabel.font = [UIFont systemFontOfSize:34];
 
-    [self.view addSubview:self.titleLabel];
+    [self.topBackgroundView addSubview:self.titleLabel];
 
     self.bodyLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     self.bodyLabel.text = @"App ID is the ID for each sideloaded application, issued by Apple's servers.\nWith a free account, you can only register up to 10 per week.\nThis limit is on a per-account basis.\nAfter a week, it will automatically expire and you can install a new app.";
@@ -69,21 +84,21 @@
 
     [self.view addSubview:self.dismissButton];
 
-    if (@available(iOS 13.0, *)) {
-        self.view.backgroundColor = [UIColor systemBackgroundColor];
-        self.titleLabel.textColor = [UIColor labelColor];
-        self.bodyLabel.textColor = [UIColor labelColor];
-    } else {
-        self.view.backgroundColor = [UIColor whiteColor];
-        self.titleLabel.textColor = [UIColor blackColor];
-        self.bodyLabel.textColor = [UIColor blackColor];
-    }
+    self.view.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1.0];
+    self.titleLabel.textColor = [UIColor whiteColor];
+    self.bodyLabel.textColor = [UIColor blackColor];
 
     [self _layoutWithSize:[UIScreen mainScreen].bounds.size];
 }
 
 - (void)_layoutWithSize:(CGSize)size {
     CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
+
+    self.topBackgroundView.frame = CGRectMake(0, 0, self.view.bounds.size.width, (statusBarFrame.size.height + 30) * 2);
+    [CATransaction begin];
+    [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+    self.topBackgroundGradientLayer.frame = self.topBackgroundView.bounds;
+    [CATransaction commit];
 
     self.titleLabel.frame = CGRectMake(size.width * 0.1, statusBarFrame.size.height + 30, size.width * 0.8, 60);
 
@@ -121,15 +136,16 @@
 
 - (void)_reloadDataSources {
     [[RPVAccountChecker sharedInstance] listAllApplicationsWithCompletionHandler:^(NSError *error, NSArray *appIds) {
-         if(appIds) {
+         if([appIds count] != 0) {
              self.appIdsDataSource = [appIds mutableCopy];
+             NSSortDescriptor* sortByDate = [NSSortDescriptor sortDescriptorWithKey:@"applicationExpiryDate" ascending:YES];
+             [self.appIdsDataSource sortUsingDescriptors:@[sortByDate]];
+
              dispatch_async(dispatch_get_main_queue(), ^{
                                 [self.appIdsTableView reloadData];
                                 [self.view setNeedsLayout];
                             });
 
-         } else {
-             //[self.appIdsTableView]
          }
      }];
 }

@@ -691,7 +691,7 @@ free_all:
          NSString *appIdIdIfExists = @"";
          NSString *fullidentifier = @"";
          for (NSDictionary *appIdDictionary in plist[@"appIds"]) {
-             if ([(NSString*)[appIdDictionary objectForKey:@"name"] isEqualToString:applicationName]) {
+             if ([(NSString*)[appIdDictionary objectForKey:@"name"] isEqualToString:applicationName] || [(NSString *)[appIdDictionary objectForKey:@"identifier"] isEqualToString:applicationIdentifier]) {
                  appIdExists = YES;
                  appIdIdIfExists = [appIdDictionary objectForKey:@"appIdId"];
                  fullidentifier = [appIdDictionary objectForKey:@"identifier"];
