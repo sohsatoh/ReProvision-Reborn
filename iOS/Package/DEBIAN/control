@@ -1,5 +1,5 @@
 Package: jp.soh.reprovision
-Name: ReProvision
+Name: ReProvision Reborn
 Version: 0.6.0~release
 Description: Re-sign applications on your device
 Section: System
@@ -12,4 +12,3 @@ Author: Soh Satoh, Matt Clarke
 dev: Matt Clarke
 Maintainer: Soh Satoh
 Icon: file:///Applications/ReProvision.app/AppIcon60x60@2x.png
-

@@ -141,7 +141,7 @@
                 }
                 
                 // If the count of certs is > 1 existing profiles, we need the user to revoke one.
-                NSArray *certificates = [dictionary objectForKey:@"certificates"];
+                NSArray *certificates = [dictionary objectForKey:@"data"];
                 if (certificates.count > 1) {
                     NSLog(@"Need to remove an existing certificate!");
                     [self _setupUIForRevokingCertificates:certificates];
@@ -264,7 +264,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
     // Fill from data source
-    NSDictionary *dictionary = [self.dataSource objectAtIndex:indexPath.row];
+    NSDictionary *dictionary = [self.dataSource objectAtIndex:indexPath.row][@"attributes"];
     
     NSString *machineName = [dictionary objectForKey:@"machineName"];
     machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
@@ -309,7 +309,7 @@
         self.certificatesExplanation.hidden = YES;
         self.activityIndicatorView.hidden = NO;
         
-        [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row] withCompletion:^(NSError *error) {
+        [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row][@"attributes"] withCompletion:^(NSError *error) {
             if (!error) {
                 // Delete the row from the data source
                 dispatch_async(dispatch_get_main_queue(), ^{

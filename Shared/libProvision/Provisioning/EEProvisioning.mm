@@ -115,11 +115,11 @@
               NSString *deviceID = [self _identifierForCurrentMachine];
 
               NSDictionary *certificate;
-              for (NSDictionary *dict in [plist objectForKey:@"certificates"]) {
-                  NSString *machineId = dict[@"machineId"];
+              for (NSDictionary *dict in [plist objectForKey:@"data"]) {
+                  NSString *machineId = dict[@"attributes"][@"machineId"];
                   if ([machineId isEqualToString:deviceID]) {
                       // Got it!
-                      certificate = dict;
+                      certificate = dict[@"attributes"];
                       break;
                   }
               }
@@ -321,16 +321,21 @@
          NSDate *now = [NSDate date];
          NSDictionary *certificate;
 
-         for (NSDictionary *dict in [plist objectForKey:@"certificates"]) {
-             NSString *machineId = dict[@"machineId"];
+         for (NSDictionary *dict in [plist objectForKey:@"data"]) {
+             NSString *machineId = dict[@"attributes"][@"machineId"];
              if ([machineId isEqualToString:[self _identifierForCurrentMachine]]) {
                  // Alright cool. Now, we check to see if it has expired.
-                 certificate = dict;
+                 certificate = dict[@"attributes"];
 
                  // Compare expirationDate to now. If passed, then certificate is not valid.
                  hasValidCertificate = YES;
 
-                 NSDate *certificateExpiryDate = [dict objectForKey:@"expirationDate"];
+                 NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                 dateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+                 dateFormatter.dateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
+                 dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+
+                 NSDate *certificateExpiryDate = [dateFormatter dateFromString:dict[@"attributes"][@"expirationDate"]];
                  if ([now compare:certificateExpiryDate] == NSOrderedDescending) {
                      // Certificate has passed its expiry date.
                      hasValidCertificate = NO;
@@ -505,11 +510,11 @@
               // TODO: Check plist for errors.
 
               NSDictionary *certificate;
-              for (NSDictionary *dict in [plist objectForKey:@"certificates"]) {
-                  NSString *certSerialNumber = dict[@"serialNumber"];
+              for (NSDictionary *dict in [plist objectForKey:@"data"]) {
+                  NSString *certSerialNumber = dict[@"attributes"][@"serialNumber"];
                   if ([certSerialNumber isEqualToString:certificateSerialID]) {
                       // Got it!
-                      certificate = dict;
+                      certificate = dict[@"attributes"];
                       break;
                   }
               }
