@@ -90,7 +90,8 @@ static CGFloat inset = 20;
 // And re-enable if needed
 - (void)_signingDidComplete:(id)sender {
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.button.alpha = self.button.enabled ? 1.0 : 0.5;
+        self.button.enabled = YES;
+        self.button.alpha = 1.0;
     });
 }
 
