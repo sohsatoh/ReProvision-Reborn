@@ -1,73 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
+  <dict>
 
-	<key>com.apple.private.mobileinstall.allowedSPI</key> 
-	<array> 
-		<string>Lookup</string> 
-		<string>Install</string> 
-		<string>Browse</string> 
-		<string>Uninstall</string> 
-		<string>LookupForLaunchServices</string> 
-		<string>InstallForLaunchServices</string> 
-		<string>BrowseForLaunchServices</string> 
-		<string>UninstallForLaunchServices</string> 
-		<string>InstallLocalProvisioned</string> 
-	</array>
-    
+    <key>com.apple.private.mobileinstall.allowedSPI</key>
+    <array>
+      <string>Lookup</string>
+      <string>Install</string>
+      <string>Browse</string>
+      <string>Uninstall</string>
+      <string>LookupForLaunchServices</string>
+      <string>InstallForLaunchServices</string>
+      <string>BrowseForLaunchServices</string>
+      <string>UninstallForLaunchServices</string>
+      <string>InstallLocalProvisioned</string>
+    </array>
+
     <key>com.apple.CommCenter.fine-grained</key>
     <array>
-        <string>cellular-plan</string>
-        <string>data-usage</string>
-        <string>data-allowed-write</string>
-        <string>preferences-write</string>
+      <string>cellular-plan</string>
+      <string>data-usage</string>
+      <string>data-allowed-write</string>
+      <string>preferences-write</string>
     </array>
-	
-	<key>com.apple.lsapplicationworkspace.rebuildappdatabases</key>  
-	<true/>    
-	
-	<key>com.apple.private.MobileContainerManager.allowed</key>  
-	<true/> 
-	
-	<key>com.apple.private.MobileGestalt.AllowedProtectedKeys</key>
-	<true/>
-	
-	<key>com.apple.managedconfiguration.profiled-access</key>
-	<true/>
 
-	<key>platform-application</key>
-	<true/>
-	
-	<key>com.apple.private.security.no-container</key>
-	<true/>
-	
-	<key>com.apple.private.skip-library-validation</key>
-	<true/>
-	
-	<key>application-identifier</key> 
-	<string>AAAAAAAAAA.jp.soh.reprovision.ios</string>
-	
-	<key>com.apple.developer.team-identifier</key> 
-	<string>AAAAAAAAAA</string>  
-	
-	<key>com.apple.security.application-groups</key> 
-	<array> 
-		<string>group.jp.soh.reprovision.ios</string> 
-	</array> 
-	
-	<key>keychain-access-groups</key> 
-	<array> 
-		<string>AAAAAAAAAA.jp.soh.reprovision.ios</string> 
-	</array>  
+    <key>com.apple.lsapplicationworkspace.rebuildappdatabases</key>
+    <true/>
 
-	<key>com.apple.localnotification.schedulingproxy</key>
-	<true/>
-	
-	<key>com.apple.nano.nanoregistry</key>
-	<true/>
+    <key>com.apple.private.MobileContainerManager.allowed</key>
+    <true/>
+
+    <key>com.apple.private.MobileGestalt.AllowedProtectedKeys</key>
+    <true/>
+
+    <key>com.apple.managedconfiguration.profiled-access</key>
+    <true/>
+
+    <key>platform-application</key>
+    <true/>
+
+    <key>com.apple.private.security.no-container</key>
+    <true/>
+
+    <key>com.apple.private.skip-library-validation</key>
+    <true/>
+
+    <key>application-identifier</key>
+    <string>AAAAAAAAAA.jp.soh.reprovision.ios</string>
+
+    <key>com.apple.developer.team-identifier</key>
+    <string>AAAAAAAAAA</string>
+
+    <key>com.apple.security.application-groups</key>
+    <array>
+      <string>group.jp.soh.reprovision.ios</string>
+    </array>
+
+    <key>keychain-access-groups</key>
+    <array>
+      <string>AAAAAAAAAA.jp.soh.reprovision.ios</string>
+    </array>
+
+    <key>com.apple.localnotification.schedulingproxy</key>
+    <true/>
+
+    <key>com.apple.nano.nanoregistry</key>
+    <true/>
 
     <key>com.apple.authkit.client.private</key>
     <true/>
-</dict>
+
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+      <string>CloudKit</string>
+      <string>CloudDocuments</string>
+    </array>
+
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+      <string>iCloud.jp.soh.reprovision.ios</string>
+    </array>
+
+  </dict>
 </plist>

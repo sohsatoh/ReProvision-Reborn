@@ -38,39 +38,39 @@
 #define TABLE_VIEWS_INSET 20
 
 @interface LSApplicationProxy : NSObject
-@property (nonatomic, readonly) NSString *applicationIdentifier;
-+ (instancetype)applicationProxyForIdentifier:(NSString*)arg1;
+@property(nonatomic, readonly) NSString *applicationIdentifier;
++ (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
 @end
 
 @interface RPVInstalledViewController ()
 // Views
-@property (nonatomic, strong) UIScrollView *rootScrollView;
+@property(nonatomic, strong) UIScrollView *rootScrollView;
 
-@property (nonatomic, strong) UIView *topBackgroundView;
-@property (nonatomic, strong) CAGradientLayer *topBackgroundGradientLayer;
+@property(nonatomic, strong) UIView *topBackgroundView;
+@property(nonatomic, strong) CAGradientLayer *topBackgroundGradientLayer;
 
-@property (nonatomic, strong) RPVInstalledMainHeaderView *mainHeaderView;
-@property (nonatomic, strong) UICollectionView *expiringCollectionView;
-@property (nonatomic, strong) UITableView *recentTableView;
-@property (nonatomic, strong) UITableView *otherApplicationsTableView;
-@property (nonatomic, strong) RPVAppIdsLabel *appIdsLabel;
+@property(nonatomic, strong) RPVInstalledMainHeaderView *mainHeaderView;
+@property(nonatomic, strong) UICollectionView *expiringCollectionView;
+@property(nonatomic, strong) UITableView *recentTableView;
+@property(nonatomic, strong) UITableView *otherApplicationsTableView;
+@property(nonatomic, strong) RPVAppIdsLabel *appIdsLabel;
 
 #if TARGET_OS_TV
-@property (nonatomic, strong) RPVInstalledSectionHeaderViewController *expiringSectionHeader;
-@property (nonatomic, strong) RPVInstalledSectionHeaderViewController *recentSectionHeader;
-@property (nonatomic, strong) RPVInstalledSectionHeaderViewController *otherApplicationsSectionHeader;
+@property(nonatomic, strong) RPVInstalledSectionHeaderViewController *expiringSectionHeader;
+@property(nonatomic, strong) RPVInstalledSectionHeaderViewController *recentSectionHeader;
+@property(nonatomic, strong) RPVInstalledSectionHeaderViewController *otherApplicationsSectionHeader;
 #else
-@property (nonatomic, strong) RPVInstalledSectionHeaderView *expiringSectionHeaderView;
-@property (nonatomic, strong) RPVInstalledSectionHeaderView *recentSectionHeaderView;
-@property (nonatomic, strong) RPVInstalledSectionHeaderView *otherApplicationsSectionHeaderView;
+@property(nonatomic, strong) RPVInstalledSectionHeaderView *expiringSectionHeaderView;
+@property(nonatomic, strong) RPVInstalledSectionHeaderView *recentSectionHeaderView;
+@property(nonatomic, strong) RPVInstalledSectionHeaderView *otherApplicationsSectionHeaderView;
 #endif
 
 // Data sources
-@property (nonatomic, strong) NSMutableArray *expiringSoonDataSource;
-@property (nonatomic, strong) NSMutableArray *recentlySignedDataSource;
-@property (nonatomic, strong) NSMutableArray *otherApplicationsDataSource;
+@property(nonatomic, strong) NSMutableArray *expiringSoonDataSource;
+@property(nonatomic, strong) NSMutableArray *recentlySignedDataSource;
+@property(nonatomic, strong) NSMutableArray *otherApplicationsDataSource;
 
-@property (nonatomic, strong) NSMutableDictionary *currentSigningProgress;
+@property(nonatomic, strong) NSMutableDictionary *currentSigningProgress;
 @end
 
 @implementation RPVInstalledViewController
@@ -140,9 +140,9 @@
     self.topBackgroundGradientLayer = [CAGradientLayer layer];
     self.topBackgroundGradientLayer.frame = CGRectZero;
 
-    UIColor *startColor = [UIColor colorWithRed:147.0/255.0 green:99.0/255.0 blue:207.0/255.0 alpha:1.0];
-    UIColor *endColor = [UIColor colorWithRed:116.0/255.0 green:158.0/255.0 blue:201.0/255.0 alpha:1.0];
-    self.topBackgroundGradientLayer.colors = @[(id)startColor.CGColor, (id)endColor.CGColor];
+    UIColor *startColor = [UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0];
+    UIColor *endColor = [UIColor colorWithRed:116.0 / 255.0 green:158.0 / 255.0 blue:201.0 / 255.0 alpha:1.0];
+    self.topBackgroundGradientLayer.colors = @[ (id)startColor.CGColor, (id)endColor.CGColor ];
     self.topBackgroundGradientLayer.startPoint = CGPointMake(0.75, 0.75);
     self.topBackgroundGradientLayer.endPoint = CGPointMake(0.25, 0.25);
 
@@ -262,12 +262,12 @@
 #if TARGET_OS_TV
     self.rootScrollView.frame = self.view.bounds;
 #else
-    CGFloat rootHeight = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? self.view.bounds.size.height : self.view.bounds.size.height - [(UITabBarController*)self.parentViewController tabBar].frame.size.height;
+    CGFloat rootHeight = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? self.view.bounds.size.height : self.view.bounds.size.height - [(UITabBarController *)self.parentViewController tabBar].frame.size.height;
     self.rootScrollView.frame = CGRectMake(0, 0, self.view.bounds.size.width, rootHeight);
 #endif
 
 #if TARGET_OS_TV
-    CGFloat yOffset = 160.0; // top tab bar
+    CGFloat yOffset = 160.0;  // top tab bar
 
     CGFloat mainHeaderHeight = 0;
     CGFloat sectionHeaderHeight = 80;
@@ -300,7 +300,7 @@
         self.expiringCollectionView.frame = CGRectMake(0 - tvOSInset, yOffset, self.view.bounds.size.width + tvOSInset, [self _collectionCellSize].height + 50);
     }
 
-    yOffset += self.expiringCollectionView.frame.size.height; // CollectionView's insets handle extra offsetting.
+    yOffset += self.expiringCollectionView.frame.size.height;  // CollectionView's insets handle extra offsetting.
 
     // Top background view.
     self.topBackgroundView.frame = CGRectMake(0, 0, self.view.bounds.size.width, yOffset);
@@ -323,15 +323,15 @@
     // Table View's frame height is: insetTop + (n*itemheight) + insetBottom
 #if TARGET_OS_TV
     CGFloat height = [self tableView:self.recentTableView numberOfRowsInSection:0] * [self _tableViewCellHeight];
-    height += [self tableView:self.recentTableView numberOfRowsInSection:0] * 20.0; // interim insets
+    height += [self tableView:self.recentTableView numberOfRowsInSection:0] * 20.0;  // interim insets
 
     // Grouped header insets
     yOffset -= 20.0;
 #else
     CGFloat height = [self tableView:self.recentTableView numberOfRowsInSection:0] * [self _tableViewCellHeight];
 #endif
-    self.recentTableView.frame = CGRectMake(TABLE_VIEWS_INSET, yOffset, self.view.bounds.size.width - (TABLE_VIEWS_INSET*2), height);
-    self.recentTableView.contentSize = CGSizeMake(self.view.bounds.size.width - (TABLE_VIEWS_INSET*2), height);
+    self.recentTableView.frame = CGRectMake(TABLE_VIEWS_INSET, yOffset, self.view.bounds.size.width - (TABLE_VIEWS_INSET * 2), height);
+    self.recentTableView.contentSize = CGSizeMake(self.view.bounds.size.width - (TABLE_VIEWS_INSET * 2), height);
 
     yOffset += height + 15;
 
@@ -347,15 +347,15 @@
     // Table View's frame height is: insetTop + (n*itemheight) + insetBottom
 #if TARGET_OS_TV
     CGFloat otherAppsHeight = [self tableView:self.otherApplicationsTableView numberOfRowsInSection:0] * [self _tableViewCellHeight];
-    otherAppsHeight += [self tableView:self.otherApplicationsTableView numberOfRowsInSection:0] * 20.0; // interim insets
+    otherAppsHeight += [self tableView:self.otherApplicationsTableView numberOfRowsInSection:0] * 20.0;  // interim insets
 
     // Grouped header insets
     yOffset -= 30.0;
 #else
     CGFloat otherAppsHeight = [self tableView:self.otherApplicationsTableView numberOfRowsInSection:0] * [self _tableViewCellHeight];
 #endif
-    self.otherApplicationsTableView.frame = CGRectMake(TABLE_VIEWS_INSET, yOffset, self.view.bounds.size.width - (TABLE_VIEWS_INSET*2), otherAppsHeight);
-    self.otherApplicationsTableView.contentSize = CGSizeMake(self.view.bounds.size.width - (TABLE_VIEWS_INSET*2), otherAppsHeight);
+    self.otherApplicationsTableView.frame = CGRectMake(TABLE_VIEWS_INSET, yOffset, self.view.bounds.size.width - (TABLE_VIEWS_INSET * 2), otherAppsHeight);
+    self.otherApplicationsTableView.contentSize = CGSizeMake(self.view.bounds.size.width - (TABLE_VIEWS_INSET * 2), otherAppsHeight);
 
     yOffset += otherAppsHeight + 15;
 
@@ -375,32 +375,30 @@
 
 #if TARGET_OS_TV
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
-
     // Check for tabbar hide and show!
     static NSString *kUITabBarButtonClassName = @"UITabBarButton";
 
     NSString *prevFocusViewClassName = NSStringFromClass([context.previouslyFocusedView class]);
     NSString *nextFocusedView = NSStringFromClass([context.nextFocusedView class]);
 
-    RPVStickyScrollView *stickyScrollView = (RPVStickyScrollView*)self.rootScrollView;
+    RPVStickyScrollView *stickyScrollView = (RPVStickyScrollView *)self.rootScrollView;
 
     if (![prevFocusViewClassName isEqualToString:kUITabBarButtonClassName] &&
         [nextFocusedView isEqualToString:kUITabBarButtonClassName]) {
-
         stickyScrollView.stickyYPosition = 20.0;
         [coordinator addCoordinatedAnimations:^{
-             [stickyScrollView setContentOffset:CGPointMake(0, 20.0)];
-         } completion:^{
+            [stickyScrollView setContentOffset:CGPointMake(0, 20.0)];
+        } completion:^{
 
-         }];
+        }];
     } else {
         stickyScrollView.stickyYPosition = 140.0;
         [coordinator addCoordinatedAnimations:^{
-             if (stickyScrollView.contentOffset.y < 140.0)
-                 [stickyScrollView setContentOffset:CGPointMake(0, 140.0)];
-         } completion:^{
+            if (stickyScrollView.contentOffset.y < 140.0)
+                [stickyScrollView setContentOffset:CGPointMake(0, 140.0)];
+        } completion:^{
 
-         }];
+        }];
     }
 }
 #endif
@@ -454,12 +452,11 @@
 
     if (!USE_FAKE_DATA) {
         NSDate *now = [NSDate date];
-        int thresholdForExpiration = [RPVResources thresholdForResigning]; // days
+        int thresholdForExpiration = [RPVResources thresholdForResigning];  // days
 
         NSDate *expirationDate = [now dateByAddingTimeInterval:60 * 60 * 24 * thresholdForExpiration];
 
         if (![[RPVApplicationDatabase sharedInstance] getApplicationsWithExpiryDateBefore:&expiringSoon andAfter:&recentlySigned date:expirationDate forTeamID:[RPVResources getTeamID]]) {
-
             // :(
         } else {
             self.expiringSoonDataSource = expiringSoon;
@@ -540,7 +537,6 @@
     self.topBackgroundGradientLayer.frame = self.topBackgroundView.bounds;
 
     [CATransaction commit];
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -548,7 +544,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    RPVInstalledCollectionViewCell *cell = (RPVInstalledCollectionViewCell*)[collectionView dequeueReusableCellWithReuseIdentifier:@"installed.cell" forIndexPath:indexPath];
+    RPVInstalledCollectionViewCell *cell = (RPVInstalledCollectionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:@"installed.cell" forIndexPath:indexPath];
 
     RPVApplication *application;
     NSString *fallbackString = @"";
@@ -566,12 +562,17 @@
     return self.expiringSoonDataSource.count > 0 ? self.expiringSoonDataSource.count : 1;
 }
 
-- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     return UIEdgeInsetsMake(0, 20, 15, 20);
 }
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return self.expiringSoonDataSource.count > 0 ? [(UICollectionViewFlowLayout*)collectionViewLayout itemSize] : CGSizeMake(self.view.frame.size.width - 40, 50);
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    CGSize size = self.expiringSoonDataSource.count > 0 ? [(UICollectionViewFlowLayout *)collectionViewLayout itemSize] : CGSizeMake(self.view.frame.size.width - 40, 50);
+    if (size.width <= 0) {
+        size.width = CGRectGetWidth([[UIScreen mainScreen] bounds]) - 40;
+    }
+
+    return size;
 }
 
 
@@ -606,7 +607,7 @@
         return self.otherApplicationsDataSource.count > 0 ? self.otherApplicationsDataSource.count : 1;
 }
 
-- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     RPVInstalledTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"installed.cell"];
 
     if (!cell) {
@@ -656,7 +657,7 @@
     [self _showApplicationDetailController:application withButtonTitle:buttonTitle isDestructiveResign:isDestructiveResign];
 }
 
-- (void)_showApplicationDetailController:(RPVApplication*)application withButtonTitle:(NSString*)buttonTitle isDestructiveResign:(BOOL)isDestructiveResign {
+- (void)_showApplicationDetailController:(RPVApplication *)application withButtonTitle:(NSString *)buttonTitle isDestructiveResign:(BOOL)isDestructiveResign {
     RPVApplicationDetailController *detailController = [[RPVApplicationDetailController alloc] initWithApplication:application];
     detailController.warnUserOnResign = isDestructiveResign;
 
@@ -682,7 +683,7 @@
 
 // We provide editing only for the other applications table.
 
-- (BOOL)tableView:(UITableView*)tableView canEditRowAtIndexPath:(NSIndexPath*)arg2 {
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)arg2 {
     return NO;
 }
 
@@ -701,10 +702,8 @@
     [self.currentSigningProgress setObject:[NSNumber numberWithInt:progress] forKey:bundleIdentifier];
 
     if (progress == 100) {
-
         // Great success! Now we can move items around!
         dispatch_async(dispatch_get_main_queue(), ^{
-
             int oldDataSource = 0;
             RPVApplication *application;
             // Check expiring
@@ -742,10 +741,10 @@
                 [self.expiringSectionHeader requestNewButtonEnabledState];
                 [self.otherApplicationsSectionHeader requestNewButtonEnabledState];
 #else
-                [self.recentSectionHeaderView requestNewButtonEnabledState];
-                [self.expiringSectionHeaderView requestNewButtonEnabledState];
-                [self.otherApplicationsSectionHeaderView requestNewButtonEnabledState];
-                [self.appIdsLabel updateText];
+                    [self.recentSectionHeaderView requestNewButtonEnabledState];
+                    [self.expiringSectionHeaderView requestNewButtonEnabledState];
+                    [self.otherApplicationsSectionHeaderView requestNewButtonEnabledState];
+                    [self.appIdsLabel updateText];
 #endif
 
                 return;
@@ -761,16 +760,16 @@
                     [self.expiringCollectionView reloadData];
                 } else {
                     [self.expiringCollectionView performBatchUpdates:^{
-                         int index = (int)[self.expiringSoonDataSource indexOfObject:application];
+                        int index = (int)[self.expiringSoonDataSource indexOfObject:application];
 
-                         // Remove items from data source.
-                         [self.expiringSoonDataSource removeObjectAtIndex:index];
+                        // Remove items from data source.
+                        [self.expiringSoonDataSource removeObjectAtIndex:index];
 
-                         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-                         [self.expiringCollectionView deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath]];
-                     } completion:^(BOOL finished) {
+                        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+                        [self.expiringCollectionView deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath]];
+                    } completion:^(BOOL finished){
 
-                     }];
+                    }];
                 }
             } else if (oldDataSource == 2) {
                 // Effectively this will be a re-order, but oh well.
@@ -789,12 +788,11 @@
                     // Delete the row from the table
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 
-                    [self.recentTableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [self.recentTableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
 
                     [self.recentTableView endUpdates];
                 }
             } else if (oldDataSource == 3) {
-
                 if (self.otherApplicationsDataSource.count - 1 == 0) {
                     [self.otherApplicationsDataSource removeObject:application];
                     [self.otherApplicationsTableView reloadData];
@@ -807,7 +805,7 @@
                     // Delete the row from the table
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 
-                    [self.otherApplicationsTableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [self.otherApplicationsTableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
 
                     [self.otherApplicationsTableView endUpdates];
                 }
@@ -830,7 +828,7 @@
                 // Add the row to the table
                 NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 
-                [self.recentTableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.recentTableView insertRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
             }
 
             [self.recentTableView endUpdates];
@@ -839,10 +837,9 @@
             [self.view setNeedsLayout];
 
             // Flash notification on this cell.
-            dispatch_async(dispatch_get_main_queue(), ^(){
+            dispatch_async(dispatch_get_main_queue(), ^() {
                 [[self _cellForApplication:application] flashNotificationSuccess];
             });
-
         });
     }
 }
@@ -852,7 +849,7 @@
 
     // Find cell for this identifier.
     // Flash notification on this cell.
-    dispatch_async(dispatch_get_main_queue(), ^(){
+    dispatch_async(dispatch_get_main_queue(), ^() {
         [[self _cellForApplication:[self _applicationForBundleIdentifier:bundleIdentifier]] flashNotificationFailure];
     });
 }
@@ -863,18 +860,18 @@
 - (void)startApplicationSigningForSection:(NSInteger)section {
     NSString *startAlertString = @"";
     switch (section) {
-    case 1:
-        startAlertString = @"Starting signing for applications expiring soon";
-        break;
-    case 2:
-        startAlertString = @"Starting signing for all applications";
-        break;
-    case 3:
-        startAlertString = @"Starting signing for other sideloaded applications";
-        break;
+        case 1:
+            startAlertString = @"Starting signing for applications expiring soon";
+            break;
+        case 2:
+            startAlertString = @"Starting signing for all applications";
+            break;
+        case 3:
+            startAlertString = @"Starting signing for other sideloaded applications";
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"DEBUG" body:startAlertString isDebugMessage:YES andNotificationID:nil];
@@ -882,19 +879,19 @@
     if (section == 3) {
         // Sign all other sideloaded applications to this Team ID.
         [[RPVApplicationSigning sharedInstance] resignSpecificApplications:self.otherApplicationsDataSource
-         withTeamID:[RPVResources getTeamID]
-         username:[RPVResources getUsername]
-         password:[RPVResources getPassword]];
+                                                                withTeamID:[RPVResources getTeamID]
+                                                                  username:[RPVResources getUsername]
+                                                                  password:[RPVResources getPassword]];
     } else {
         [[RPVApplicationSigning sharedInstance] resignApplications:(section == 1)
-         thresholdForExpiration:[RPVResources thresholdForResigning]
-         withTeamID:[RPVResources getTeamID]
-         username:[RPVResources getUsername]
-         password:[RPVResources getPassword]];
+                                            thresholdForExpiration:[RPVResources thresholdForResigning]
+                                                        withTeamID:[RPVResources getTeamID]
+                                                          username:[RPVResources getUsername]
+                                                          password:[RPVResources getPassword]];
     }
 }
 
-- (RPVApplication*)_applicationForBundleIdentifier:(NSString*)bundleIdentifier {
+- (RPVApplication *)_applicationForBundleIdentifier:(NSString *)bundleIdentifier {
     RPVApplication *application;
     // Check expiring
     for (RPVApplication *app in self.expiringSoonDataSource) {
@@ -921,7 +918,7 @@
     return application;
 }
 
-- (id)_cellForApplication:(RPVApplication*)application {
+- (id)_cellForApplication:(RPVApplication *)application {
     NSString *bundleIdentifier = [application bundleIdentifier];
 
     // Check expiring
@@ -964,14 +961,14 @@
 
 - (BOOL)isButtonEnabledForSection:(NSInteger)section {
     switch (section) {
-    case 1:
-        return self.expiringSoonDataSource.count > 0;
-    case 2:
-        return self.recentlySignedDataSource.count > 0;
-    case 3:
-        return self.otherApplicationsDataSource.count > 0;
-    default:
-        return NO;
+        case 1:
+            return self.expiringSoonDataSource.count > 0;
+        case 2:
+            return self.recentlySignedDataSource.count > 0;
+        case 3:
+            return self.otherApplicationsDataSource.count > 0;
+        default:
+            return NO;
     }
 }
 
@@ -979,8 +976,8 @@
 //  File Picker delegate methods.
 //////////////////////////////////////////////////////////////////////////////////
 
--(void)installButtonTapped {
-    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.data"] inMode:UIDocumentPickerModeOpen];
+- (void)installButtonTapped {
+    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[ @"public.data" ] inMode:UIDocumentPickerModeImport];
     picker.delegate = self;
     [self presentViewController:picker animated:YES completion:nil];
 }
@@ -989,28 +986,27 @@
     if (![[[url pathExtension] lowercaseString] isEqualToString:@"ipa"]) return;
 
     // Incoming URL is a fileURL!
-    
+
     // Create an RPVApplication for this incoming .ipa, and display the installation popup.
     RPVIpaBundleApplication *ipaApplication = [[RPVIpaBundleApplication alloc] initWithIpaURL:url];
-    
+
     RPVApplicationDetailController *detailController = [[RPVApplicationDetailController alloc] initWithApplication:ipaApplication];
-    
+
     // Update with current states.
     [detailController setButtonTitle:@"INSTALL"];
     detailController.lockWhenInstalling = YES;
-    
+
     // Add to the rootViewController of the application, as an effective overlay.
     detailController.view.alpha = 0.0;
-    
+
     UIViewController *rootController = [UIApplication sharedApplication].keyWindow.rootViewController;
     [rootController addChildViewController:detailController];
     [rootController.view addSubview:detailController.view];
-    
+
     detailController.view.frame = rootController.view.bounds;
-    
+
     // Animate in!
     [detailController animateForPresentation];
 }
 
 @end
-

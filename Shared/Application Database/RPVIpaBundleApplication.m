@@ -17,20 +17,20 @@
 
 @interface RPVIpaBundleApplication ()
 
-@property (nonatomic, strong) NSDictionary *cachedInfoPlist;
-@property (nonatomic, strong) NSURL *cachedURL;
-@property (nonatomic, strong) UIImage *cachedIconImage;
-@property (nonatomic, strong) NSNumber *uncompressedSize;
+@property(nonatomic, strong) NSDictionary *cachedInfoPlist;
+@property(nonatomic, strong) NSURL *cachedURL;
+@property(nonatomic, strong) UIImage *cachedIconImage;
+@property(nonatomic, strong) NSNumber *uncompressedSize;
 
-@property (nonatomic, strong) NSString *_tmp_zipFileRequested;
-@property (nonatomic, readwrite) BOOL _tmp_zipUncompressedSizeRequested;
-@property (nonatomic, readwrite) int _tmp_zipUncompressedSize;
+@property(nonatomic, strong) NSString *_tmp_zipFileRequested;
+@property(nonatomic, readwrite) BOOL _tmp_zipUncompressedSizeRequested;
+@property(nonatomic, readwrite) int _tmp_zipUncompressedSize;
 
 @end
 
 @implementation RPVIpaBundleApplication
 
-- (instancetype)initWithIpaURL:(NSURL*)url {
+- (instancetype)initWithIpaURL:(NSURL *)url {
     self = [super init];
 
     if (self) {
@@ -45,7 +45,7 @@
     return self;
 }
 
-- (NSNumber*)_loadUncompressedFileSizeFromURL:(NSURL*)url {
+- (NSNumber *)_loadUncompressedFileSizeFromURL:(NSURL *)url {
     self._tmp_zipUncompressedSizeRequested = YES;
     self._tmp_zipUncompressedSize = 0;
     BOOL success = [SSZipArchive unzipFileAtPath:[url path] toDestination:NSTemporaryDirectory() delegate:self];
@@ -58,15 +58,15 @@
     }
 }
 
-- (NSDictionary*)_loadInfoPlistFromURL:(NSURL*)url {
+- (NSDictionary *)_loadInfoPlistFromURL:(NSURL *)url {
     NSData *data = [self _loadFileWithFormat:@"Payload/*/Info.plist" fromIPA:url multipleCandiateChooser:^NSString *(NSArray *candidates) {
-                        return [candidates firstObject];
-                    }];
+        return [candidates firstObject];
+    }];
 
     return [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:nil];
 }
 
-- (UIImage*)_loadApplicationIconFromURL:(NSURL*)url withInfoPlist:(NSDictionary*)infoPlist {
+- (UIImage *)_loadApplicationIconFromURL:(NSURL *)url withInfoPlist:(NSDictionary *)infoPlist {
     // Check if this Info.plist has any icons.
     if (![infoPlist.allKeys containsObject:@"CFBundleIcons"] && ![infoPlist.allKeys containsObject:@"CFBundleIcons~ipad"]) {
         return [UIImage _applicationIconImageForBundleIdentifier:@"" format:2 scale:[UIScreen mainScreen].scale];
@@ -92,44 +92,43 @@
         NSString *fileFormat = [NSString stringWithFormat:@"Payload/*/%@", iconFileName];
 
         NSData *data = [self _loadFileWithFormat:fileFormat fromIPA:url multipleCandiateChooser:^NSString *(NSArray *candidates) {
+            NSArray *suffixPreferences = @[ @"@3x", @"@2x", @"" ];
 
-                            NSArray *suffixPreferences = @[@"@3x", @"@2x", @""];
+            // Choose which candidate is best for the current device, and fallback as needed.
+            NSString *currentBest = @"";
+            int currentBestRank = 2;
 
-                            // Choose which candidate is best for the current device, and fallback as needed.
-                            NSString *currentBest = @"";
-                            int currentBestRank = 2;
+            BOOL anyHaveIpadSuffix = NO;
+            for (NSString *item in candidates) {
+                if ([item containsString:@"~ipad"]) {
+                    anyHaveIpadSuffix = YES;
+                    break;
+                }
+            }
 
-                            BOOL anyHaveIpadSuffix = NO;
-                            for (NSString *item in candidates) {
-                                if ([item containsString:@"~ipad"]) {
-                                    anyHaveIpadSuffix = YES;
-                                    break;
-                                }
-                            }
+            for (NSString *item in candidates) {
+                if (IS_IPAD && anyHaveIpadSuffix && ![item containsString:@"~ipad"])
+                    continue;
 
-                            for (NSString *item in candidates) {
-                                if (IS_IPAD && anyHaveIpadSuffix && ![item containsString:@"~ipad"])
-                                    continue;
+                // Alright, maybe this one.
 
-                                // Alright, maybe this one.
+                // Base case
+                if ([currentBest isEqualToString:@""]) {
+                    currentBest = item;
+                    currentBestRank = [self _rankItem:item forSuffixes:suffixPreferences];
+                }
 
-                                // Base case
-                                if ([currentBest isEqualToString:@""]) {
-                                    currentBest = item;
-                                    currentBestRank = [self _rankItem:item forSuffixes:suffixPreferences];
-                                }
+                // Go through the suffix preferences, and rank the currentBest and the new item.
+                int itemRank = [self _rankItem:item forSuffixes:suffixPreferences];
 
-                                // Go through the suffix preferences, and rank the currentBest and the new item.
-                                int itemRank = [self _rankItem:item forSuffixes:suffixPreferences];
+                if (itemRank < currentBestRank) {
+                    currentBest = item;
+                    currentBestRank = itemRank;
+                }
+            }
 
-                                if (itemRank < currentBestRank) {
-                                    currentBest = item;
-                                    currentBestRank = itemRank;
-                                }
-                            }
-
-                            return currentBest;
-                        }];
+            return currentBest;
+        }];
 
         if (data)
             return [self _maskApplicationIcon:[UIImage imageWithData:data]];
@@ -138,7 +137,7 @@
     }
 }
 
-- (int)_rankItem:(NSString*)item forSuffixes:(NSArray*)suffixes {
+- (int)_rankItem:(NSString *)item forSuffixes:(NSArray *)suffixes {
     int rank = (int)suffixes.count - 1;
 
     for (int i = 0; i < suffixes.count; i++) {
@@ -153,18 +152,18 @@
     return rank;
 }
 
-- (UIImage*)_maskApplicationIcon:(UIImage*)icon {
-    if(!icon) return nil;
+- (UIImage *)_maskApplicationIcon:(UIImage *)icon {
+    if (!icon || UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) return nil;
 
     static CGImageRef (*LICreateIconForImage)(CGImageRef image, NSUInteger variant, NSUInteger mask) = NULL;
 
     void *mobileIcons = dlopen("/System/Library/PrivateFrameworks/MobileIcons.framework/MobileIcons", RTLD_NOW);
     LICreateIconForImage = dlsym(mobileIcons, "LICreateIconForImage");
 
-    if(LICreateIconForImage) {
+    if (LICreateIconForImage) {
         CGFloat scale = [UIScreen mainScreen].scale;
         NSUInteger variant;
-        if(scale >= 2.0) {
+        if (scale >= 2.0) {
             variant = 15;
         } else {
             variant = 0;
@@ -180,7 +179,7 @@
     }
 }
 
-- (NSData*)_loadFileWithFormat:(NSString*)fileFormat fromIPA:(NSURL*)url multipleCandiateChooser:(NSString * (^)(NSArray *candidates))candidateChooser {
+- (NSData *)_loadFileWithFormat:(NSString *)fileFormat fromIPA:(NSURL *)url multipleCandiateChooser:(NSString * (^)(NSArray *candidates))candidateChooser {
     NSString *destinationPath = NSTemporaryDirectory();
     if (!destinationPath)
         destinationPath = @"/tmp";
@@ -241,29 +240,29 @@
     }
 }
 
-- (NSString*)bundleIdentifier {
+- (NSString *)bundleIdentifier {
     return [self.cachedInfoPlist objectForKey:@"CFBundleIdentifier"];
 }
-- (NSString*)applicationName {
+- (NSString *)applicationName {
     return [self.cachedInfoPlist objectForKey:@"CFBundleDisplayName"] != nil ? [self.cachedInfoPlist objectForKey:@"CFBundleDisplayName"] : [self.cachedInfoPlist objectForKey:@"CFBundleName"];
 }
 
-- (NSString*)applicationVersion {
+- (NSString *)applicationVersion {
     return [self.cachedInfoPlist objectForKey:@"CFBundleShortVersionString"];
 }
-- (NSNumber*)applicationInstalledSize {
+- (NSNumber *)applicationInstalledSize {
     return self.uncompressedSize;
 }
 
-- (UIImage*)applicationIcon {
+- (UIImage *)applicationIcon {
     return self.cachedIconImage;
 }
 
-- (NSDate*)applicationExpiryDate {
+- (NSDate *)applicationExpiryDate {
     return [NSDate date];
 }
 
-- (NSURL*)locationOfApplicationOnFilesystem {
+- (NSURL *)locationOfApplicationOnFilesystem {
     return self.cachedURL;
 }
 
