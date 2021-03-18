@@ -90,7 +90,6 @@
 }
 
 - (BOOL)_provisioningProfileReallyExists {
-    NSLog(@"[soh] _provisioningProfileReallyExists");
     NSString *profilesFolderPath = @"/var/MobileDevice/ProvisioningProfiles";
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     NSDirectoryEnumerator *dirEnum = [fileManager enumeratorAtPath:profilesFolderPath];
