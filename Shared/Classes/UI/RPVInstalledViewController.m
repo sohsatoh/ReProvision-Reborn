@@ -38,39 +38,39 @@
 #define TABLE_VIEWS_INSET 20
 
 @interface LSApplicationProxy : NSObject
-@property(nonatomic, readonly) NSString *applicationIdentifier;
+@property (nonatomic, readonly) NSString *applicationIdentifier;
 + (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
 @end
 
 @interface RPVInstalledViewController ()
 // Views
-@property(nonatomic, strong) UIScrollView *rootScrollView;
+@property (nonatomic, strong) UIScrollView *rootScrollView;
 
-@property(nonatomic, strong) UIView *topBackgroundView;
-@property(nonatomic, strong) CAGradientLayer *topBackgroundGradientLayer;
+@property (nonatomic, strong) UIView *topBackgroundView;
+@property (nonatomic, strong) CAGradientLayer *topBackgroundGradientLayer;
 
-@property(nonatomic, strong) RPVInstalledMainHeaderView *mainHeaderView;
-@property(nonatomic, strong) UICollectionView *expiringCollectionView;
-@property(nonatomic, strong) UITableView *recentTableView;
-@property(nonatomic, strong) UITableView *otherApplicationsTableView;
-@property(nonatomic, strong) RPVAppIdsLabel *appIdsLabel;
+@property (nonatomic, strong) RPVInstalledMainHeaderView *mainHeaderView;
+@property (nonatomic, strong) UICollectionView *expiringCollectionView;
+@property (nonatomic, strong) UITableView *recentTableView;
+@property (nonatomic, strong) UITableView *otherApplicationsTableView;
+@property (nonatomic, strong) RPVAppIdsLabel *appIdsLabel;
 
 #if TARGET_OS_TV
-@property(nonatomic, strong) RPVInstalledSectionHeaderViewController *expiringSectionHeader;
-@property(nonatomic, strong) RPVInstalledSectionHeaderViewController *recentSectionHeader;
-@property(nonatomic, strong) RPVInstalledSectionHeaderViewController *otherApplicationsSectionHeader;
+@property (nonatomic, strong) RPVInstalledSectionHeaderViewController *expiringSectionHeader;
+@property (nonatomic, strong) RPVInstalledSectionHeaderViewController *recentSectionHeader;
+@property (nonatomic, strong) RPVInstalledSectionHeaderViewController *otherApplicationsSectionHeader;
 #else
-@property(nonatomic, strong) RPVInstalledSectionHeaderView *expiringSectionHeaderView;
-@property(nonatomic, strong) RPVInstalledSectionHeaderView *recentSectionHeaderView;
-@property(nonatomic, strong) RPVInstalledSectionHeaderView *otherApplicationsSectionHeaderView;
+@property (nonatomic, strong) RPVInstalledSectionHeaderView *expiringSectionHeaderView;
+@property (nonatomic, strong) RPVInstalledSectionHeaderView *recentSectionHeaderView;
+@property (nonatomic, strong) RPVInstalledSectionHeaderView *otherApplicationsSectionHeaderView;
 #endif
 
 // Data sources
-@property(nonatomic, strong) NSMutableArray *expiringSoonDataSource;
-@property(nonatomic, strong) NSMutableArray *recentlySignedDataSource;
-@property(nonatomic, strong) NSMutableArray *otherApplicationsDataSource;
+@property (nonatomic, strong) NSMutableArray *expiringSoonDataSource;
+@property (nonatomic, strong) NSMutableArray *recentlySignedDataSource;
+@property (nonatomic, strong) NSMutableArray *otherApplicationsDataSource;
 
-@property(nonatomic, strong) NSMutableDictionary *currentSigningProgress;
+@property (nonatomic, strong) NSMutableDictionary *currentSigningProgress;
 @end
 
 @implementation RPVInstalledViewController
@@ -142,7 +142,7 @@
 
     UIColor *startColor = [UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0];
     UIColor *endColor = [UIColor colorWithRed:116.0 / 255.0 green:158.0 / 255.0 blue:201.0 / 255.0 alpha:1.0];
-    self.topBackgroundGradientLayer.colors = @[ (id)startColor.CGColor, (id)endColor.CGColor ];
+    self.topBackgroundGradientLayer.colors = @[(id)startColor.CGColor, (id)endColor.CGColor];
     self.topBackgroundGradientLayer.startPoint = CGPointMake(0.75, 0.75);
     self.topBackgroundGradientLayer.endPoint = CGPointMake(0.25, 0.25);
 
@@ -788,7 +788,7 @@
                     // Delete the row from the table
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 
-                    [self.recentTableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [self.recentTableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 
                     [self.recentTableView endUpdates];
                 }
@@ -805,7 +805,7 @@
                     // Delete the row from the table
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 
-                    [self.otherApplicationsTableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [self.otherApplicationsTableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 
                     [self.otherApplicationsTableView endUpdates];
                 }
@@ -828,7 +828,7 @@
                 // Add the row to the table
                 NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 
-                [self.recentTableView insertRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.recentTableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
             }
 
             [self.recentTableView endUpdates];
@@ -977,7 +977,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 - (void)installButtonTapped {
-    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[ @"public.data" ] inMode:UIDocumentPickerModeImport];
+    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.data"] inMode:UIDocumentPickerModeImport];
     picker.delegate = self;
     [self presentViewController:picker animated:YES completion:nil];
 }
