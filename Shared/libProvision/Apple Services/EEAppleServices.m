@@ -544,7 +544,7 @@ NSString *const REProtocolVersion = @"QH65B2";
 - (void)listAllDevelopmentCertificatesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
     [extra setObject:teamID forKey:@"teamId"];
-    // [extra setObject:@"IOS_DEVELOPMENT" forKey:@"filter[certificateType]"];
+    [extra setObject:@"IOS_DEVELOPMENT" forKey:@"filter[certificateType]"];
 
     [self _sendServiceRequestWithName:@"certificates" method:@"GET" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
 }
@@ -620,6 +620,13 @@ NSString *const REProtocolVersion = @"QH65B2";
     [extra setObject:serialNumber forKey:@"serialNumber"];
 
     [self _doActionWithName:@"revokeDevelopmentCert.action" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
+}
+
+- (void)revokeCertificateForIdentifier:(NSString *)identifier andTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
+    NSMutableDictionary *extra = [NSMutableDictionary dictionary];
+    [extra setObject:teamID forKey:@"teamId"];
+
+    [self _sendServiceRequestWithName:[NSString stringWithFormat:@"certificates/%@", identifier] method:@"DELETE" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
 }
 
 - (void)submitCodeSigningRequestForTeamID:(NSString *)teamId machineName:(NSString *)machineName machineID:(NSString *)machineID codeSigningRequest:(NSData *)csr systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {

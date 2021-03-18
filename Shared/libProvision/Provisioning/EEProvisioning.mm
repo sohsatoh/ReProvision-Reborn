@@ -114,21 +114,20 @@
 
               NSString *deviceID = [self _identifierForCurrentMachine];
 
-              NSDictionary *certificate;
+              NSString *certId;
+             
               for (NSDictionary *dict in [plist objectForKey:@"data"]) {
                   NSString *machineId = dict[@"attributes"][@"machineId"];
                   if ([machineId isEqualToString:deviceID]) {
                       // Got it!
-                      certificate = dict[@"attributes"];
+                      certId = dict[@"id"];
                       break;
                   }
               }
 
-              if (certificate) {
+              if (certId) {
                   // Revoke it!
-                  NSString *serialNumber = [certificate objectForKey:@"serialNumber"];
-
-                  [[EEAppleServices sharedInstance] revokeCertificateForSerialNumber:serialNumber andTeamID:[[EEAppleServices sharedInstance] currentTeamID] systemType:systemType withCompletionHandler:^(NSError *error, NSDictionary *plist) {
+                  [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:certId andTeamID:[[EEAppleServices sharedInstance] currentTeamID] systemType:systemType withCompletionHandler:^(NSError *error, NSDictionary *plist) {
 
                        if (error) {
                            completionHandler(error);
@@ -320,12 +319,14 @@
          BOOL hasValidCertificate = NO;
          NSDate *now = [NSDate date];
          NSDictionary *certificate;
+         NSString *certId;
 
          for (NSDictionary *dict in [plist objectForKey:@"data"]) {
              NSString *machineId = dict[@"attributes"][@"machineId"];
              if ([machineId isEqualToString:[self _identifierForCurrentMachine]]) {
                  // Alright cool. Now, we check to see if it has expired.
                  certificate = dict[@"attributes"];
+                 certId = dict[@"id"];
 
                  // Compare expirationDate to now. If passed, then certificate is not valid.
                  hasValidCertificate = YES;
@@ -354,7 +355,6 @@
              // Revoke that certificate! Note that this revocation is for THIS MACHINE ONLY.
              // Therefore, we SHOULD NOT have an issue for if we're on a team that allows App Store deployment.
              if (shouldRevokeFirst) {
-                 NSString *serialNumber = [certificate objectForKey:@"serialNumber"];
                  NSString *reason = @"";
 
                  if ([privateKey isEqualToString:@""] || privateKey == nil || !currentTeamIDMatchesStored)
@@ -362,9 +362,9 @@
                  else
                      reason = @"this certificate being expired.";
 
-                 NSLog(@"Revoking certificate with serial number '%@', due to %@", serialNumber, reason);
+                 NSLog(@"Revoking certificate with identifier '%@', due to %@", certId, reason);
 
-                 [[EEAppleServices sharedInstance] revokeCertificateForSerialNumber:serialNumber andTeamID:[[EEAppleServices sharedInstance] currentTeamID] systemType:systemType withCompletionHandler:^(NSError *error, NSDictionary *plist) {
+                 [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:certId andTeamID:[[EEAppleServices sharedInstance] currentTeamID] systemType:systemType withCompletionHandler:^(NSError *error, NSDictionary *plist) {
 
                       if (error) {
                           // Handle error.

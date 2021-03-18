@@ -309,7 +309,7 @@
         self.certificatesExplanation.hidden = YES;
         self.activityIndicatorView.hidden = NO;
         
-        [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row][@"attributes"] withCompletion:^(NSError *error) {
+        [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row] withCompletion:^(NSError *error) {
             if (!error) {
                 // Delete the row from the data source
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -335,8 +335,7 @@
 - (void)_revokeCertificate:(NSDictionary*)certificate withCompletion:(void (^)(NSError *error))completionHandler {
     [[EEAppleServices sharedInstance] ensureSessionWithIdentity:self.identity gsToken:self.gsToken andCompletionHandler:^(NSError *error, NSDictionary *plist) {
         if (!error) {
-            [[EEAppleServices sharedInstance] revokeCertificateForSerialNumber:[certificate objectForKey:@"serialNumber"] andTeamID:self.teamId systemType:EESystemTypeiOS  withCompletionHandler:^(NSError *error, NSDictionary *dictionary) {
-                
+            [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:[certificate objectForKey:@"id"] andTeamID:self.teamId systemType:EESystemTypeiOS  withCompletionHandler:^(NSError *error, NSDictionary *dictionary) {
                 completionHandler(error);
             }];
         }

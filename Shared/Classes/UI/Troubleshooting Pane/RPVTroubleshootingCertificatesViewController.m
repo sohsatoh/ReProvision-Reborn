@@ -159,7 +159,7 @@
 - (void)_revokeCertificate:(NSDictionary*)certificate withCompletion:(void (^)(NSError *error))completionHandler {
     [[EEAppleServices sharedInstance] ensureSessionWithIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error, NSDictionary *plist) {
          if (!error) {
-             [[EEAppleServices sharedInstance] revokeCertificateForSerialNumber:[certificate objectForKey:@"serialNumber"] andTeamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dictionary) {
+             [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:[certificate objectForKey:@"id"] andTeamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dictionary) {
 
                   completionHandler(error);
               }];
@@ -364,7 +364,7 @@
              self.overlayView.alpha = 1.0;
          }];
 
-        [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row][@"attributes"] withCompletion:^(NSError *error) {
+        [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row] withCompletion:^(NSError *error) {
              if (!error) {
                  // Delete the row from the data source
                  dispatch_async(dispatch_get_main_queue(), ^{
@@ -416,11 +416,11 @@
 
 - (void)_actuallyRevokeCertificatesWithCallback:(void (^)(BOOL))completionHandler {
 
-    // To revoke a certificate, we need its serial number.
-    NSMutableArray *serials = [NSMutableArray array];
+    // To revoke a certificate, we need its identifier.
+    NSMutableArray *identifiers = [NSMutableArray array];
     for (NSDictionary *cert in self.dataSource) {
-        NSString *serial = [cert[@"attributes"] objectForKey:@"serialNumber"];
-        [serials addObject:serial];
+        NSString *identifier = [cert objectForKey:@"id"];
+        [identifiers addObject:identifier];
     }
 
     // Make sure we're signed in.
@@ -430,7 +430,7 @@
              return;
          }
 
-         [self _revokeSerials:serials withTeamID:[RPVResources getTeamID] andCompletionHandler:^(NSError *error) {
+         [self _revokeIdentifiers:identifiers withTeamID:[RPVResources getTeamID] andCompletionHandler:^(NSError *error) {
               if (error) {
                   completionHandler(NO);
                   return;
@@ -442,26 +442,26 @@
      }];
 }
 
-- (void)_revokeSerials:(NSArray*)serials withTeamID:(NSString*)teamId andCompletionHandler:(void (^)(NSError*))completionHandler {
+- (void)_revokeIdentifiers:(NSArray*)identifiers withTeamID:(NSString*)teamId andCompletionHandler:(void (^)(NSError*))completionHandler {
 
     // guard.
-    if (serials.count == 0) {
+    if (identifiers.count == 0) {
         completionHandler(nil);
         return;
     }
 
-    NSString *serial = [serials firstObject];
-    [[EEAppleServices sharedInstance] revokeCertificateForSerialNumber:serial andTeamID:teamId systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *plist) {
+    NSString *identifier = [identifiers firstObject];
+    [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:identifier andTeamID:teamId systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *plist) {
          if (error) {
              completionHandler(error);
              return;
          }
 
          // Pop current serial off array and recurse.
-         NSMutableArray *array = [serials mutableCopy];
-         [array removeObject:serial];
+         NSMutableArray *array = [identifiers mutableCopy];
+         [array removeObject:identifier];
 
-         [self _revokeSerials:array withTeamID:teamId andCompletionHandler:completionHandler];
+         [self _revokeIdentifiers:array withTeamID:teamId andCompletionHandler:completionHandler];
      }];
 }
 
