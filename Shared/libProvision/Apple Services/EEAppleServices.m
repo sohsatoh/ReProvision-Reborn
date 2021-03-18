@@ -541,12 +541,17 @@ NSString *const REProtocolVersion = @"QH65B2";
 // Certificates methods.
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-- (void)listAllDevelopmentCertificatesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
+- (void)listAllDevelopmentCertificatesWithFiltering:(BOOL)useFilter teamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
     [extra setObject:teamID forKey:@"teamId"];
-    [extra setObject:@"IOS_DEVELOPMENT" forKey:@"filter[certificateType]"];
+
+    if (useFilter) [extra setObject:@"IOS_DEVELOPMENT" forKey:@"filter[certificateType]"];
 
     [self _sendServiceRequestWithName:@"certificates" method:@"GET" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
+}
+
+- (void)listAllDevelopmentCertificatesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
+    [self listAllDevelopmentCertificatesWithFiltering:YES teamID:teamID systemType:systemType withCompletionHandler:completionHandler];
 }
 
 - (void)listAllProvisioningProfilesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {

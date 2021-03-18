@@ -96,6 +96,11 @@ typedef enum : NSUInteger {
 /**
  * TODO: Docs!
  */
+- (void)listAllDevelopmentCertificatesWithFiltering:(BOOL)useFilter teamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler;
+
+/**
+ * TODO: Docs!
+ */
 - (void)listAllDevelopmentCertificatesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler;
 
 /**

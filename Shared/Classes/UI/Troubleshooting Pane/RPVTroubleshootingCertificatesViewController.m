@@ -7,13 +7,13 @@
 //
 
 #import "RPVTroubleshootingCertificatesViewController.h"
-#import "RPVResources.h"
 #import "EEAppleServices.h"
+#import "RPVResources.h"
 
 #if !TARGET_OS_TV
 #import <TORoundedTableView/TORoundedTableView.h>
-#import <TORoundedTableView/TORoundedTableViewCell.h>
 #import <TORoundedTableView/TORoundedTableViewCapCell.h>
+#import <TORoundedTableView/TORoundedTableViewCell.h>
 #endif
 
 @interface RPVTroubleshootingCertificatesViewController ()
@@ -24,6 +24,8 @@
 @property (nonatomic, strong) UIView *overlayView;
 @property (nonatomic, strong) UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) UILabel *label;
+
+@property (nonatomic, assign) BOOL showingAllCerts;
 @end
 
 @implementation RPVTroubleshootingCertificatesViewController
@@ -97,12 +99,12 @@
 
     self.tableView.frame = self.view.bounds;
     self.overlayView.frame = self.view.bounds;
-    self.spinner.frame = CGRectMake(self.overlayView.frame.size.width/2 - 25, self.overlayView.frame.size.height/2 - 50, 50, 50);
+    self.spinner.frame = CGRectMake(self.overlayView.frame.size.width / 2 - 25, self.overlayView.frame.size.height / 2 - 50, 50, 50);
 
 #if TARGET_OS_TV
-    self.label.frame = CGRectMake(10, self.overlayView.frame.size.height/2 + 30, self.overlayView.frame.size.width - 20, 30);
+    self.label.frame = CGRectMake(10, self.overlayView.frame.size.height / 2 + 30, self.overlayView.frame.size.width - 20, 30);
 #else
-    self.label.frame = CGRectMake(10, self.overlayView.frame.size.height/2 + 10, self.overlayView.frame.size.width - 20, 20);
+    self.label.frame = CGRectMake(10, self.overlayView.frame.size.height / 2 + 10, self.overlayView.frame.size.width - 20, 20);
 #endif
 }
 
@@ -134,37 +136,35 @@
     self.overlayView.hidden = NO;
 
     [[EEAppleServices sharedInstance] ensureSessionWithIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error, NSDictionary *plist) {
-         if (!error) {
-             [[EEAppleServices sharedInstance] listAllDevelopmentCertificatesForTeamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dict) {
-                  self.dataSource = [[dict objectForKey:@"data"] mutableCopy];
+        if (!error) {
+            [[EEAppleServices sharedInstance] listAllDevelopmentCertificatesWithFiltering:!self.showingAllCerts teamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dict) {
+                self.dataSource = [[dict objectForKey:@"data"] mutableCopy];
 
-                  dispatch_async(dispatch_get_main_queue(), ^{
-                                     [self.tableView reloadData];
-                                     [self.tableView setEditing:self.dataSource.count > 0 animated:NO];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.tableView reloadData];
+                    [self.tableView setEditing:self.dataSource.count > 0 animated:NO];
 
-                                     // Show table, stop spinner.
-                                     [UIView animateWithDuration:0.3 animations:^{
-                                          self.overlayView.alpha = 0.0;
-                                      } completion:^(BOOL finished) {
-                                          self.overlayView.hidden = YES;
-                                          [self.spinner stopAnimating];
-                                      }];
-                                 });
-              }];
-         }
-     }];
-
+                    // Show table, stop spinner.
+                    [UIView animateWithDuration:0.3 animations:^{
+                        self.overlayView.alpha = 0.0;
+                    } completion:^(BOOL finished) {
+                        self.overlayView.hidden = YES;
+                        [self.spinner stopAnimating];
+                    }];
+                });
+            }];
+        }
+    }];
 }
 
-- (void)_revokeCertificate:(NSDictionary*)certificate withCompletion:(void (^)(NSError *error))completionHandler {
+- (void)_revokeCertificate:(NSDictionary *)certificate withCompletion:(void (^)(NSError *error))completionHandler {
     [[EEAppleServices sharedInstance] ensureSessionWithIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error, NSDictionary *plist) {
-         if (!error) {
-             [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:[certificate objectForKey:@"id"] andTeamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dictionary) {
-
-                  completionHandler(error);
-              }];
-         }
-     }];
+        if (!error) {
+            [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:[certificate objectForKey:@"id"] andTeamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dictionary) {
+                completionHandler(error);
+            }];
+        }
+    }];
 }
 
 #pragma mark - Table view data source
@@ -177,7 +177,7 @@
     if (section == 0) {
         return self.dataSource.count > 0 ? self.dataSource.count : 1;
     } else {
-        return 1;
+        return 2;
     }
 }
 
@@ -194,7 +194,7 @@
 #else
     // Fancy cell styling on iPad
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        cell = [self tableView:(TORoundedTableView*)tableView _ipadCellForIndexPath:indexPath];
+        cell = [self tableView:(TORoundedTableView *)tableView _ipadCellForIndexPath:indexPath];
     } else {
         cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (!cell) {
@@ -224,9 +224,11 @@
             machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
 
             NSString *applicationName = @"Unknown";
-            if ([(NSString*)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
+            if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
                 applicationName = @"ReProvision";
-            else if ([(NSString*)[dictionary objectForKey:@"machineName"] containsString:@"Cydia"])
+            else if ([(NSString *)[dictionary objectForKey:@"machineName"] isEqualToString:@"AltStore"])
+                applicationName = @"AltStore";
+            else if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"Cydia"])
                 applicationName = @"Cydia Impactor or Extender";
             else
                 applicationName = @"Xcode";
@@ -244,10 +246,14 @@
             cell.detailTextLabel.text = [NSString stringWithFormat:@"Application: %@", applicationName];
         }
     } else {
-        cell.textLabel.text = @"Revoke All Certificates";
-        cell.textLabel.textColor = self.dataSource.count > 0 ? [UIColor redColor] : [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];
+        if (indexPath.row == 0) {
+            cell.textLabel.text = self.showingAllCerts ? @"Hide Unrelated Certificates" : @"Show All Certificates";
+            cell.textLabel.textColor = [UIApplication sharedApplication].delegate.window.tintColor;
+        } else {
+            cell.textLabel.text = @"Revoke All Certificates";
+            cell.textLabel.textColor = self.dataSource.count > 0 ? [UIColor redColor] : [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];
+        }
         cell.textLabel.textAlignment = NSTextAlignmentCenter;
-
         cell.detailTextLabel.text = @"";
     }
 
@@ -255,9 +261,9 @@
 }
 
 #if !TARGET_OS_TV
-- (UITableViewCell*)tableView:(TORoundedTableView*)tableView _ipadCellForIndexPath:(NSIndexPath*)indexPath {
-    static NSString *cellIdentifier     = @"Cell";
-    static NSString *capCellIdentifier  = @"CapCell";
+- (UITableViewCell *)tableView:(TORoundedTableView *)tableView _ipadCellForIndexPath:(NSIndexPath *)indexPath {
+    static NSString *cellIdentifier = @"Cell";
+    static NSString *capCellIdentifier = @"CapCell";
 
     // Work out if this cell needs the top or bottom corners rounded (Or if the section only has 1 row, both!)
     BOOL isTop = (indexPath.row == 0);
@@ -274,8 +280,7 @@
         }
 
         cell = normalCell;
-    }
-    else {
+    } else {
         // If the cell is indeed one that needs rounded corners, dequeue from the pool of cap cells
         TORoundedTableViewCapCell *capCell = [tableView dequeueReusableCellWithIdentifier:capCellIdentifier];
         if (capCell == nil) {
@@ -309,44 +314,59 @@
     return indexPath.section == 0 ? 55.0 : UITableViewAutomaticDimension;
 }
 
-- (NSString*)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
     if (section == 0) {
-        return @"Free accounts are limited to two active certificates.";
+        return @"By default, only the certificates required to sign the app are shown.\nBy tapping the 'Show All Certificates' button, you can show other certificates such as Xcode.";
     } else {
-        return @"";
+        return @"Free accounts are limited to two active certificates.";
     }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if (indexPath.section == 1 && self.dataSource.count > 0) {
-        // Hit the revoke all button!
+    if (indexPath.section == 1) {
+        if (indexPath.row == 1 && self.dataSource.count > 0) {
+            // Hit the revoke all button!
 
-        // First, start the spinner off...
-        [self.spinner startAnimating];
-        self.overlayView.hidden = NO;
-        self.overlayView.alpha = 0.0;
+            // First, start the spinner off...
+            [self.spinner startAnimating];
+            self.overlayView.hidden = NO;
+            self.overlayView.alpha = 0.0;
 
-        [UIView animateWithDuration:0.3 animations:^{
-             self.overlayView.alpha = 1.0;
-         }];
+            [UIView animateWithDuration:0.3 animations:^{
+                self.overlayView.alpha = 1.0;
+            }];
 
-        [self _revokeAllCertificatesWithCallback:^(BOOL success) {
-             // Done, restore UI.
-             dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.tableView reloadData];
-                                [self.tableView setEditing:self.dataSource.count > 0 animated:NO];
+            [self _revokeAllCertificatesWithCallback:^(BOOL success) {
+                // Done, restore UI.
+                [self.dataSource removeAllObjects];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.tableView reloadData];
+                    [self.tableView setEditing:self.dataSource.count > 0 animated:NO];
 
-                                // Show table, stop spinner.
-                                [UIView animateWithDuration:0.3 animations:^{
-                                     self.overlayView.alpha = 0.0;
-                                 } completion:^(BOOL finished) {
-                                     self.overlayView.hidden = YES;
-                                     [self.spinner stopAnimating];
-                                 }];
-                            });
-         }];
+                    // Show table, stop spinner.
+                    [UIView animateWithDuration:0.3 animations:^{
+                        self.overlayView.alpha = 0.0;
+                    } completion:^(BOOL finished) {
+                        self.overlayView.hidden = YES;
+                        [self.spinner stopAnimating];
+                    }];
+                });
+            }];
+        } else {
+            // Show or hide certificates
+            [self.spinner startAnimating];
+            self.overlayView.hidden = NO;
+            self.overlayView.alpha = 0.0;
+
+            [UIView animateWithDuration:0.3 animations:^{
+                self.overlayView.alpha = 1.0;
+            }];
+
+            self.showingAllCerts = !self.showingAllCerts;
+            [self _requestAllDevelopmentCodesigningCertificates];
+        }
     }
 }
 
@@ -361,33 +381,33 @@
         self.overlayView.alpha = 0.0;
 
         [UIView animateWithDuration:0.3 animations:^{
-             self.overlayView.alpha = 1.0;
-         }];
+            self.overlayView.alpha = 1.0;
+        }];
 
         [self _revokeCertificate:[self.dataSource objectAtIndex:indexPath.row] withCompletion:^(NSError *error) {
-             if (!error) {
-                 // Delete the row from the data source
-                 dispatch_async(dispatch_get_main_queue(), ^{
-                                    if (self.dataSource.count == 1) {
-                                        [self.dataSource removeObjectAtIndex:indexPath.row];
-                                        [self.tableView reloadData];
-                                    } else {
-                                        [self.dataSource removeObjectAtIndex:indexPath.row];
-                                        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-                                    }
+            if (!error) {
+                // Delete the row from the data source
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (self.dataSource.count == 1) {
+                        [self.dataSource removeObjectAtIndex:indexPath.row];
+                        [self.tableView reloadData];
+                    } else {
+                        [self.dataSource removeObjectAtIndex:indexPath.row];
+                        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+                    }
 
-                                    [self.tableView setEditing:self.dataSource.count > 0 animated:NO];
+                    [self.tableView setEditing:self.dataSource.count > 0 animated:NO];
 
-                                    // Stop spinner
-                                    [UIView animateWithDuration:0.3 animations:^{
-                                         self.overlayView.alpha = 0.0;
-                                     } completion:^(BOOL finished) {
-                                         self.overlayView.hidden = YES;
-                                         [self.spinner stopAnimating];
-                                     }];
-                                });
-             }
-         }];
+                    // Stop spinner
+                    [UIView animateWithDuration:0.3 animations:^{
+                        self.overlayView.alpha = 0.0;
+                    } completion:^(BOOL finished) {
+                        self.overlayView.hidden = YES;
+                        [self.spinner stopAnimating];
+                    }];
+                });
+            }
+        }];
     }
 }
 
@@ -398,15 +418,15 @@
 - (void)_revokeAllCertificatesWithCallback:(void (^)(BOOL))completionHandler {
     UIAlertController *controller = [UIAlertController alertControllerWithTitle:@"Revoke All Certificates" message:@"Revoking all certificates will require applications to be re-signed.\n\nAre you sure you wish to continue?" preferredStyle:UIAlertControllerStyleAlert];
 
-    UIAlertAction *attempt = [UIAlertAction actionWithTitle:@"Revoke" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * action) {
-                                  // Alright, user is sure...
-                                  [self _actuallyRevokeCertificatesWithCallback:completionHandler];
-                              }];
+    UIAlertAction *attempt = [UIAlertAction actionWithTitle:@"Revoke" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+        // Alright, user is sure...
+        [self _actuallyRevokeCertificatesWithCallback:completionHandler];
+    }];
 
-    UIAlertAction* cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
-                                 [controller dismissViewControllerAnimated:YES completion:nil];
-                                 completionHandler(NO);
-                             }];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        [controller dismissViewControllerAnimated:YES completion:nil];
+        completionHandler(NO);
+    }];
 
     [controller addAction:cancel];
     [controller addAction:attempt];
@@ -415,7 +435,6 @@
 }
 
 - (void)_actuallyRevokeCertificatesWithCallback:(void (^)(BOOL))completionHandler {
-
     // To revoke a certificate, we need its identifier.
     NSMutableArray *identifiers = [NSMutableArray array];
     for (NSDictionary *cert in self.dataSource) {
@@ -425,25 +444,24 @@
 
     // Make sure we're signed in.
     [[EEAppleServices sharedInstance] ensureSessionWithIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error, NSDictionary *dict) {
-         if (error) {
-             completionHandler(NO);
-             return;
-         }
+        if (error) {
+            completionHandler(NO);
+            return;
+        }
 
-         [self _revokeIdentifiers:identifiers withTeamID:[RPVResources getTeamID] andCompletionHandler:^(NSError *error) {
-              if (error) {
-                  completionHandler(NO);
-                  return;
-              }
+        [self _revokeIdentifiers:identifiers withTeamID:[RPVResources getTeamID] andCompletionHandler:^(NSError *error) {
+            if (error) {
+                completionHandler(NO);
+                return;
+            }
 
-              // Done revoking!
-              completionHandler(YES);
-          }];
-     }];
+            // Done revoking!
+            completionHandler(YES);
+        }];
+    }];
 }
 
-- (void)_revokeIdentifiers:(NSArray*)identifiers withTeamID:(NSString*)teamId andCompletionHandler:(void (^)(NSError*))completionHandler {
-
+- (void)_revokeIdentifiers:(NSArray *)identifiers withTeamID:(NSString *)teamId andCompletionHandler:(void (^)(NSError *))completionHandler {
     // guard.
     if (identifiers.count == 0) {
         completionHandler(nil);
@@ -452,17 +470,17 @@
 
     NSString *identifier = [identifiers firstObject];
     [[EEAppleServices sharedInstance] revokeCertificateForIdentifier:identifier andTeamID:teamId systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *plist) {
-         if (error) {
-             completionHandler(error);
-             return;
-         }
+        if (error) {
+            completionHandler(error);
+            return;
+        }
 
-         // Pop current serial off array and recurse.
-         NSMutableArray *array = [identifiers mutableCopy];
-         [array removeObject:identifier];
+        // Pop current serial off array and recurse.
+        NSMutableArray *array = [identifiers mutableCopy];
+        [array removeObject:identifier];
 
-         [self _revokeIdentifiers:array withTeamID:teamId andCompletionHandler:completionHandler];
-     }];
+        [self _revokeIdentifiers:array withTeamID:teamId andCompletionHandler:completionHandler];
+    }];
 }
 
 
