@@ -5,7 +5,8 @@ This project provides automatic re-provisioning of iOS and tvOS applications to 
 ### Why 'Reborn'?
 
 This project had been EOL and I have resurrected it.
-One thing to note is that there is no support for this version. Use it only if you can solve the problem yourself.
+
+One thing to note is that I do not intend to update for non-iOS. Perhaps an update for iOS make it incompatible with other operating systems.
 
 **Please don't bother the original developer about issues on this version.**
 
@@ -16,7 +17,11 @@ One thing to note is that there is no support for this version. Use it only if y
 - Fix errors related to certificate (Thanks: [@nyuszika7h](https://github.com/nyuszika7h))
 - Fix signing issues (Thanks: AltSign by [@rileytestut](https://github.com/rileytestut/))
 
+... and more!
+
 This tool uses the code taken from [AltSign](https://github.com/rileytestut/AltSign) by [@rileytestut](https://github.com/rileytestut/).
+
+## Original Description
 
 ### Features
 
