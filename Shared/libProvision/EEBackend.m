@@ -7,47 +7,40 @@
 //
 
 #import "EEBackend.h"
+#import "EEAppleServices.h"
 #import "EEProvisioning.h"
 #import "EESigning.h"
-#import "EEAppleServices.h"
 #import "SSZipArchive.h"
 
 @implementation EEBackend
 
-+ (void)provisionDevice:(NSString*)udid name:(NSString*)name identity:(NSString*)identity gsToken:(NSString*)gsToken priorChosenTeamID:(NSString*)teamId systemType:(EESystemType)systemType withCallback:(void (^)(NSError *))completionHandler {
++ (void)provisionDevice:(NSString *)udid name:(NSString *)name identity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId systemType:(EESystemType)systemType withCallback:(void (^)(NSError *))completionHandler {
+    EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity:gsToken];
+    [provisioner provisionDevice:udid name:name withTeamIDCheck:^NSString *(NSArray *teams) {
+        // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
+        // When integrated into an app, this backend can assume that this choice has been prior made, and so
+        // we can return the result of that choice now.
 
-    EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity :gsToken];
-    [provisioner provisionDevice:udid name:name withTeamIDCheck:^ NSString* (NSArray* teams) {
-
-         // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
-         // When integrated into an app, this backend can assume that this choice has been prior made, and so
-         // we can return the result of that choice now.
-
-         return teamId;
-
-     } systemType:systemType andCallback:^(NSError *error) {
-         completionHandler(error);
-     }];
+        return teamId;
+    } systemType:systemType andCallback:^(NSError *error) {
+        completionHandler(error);
+    }];
 }
 
-+ (void)revokeDevelopmentCertificatesForCurrentMachineWithIdentity:(NSString*)identity gsToken:(NSString*)gsToken priorChosenTeamID:(NSString*)teamId systemType:(EESystemType)systemType withCallback:(void (^)(NSError *))completionHandler {
++ (void)revokeDevelopmentCertificatesForCurrentMachineWithIdentity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId systemType:(EESystemType)systemType withCallback:(void (^)(NSError *))completionHandler {
+    EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity:gsToken];
+    [provisioner revokeCertificatesWithTeamIDCheck:^NSString *(NSArray *teams) {
+        // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
+        // When integrated into an app, this backend can assume that this choice has been prior made, and so
+        // we can return the result of that choice now.
 
-    EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity :gsToken];
-    [provisioner revokeCertificatesWithTeamIDCheck:^ NSString* (NSArray* teams) {
-
-         // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
-         // When integrated into an app, this backend can assume that this choice has been prior made, and so
-         // we can return the result of that choice now.
-
-         return teamId;
-
-     } systemType:systemType andCallback:^(NSError *error) {
-         completionHandler(error);
-     }];
+        return teamId;
+    } systemType:systemType andCallback:^(NSError *error) {
+        completionHandler(error);
+    }];
 }
 
-+ (void)signBundleAtPath:(NSString*)path identity:(NSString*)identity gsToken:(NSString*)gsToken priorChosenTeamID:(NSString*)teamId withCompletionHandler:(void (^)(NSError *error))completionHandler {
-
++ (void)signBundleAtPath:(NSString *)path identity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId withCompletionHandler:(void (^)(NSError *error))completionHandler {
     // We need to handle application extensions, e.g. watchOS applications and VPN plugins etc.
     // These are stored in the bundle's root directory at the following locations:
     // - /Plugins
@@ -55,7 +48,7 @@
     // Therefore, recurse through those directories as required before continuing for the root directory.
 
     dispatch_group_t dispatch_group = dispatch_group_create();
-    NSMutableArray * __block subBundleErrors = [NSMutableArray array];
+    NSMutableArray *__block subBundleErrors = [NSMutableArray array];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/PlugIns", path]]) {
         // Recurse through the plugins.
@@ -70,12 +63,12 @@
 
             // Sign the bundle
             [self signBundleAtPath:subBundlePath identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
-                 if (error)
-                     [subBundleErrors addObject:error];
+                if (error)
+                    [subBundleErrors addObject:error];
 
-                 NSLog(@"Finished sub-bundle: %@", subBundlePath);
-                 dispatch_group_leave(dispatch_group);
-             }];
+                NSLog(@"Finished sub-bundle: %@", subBundlePath);
+                dispatch_group_leave(dispatch_group);
+            }];
         }
     }
 
@@ -83,7 +76,7 @@
         // Recurse through the watchOS stuff.
 
         for (NSString *subBundle in [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@/Watch", path] error:nil]) {
-            NSString * __block subBundlePath = [NSString stringWithFormat:@"%@/Watch/%@", path, subBundle];
+            NSString *__block subBundlePath = [NSString stringWithFormat:@"%@/Watch/%@", path, subBundle];
 
             // Enter the dispatch group
             dispatch_group_enter(dispatch_group);
@@ -92,12 +85,12 @@
 
             // Sign the bundle
             [self signBundleAtPath:subBundlePath identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
-                 if (error)
-                     [subBundleErrors addObject:error];
+                if (error)
+                    [subBundleErrors addObject:error];
 
-                 NSLog(@"Handled sub-bundle: %@", subBundlePath);
-                 dispatch_group_leave(dispatch_group);
-             }];
+                NSLog(@"Handled sub-bundle: %@", subBundlePath);
+                dispatch_group_leave(dispatch_group);
+            }];
         }
     }
 
@@ -143,10 +136,25 @@
     NSLog(@"Platform: %@ for bundle: %@", platformName, [path lastPathComponent]);
 
     NSString *applicationId = [infoplist objectForKey:@"CFBundleIdentifier"];
-    if(![applicationId hasSuffix:teamId]) {
-        if([infoplist objectForKey:@"ALTBundleIdentifier"] != nil) applicationId = [infoplist objectForKey:@"ALTBundleIdentifier"];
-        else if ([infoplist objectForKey:@"REBundleIdentifier"] != nil) applicationId = [infoplist objectForKey:@"REBundleIdentifier"];
-        else [infoplist setObject:applicationId forKey:@"REBundleIdentifier"];
+    NSString *embeddedPath = [NSString stringWithFormat:@"%@/embedded.mobileprovision", path];
+    BOOL isEmbeddedExists = [[NSFileManager defaultManager] fileExistsAtPath:embeddedPath];
+
+    BOOL isInstalledFromXcode = NO;
+
+    if (isEmbeddedExists) {
+        NSString *profileString = [NSString stringWithContentsOfFile:embeddedPath encoding:NSISOLatin1StringEncoding error:nil];
+        NSRange rangeOfTeamId = [profileString rangeOfString:teamId];
+        NSRange rangeOfXC = [profileString rangeOfString:@"XC "];
+        if (rangeOfTeamId.location != NSNotFound && rangeOfXC.location != NSNotFound) isInstalledFromXcode = YES;
+    }
+
+    if (![applicationId hasSuffix:teamId] && !isInstalledFromXcode) {
+        if ([infoplist objectForKey:@"ALTBundleIdentifier"] != nil)
+            applicationId = [infoplist objectForKey:@"ALTBundleIdentifier"];
+        else if ([infoplist objectForKey:@"REBundleIdentifier"] != nil)
+            applicationId = [infoplist objectForKey:@"REBundleIdentifier"];
+        else
+            [infoplist setObject:applicationId forKey:@"REBundleIdentifier"];
 
         applicationId = [applicationId stringByAppendingFormat:@".%@", teamId];
         [infoplist setObject:applicationId forKey:@"CFBundleIdentifier"];
@@ -159,7 +167,7 @@
             [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] atomically:YES];
         }
 
-        if(error) {
+        if (error) {
             NSLog(@"%@", error);
             return;
         }
@@ -171,73 +179,66 @@
     // We get entitlements from the binary using ldid::Analyze() during provisioning, updating them as needed
     // for the current Team ID.
 
-    EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity :gsToken];
-    [provisioner downloadProvisioningProfileForApplicationIdentifier:applicationId applicationName:applicationName binaryLocation:(NSString*)binaryLocation withTeamIDCheck:^ NSString* (NSArray* teams) {
+    EEProvisioning *provisioner = [EEProvisioning provisionerWithCredentials:identity:gsToken];
+    [provisioner downloadProvisioningProfileForApplicationIdentifier:applicationId applicationName:applicationName binaryLocation:(NSString *)binaryLocation withTeamIDCheck:^NSString *(NSArray *teams) {
+        // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
+        // When integrated into an app, this backend can assume that this choice has been prior made, and so
+        // we can return the result of that choice now.
 
-         // If this is called, then the user is on multiple teams, and must be asked which one they want to use.
-         // When integrated into an app, this backend can assume that this choice has been prior made, and so
-         // we can return the result of that choice now.
+        return teamId;
+    } systemType:systemType andCallback:^(NSError *error, NSData *embeddedMobileProvision, NSString *privateKey, NSDictionary *certificate, NSDictionary *entitlements) {
+        if (error) {
+            completionHandler(error);
+            return;
+        }
 
-         return teamId;
+        // We now have a valid provisioning profile for this application!
+        // And, we also have a valid development codesigning certificate, with its private key!
 
-     } systemType:systemType andCallback:^(NSError *error, NSData *embeddedMobileProvision, NSString *privateKey, NSDictionary *certificate, NSDictionary *entitlements) {
-         if (error) {
-             completionHandler(error);
-             return;
-         }
+        // Add embedded.mobileprovision to the bundle, overwriting if needed.
+        NSError *fileIOError;
 
-         // We now have a valid provisioning profile for this application!
-         // And, we also have a valid development codesigning certificate, with its private key!
+        if (isEmbeddedExists) {
+            [[NSFileManager defaultManager] removeItemAtPath:embeddedPath error:&fileIOError];
 
-         // Add embedded.mobileprovision to the bundle, overwriting if needed.
-         NSError *fileIOError;
-         NSString *embeddedPath = [NSString stringWithFormat:@"%@/embedded.mobileprovision", path];
+            if (fileIOError) {
+                NSLog(@"%@", fileIOError);
+                return;
+            }
+        }
 
-         if ([[NSFileManager defaultManager] fileExistsAtPath:embeddedPath]) {
-             [[NSFileManager defaultManager] removeItemAtPath:embeddedPath error:&fileIOError];
+        if (![(NSData *)embeddedMobileProvision writeToFile:embeddedPath options:NSDataWritingAtomic error:&fileIOError]) {
+            if (fileIOError) {
+                NSLog(@"%@", fileIOError);
+            } else {
+                NSLog(@"Failed to write '%@'.", embeddedPath);
+            }
 
-             if (fileIOError) {
-                 NSLog(@"%@", fileIOError);
-                 return;
-             }
-         }
+            return;
+        }
 
-         if (![(NSData*)embeddedMobileProvision writeToFile:embeddedPath options:NSDataWritingAtomic error:&fileIOError]) {
+        // Next step: signing. To do this, we use EESigner with these four results.
+        NSData *certificateContent = [[NSData alloc] initWithBase64EncodedString:certificate[@"certificateContent"] options:0];
+        EESigning *signer = [EESigning signerWithCertificate:certificateContent privateKey:privateKey];
+        [signer signBundleAtPath:path entitlements:entitlements identifier:applicationId withCallback:^(BOOL success, NSString *result) {
+            // Return to the caller on a new thread.
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                // We will now pause so that ldid can cleanup after itself.
+                [NSThread sleepForTimeInterval:1];
 
-             if (fileIOError) {
-                 NSLog(@"%@", fileIOError);
-             } else {
-                 NSLog(@"Failed to write '%@'.", embeddedPath);
-             }
+                NSError *error = nil;
+                if (!success) {
+                    error = [self _errorFromString:result];
+                }
 
-             return;
-         }
-
-         // Next step: signing. To do this, we use EESigner with these four results.
-         NSData *certificateContent = [[NSData alloc] initWithBase64EncodedString:certificate[@"certificateContent"] options:0];
-         EESigning *signer = [EESigning signerWithCertificate:certificateContent privateKey:privateKey];
-         [signer signBundleAtPath:path entitlements:entitlements identifier:applicationId withCallback:^(BOOL success, NSString *result) {
-
-              // Return to the caller on a new thread.
-              dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-                                 // We will now pause so that ldid can cleanup after itself.
-                                 [NSThread sleepForTimeInterval:1];
-
-                                 NSError *error = nil;
-                                 if (!success) {
-                                     error = [self _errorFromString:result];
-                                 }
-
-                                 // We're done.
-                                 completionHandler(error);
-                             });
-          }];
-     }];
+                // We're done.
+                completionHandler(error);
+            });
+        }];
+    }];
 }
 
-+ (void)signIpaAtPath:(NSString*)ipaPath outputPath:(NSString*)outputPath identity:(NSString*)identity gsToken:(NSString*)gsToken priorChosenTeamID:(NSString*)teamId withCompletionHandler:(void (^)(NSError *))completionHandler {
-
++ (void)signIpaAtPath:(NSString *)ipaPath outputPath:(NSString *)outputPath identity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId withCompletionHandler:(void (^)(NSError *))completionHandler {
     // 1. Unpack IPA to a temporary directory.
     NSError *error;
     NSString *unpackedDirectory;
@@ -278,24 +279,23 @@
     NSLog(@"Signing bundle at path '%@'", bundleDirectory);
 
     [self signBundleAtPath:bundleDirectory identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *err) {
-         if (err) {
-             completionHandler(err);
-             return;
-         }
+        if (err) {
+            completionHandler(err);
+            return;
+        }
 
-         // 3. Repack IPA to output path
-         NSError *error2;
-         if (![self repackIpaAtPath:[NSString stringWithFormat:@"%@/%@", [self applicationTemporaryDirectory], zipFilename] toPath:outputPath error:&error2]) {
-             completionHandler(error2);
-         } else {
-             // Success!
-             completionHandler(nil);
-         }
-     }];
+        // 3. Repack IPA to output path
+        NSError *error2;
+        if (![self repackIpaAtPath:[NSString stringWithFormat:@"%@/%@", [self applicationTemporaryDirectory], zipFilename] toPath:outputPath error:&error2]) {
+            completionHandler(error2);
+        } else {
+            // Success!
+            completionHandler(nil);
+        }
+    }];
 }
 
-+ (BOOL)unpackIpaAtPath:(NSString*)ipaPath outDirectory:(NSString**)outputDirectory error:(NSError**)error {
-
++ (BOOL)unpackIpaAtPath:(NSString *)ipaPath outDirectory:(NSString **)outputDirectory error:(NSError **)error {
     // Sanity checks.
     if (![ipaPath hasSuffix:@".ipa"]) {
         if (error)
@@ -325,8 +325,7 @@
     return YES;
 }
 
-+ (BOOL)repackIpaAtPath:(NSString*)extractedPath toPath:(NSString*)outputPath error:(NSError**)error {
-
++ (BOOL)repackIpaAtPath:(NSString *)extractedPath toPath:(NSString *)outputPath error:(NSError **)error {
     // Sanity checks.
     if (![outputPath hasSuffix:@".ipa"]) {
         if (error)
@@ -348,8 +347,8 @@
     return YES;
 }
 
-+ (NSString*)applicationTemporaryDirectory {
-    NSString * tempDir = NSTemporaryDirectory();
++ (NSString *)applicationTemporaryDirectory {
+    NSString *tempDir = NSTemporaryDirectory();
     if (!tempDir)
         tempDir = @"/tmp";
 
@@ -360,16 +359,16 @@
     return tempDir;
 }
 
-+ (NSError*)_errorFromString:(NSString*)string {
++ (NSError *)_errorFromString:(NSString *)string {
     NSDictionary *userInfo = @{
-        NSLocalizedDescriptionKey: NSLocalizedString(string, nil),
-        NSLocalizedFailureReasonErrorKey: NSLocalizedString(string, nil),
-        NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"", nil)
+        NSLocalizedDescriptionKey : NSLocalizedString(string, nil),
+        NSLocalizedFailureReasonErrorKey : NSLocalizedString(string, nil),
+        NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"", nil)
     };
 
     NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain
-                      code:-1
-                      userInfo:userInfo];
+                                         code:-1
+                                     userInfo:userInfo];
 
     return error;
 }
