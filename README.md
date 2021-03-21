@@ -8,6 +8,8 @@ This project had been EOL and I have resurrected it.
 
 One thing to note is that I do not intend to update for non-iOS. Perhaps an update for iOS make it incompatible with other operating systems.
 
+**ReProvision Reborn does not wish to be a competitor to AltStore. It's an option**
+
 **Please don't bother the original developer about issues on this version.**
 
 #### Changes
