@@ -268,18 +268,23 @@
     NSDictionary *dictionary = [self.dataSource objectAtIndex:indexPath.row][@"attributes"];
 
     NSString *machineName = [dictionary objectForKey:@"machineName"];
-    machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
-
     NSString *applicationName = @"Unknown";
-    if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
-        applicationName = @"ReProvision";
-    else if ([(NSString *)[dictionary objectForKey:@"machineName"] isEqualToString:@"AltStore"])
-        applicationName = @"AltStore";
-    else if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"Cydia"]) {
+
+    if (machineName) {
+        machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
+
+        if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
+            applicationName = @"ReProvision";
+        else if ([(NSString *)[dictionary objectForKey:@"machineName"] isEqualToString:@"AltStore"])
+            applicationName = @"AltStore";
+        else if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"Cydia"]) {
+            machineName = @"Unknown";
+            applicationName = @"Cydia Impactor or Extender";
+        } else
+            applicationName = @"Xcode";
+    } else {
         machineName = @"Unknown";
-        applicationName = @"Cydia Impactor or Extender";
-    } else
-        applicationName = @"Xcode";
+    }
 
     cell.textLabel.text = [NSString stringWithFormat:@"Device: %@", machineName];
     cell.detailTextLabel.text = [NSString stringWithFormat:@"Application: %@", applicationName];
