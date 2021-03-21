@@ -23,15 +23,15 @@
         self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeAlways;
     }
 
-    NSArray *names = @[@"soh", @"Matchstic", @"Riles", @"Aesign"];
-    NSArray *titles = @[@"Developer of Reborn Version", @"Developer of Original Version", @"Developer of AltStore", @"Designer"];
+    NSArray *names = @[@"Soh", @"Matchstic", @"Riles", @"Aesign"];
+    NSArray *titles = @[@"Developer of Reborn Version / New Icon Design", @"Developer of Original Version", @"Developer of AltStore", @"Designer"];
     NSArray *imagePaths = @[@"developer_of_reborn", @"author", @"developer_of_altstore", @"designer"];
-    NSArray *userNames = @[@"soh_satoh", @"_Matchstic", @"rileytestut", @"aesign_"];
+    NSArray *usernames = @[@"soh_satoh", @"_Matchstic", @"rileytestut", @"aesign_"];
 
     NSDictionary *contributers = @{ @"names": names,
                                     @"titles": titles,
                                     @"imagePaths": imagePaths,
-                                    @"userNames": userNames };
+                                    @"usernames": usernames };
 
     _contributers = contributers;
 
@@ -271,7 +271,7 @@
         // handle credits tap.
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         if (indexPath.row != 1 && indexPath.row != 2) {
-            [self _openTwitterForUser:indexPath.row > [_contributers count] ? nil : _contributers[@"userNames"][indexPath.row]];
+            [self _openTwitterForUser:indexPath.row > [_contributers count] ? nil : _contributers[@"usernames"][indexPath.row]];
         }
     } else {
         [super tableView:tableView didSelectRowAtIndexPath:indexPath];
