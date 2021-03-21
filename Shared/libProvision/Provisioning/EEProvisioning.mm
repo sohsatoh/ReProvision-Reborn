@@ -317,7 +317,6 @@
             NSString *machineName = dict[@"attributes"][@"machineName"];
 
             BOOL shouldCheckForAltStore = [machineName isEqualToString:@"AltStore"] && [RPVResources shouldForceResign];
-            NSLog(@"[soh] shouldCheckForAltStore = %d", shouldCheckForAltStore);
 
             if ([machineId isEqualToString:[self _identifierForCurrentMachine]] || shouldCheckForAltStore) {
                 // Alright cool. Now, we check to see if it has expired.
