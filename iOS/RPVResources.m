@@ -1,6 +1,6 @@
 //
 //  RPVResources.m
-//  
+//
 //
 //  Created by Matt Clarke on 09/01/2018.
 //
@@ -12,8 +12,8 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
-#include <notify.h>
 #include <dlfcn.h>
+#include <notify.h>
 
 // For Apple Watch support
 @interface NRDevice : NSObject
@@ -22,7 +22,7 @@
 
 @interface NRPairedDeviceRegistry : NSObject
 + (instancetype)sharedInstance;
-- (NRDevice*)getActivePairedDevice;
+- (NRDevice *)getActivePairedDevice;
 - (bool)isPaired;
 @end
 
@@ -67,6 +67,12 @@ static dispatch_once_t nanoRegistryOnceToken;
     return value ? [value boolValue] : NO;
 }
 
++ (BOOL)shouldForceResign {
+    id value = [self preferenceValueForKey:@"shouldForceResign"];
+    return value ? [value boolValue] : YES;
+}
+
+
 + (BOOL)shouldAutoRevokeIfNeeded {
     id value = [self preferenceValueForKey:@"shouldAutoRevokeIfNeeded"];
     return value ? [value boolValue] : NO;
@@ -75,33 +81,33 @@ static dispatch_once_t nanoRegistryOnceToken;
 + (NSTimeInterval)heartbeatTimerInterval {
     id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"heartbeatTimerInterval"];
     int time = value ? [value intValue] : 2;
-    
+
     NSTimeInterval interval = 3600;
     interval *= time;
-    
+
     return interval;
 }
 
-+ (id)preferenceValueForKey:(NSString*)key {
++ (id)preferenceValueForKey:(NSString *)key {
     return [[NSUserDefaults standardUserDefaults] objectForKey:key];
 }
 
-+ (void)setPreferenceValue:(id)value forKey:(NSString*)key withNotification:(NSString*)notification {
++ (void)setPreferenceValue:(id)value forKey:(NSString *)key withNotification:(NSString *)notification {
     [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
-    
+
     // Write to CFPreferences
-    CFPreferencesSetValue ((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, CFSTR("jp.soh.reprovision.ios"), kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    CFPreferencesSetValue((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, CFSTR("jp.soh.reprovision.ios"), kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     CFPreferencesAppSynchronize(CFSTR("jp.soh.reprovision.ios"));
-    
+
     // Notify daemon of new preferences.
-    [(AppDelegate*)[UIApplication sharedApplication].delegate requestPreferencesUpdate];
-    
+    [(AppDelegate *)[UIApplication sharedApplication].delegate requestPreferencesUpdate];
+
     // Broadcast notification as Darwin
     if (notification)
         [self _broadcastNotification:notification withUserInfo:nil];
 }
 
-+ (void)_broadcastNotification:(NSString*)notifiation withUserInfo:(NSDictionary*)userInfo {
++ (void)_broadcastNotification:(NSString *)notifiation withUserInfo:(NSDictionary *)userInfo {
     [[NSNotificationCenter defaultCenter] postNotificationName:notifiation object:nil userInfo:userInfo];
 }
 
@@ -109,31 +115,31 @@ static dispatch_once_t nanoRegistryOnceToken;
 // User Account
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-+ (NSString*)getUsername {
-    NSString* username = [[NSUserDefaults standardUserDefaults] objectForKey:@"cachedUsername"];
-    NSArray* components = [username componentsSeparatedByString:@"|"];
-    if([components count] < 2) return nil;
++ (NSString *)getUsername {
+    NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:@"cachedUsername"];
+    NSArray *components = [username componentsSeparatedByString:@"|"];
+    if ([components count] < 2) return nil;
     return username;
 }
 
-+ (NSString*)getPassword {
++ (NSString *)getPassword {
     return [SAMKeychain passwordForService:SERVICENAME account:[self getUsername]];
 }
 
-+ (NSString*)getTeamID {
++ (NSString *)getTeamID {
     return [[NSUserDefaults standardUserDefaults] objectForKey:@"cachedTeamID"];
 }
 
-+ (NSString*)getCredentialsVersion {
-    NSString* version = [[NSUserDefaults standardUserDefaults] objectForKey:@"credentialsVersion"];
++ (NSString *)getCredentialsVersion {
+    NSString *version = [[NSUserDefaults standardUserDefaults] objectForKey:@"credentialsVersion"];
     return version ? version : @"0";
 }
 
-+ (void)storeUsername:(NSString*)username password:(NSString*)password andTeamID:(NSString*)teamId {
++ (void)storeUsername:(NSString *)username password:(NSString *)password andTeamID:(NSString *)teamId {
     [[NSUserDefaults standardUserDefaults] setObject:username forKey:@"cachedUsername"];
-    
+
     [SAMKeychain setPassword:password forService:SERVICENAME account:username];
-    
+
     [[NSUserDefaults standardUserDefaults] setObject:teamId forKey:@"cachedTeamID"];
     [[NSUserDefaults standardUserDefaults] setObject:CURRENT_CREDENTIALS_VERSION forKey:@"credentialsVersion"];
 }
@@ -146,10 +152,10 @@ static dispatch_once_t nanoRegistryOnceToken;
     NSString *username = [self getUsername];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"cachedUsername"];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"cachedTeamID"];
-    
+
     // Remove password from Keychain
     [SAMKeychain deletePasswordForService:SERVICENAME account:username];
-    
+
     [self _broadcastNotification:@"RPVDisplayAccountSignInController" withUserInfo:nil];
 }
 
@@ -165,21 +171,21 @@ static dispatch_once_t nanoRegistryOnceToken;
     dispatch_once(&nanoRegistryOnceToken, ^{
         dlopen("/System/Library/PrivateFrameworks/NanoRegistry.framework/NanoRegistry", RTLD_NOW);
     });
-    
+
     NRPairedDeviceRegistry *sharedRegistry = [objc_getClass("NRPairedDeviceRegistry") sharedInstance];
     return [sharedRegistry isPaired];
 #endif
 }
 
-+ (NSString*)activePairedWatchUDID {
++ (NSString *)activePairedWatchUDID {
     return [self _valueForActivePairedWatchWithProperty:@"UDID"];
 }
 
-+ (NSString*)activePairedWatchName {
++ (NSString *)activePairedWatchName {
     return [self _valueForActivePairedWatchWithProperty:@"name"];
 }
 
-+ (id)_valueForActivePairedWatchWithProperty:(NSString*)property {
++ (id)_valueForActivePairedWatchWithProperty:(NSString *)property {
 #if TARGET_OS_SIMULATOR
     return @"";
 #else
@@ -187,7 +193,7 @@ static dispatch_once_t nanoRegistryOnceToken;
     dispatch_once(&nanoRegistryOnceToken, ^{
         dlopen("/System/Library/PrivateFrameworks/NanoRegistry.framework/NanoRegistry", RTLD_NOW);
     });
-    
+
     NRPairedDeviceRegistry *sharedRegistry = [objc_getClass("NRPairedDeviceRegistry") sharedInstance];
     NRDevice *currentWatchDevice = [sharedRegistry getActivePairedDevice];
     return [currentWatchDevice valueForProperty:property];
@@ -198,23 +204,23 @@ static dispatch_once_t nanoRegistryOnceToken;
 // Helper methods.
 //////////////////////////////////////////////////////////////////////////////////
 
-+ (NSString*)getFormattedTimeRemainingForExpirationDate:(NSDate*)expirationDate {
++ (NSString *)getFormattedTimeRemainingForExpirationDate:(NSDate *)expirationDate {
     NSDate *now = [NSDate date];
-    
+
     NSTimeInterval distanceBetweenDates = [expirationDate timeIntervalSinceDate:now];
     double secondsInAnHour = 3600;
     NSInteger hoursBetweenDates = distanceBetweenDates / secondsInAnHour;
-    
+
     int days = (int)floor((CGFloat)hoursBetweenDates / 24.0);
     int minutes = distanceBetweenDates / 60;
-    
+
     if (days > 0) {
         // round up days to make more sense to the user
         return [NSString stringWithFormat:@"%d day%@, %d hour%@", days, days == 1 ? @"" : @"s", (int)hoursBetweenDates - (days * 24), hoursBetweenDates == 1 ? @"" : @"s"];
     } else if (hoursBetweenDates > 0) {
         // less than 24 hours, warning time.
         return [NSString stringWithFormat:@"%d hour%@", (int)hoursBetweenDates, hoursBetweenDates == 1 ? @"" : @"s"];
-    } else if (minutes > 0){
+    } else if (minutes > 0) {
         // less than 1 hour, warning time. (!!)
         return [NSString stringWithFormat:@"%d minute%@", minutes, minutes == 1 ? @"" : @"s"];
     } else {
@@ -222,21 +228,21 @@ static dispatch_once_t nanoRegistryOnceToken;
     }
 }
 
-+ (CGRect)boundedRectForFont:(UIFont*)font andText:(NSString*)text width:(CGFloat)width {
++ (CGRect)boundedRectForFont:(UIFont *)font andText:(NSString *)text width:(CGFloat)width {
     if (!text || !font) {
         return CGRectZero;
     }
-    
+
     if (![text isKindOfClass:[NSAttributedString class]]) {
-        NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName:font}];
-        CGRect rect = [attributedText boundingRectWithSize:(CGSize){width, CGFLOAT_MAX}
+        NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:text attributes:@{ NSFontAttributeName: font }];
+        CGRect rect = [attributedText boundingRectWithSize:(CGSize){ width, CGFLOAT_MAX }
                                                    options:NSStringDrawingUsesLineFragmentOrigin
                                                    context:nil];
         return rect;
     } else {
-        return [(NSAttributedString*)text boundingRectWithSize:(CGSize){width, CGFLOAT_MAX}
-                                                       options:NSStringDrawingUsesLineFragmentOrigin
-                                                       context:nil];
+        return [(NSAttributedString *)text boundingRectWithSize:(CGSize){ width, CGFLOAT_MAX }
+                                                        options:NSStringDrawingUsesLineFragmentOrigin
+                                                        context:nil];
     }
 }
 
