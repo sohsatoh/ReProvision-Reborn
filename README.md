@@ -73,7 +73,7 @@ A third-party library notice can be found [here](https://raw.githubusercontent.c
 
 Licensed under the AGPLv3 License.
 
-If you re-distribute this package on a Cydia repository, be aware that I will not provide any support whatsoever for users of it on said repository.
+However, if you modify or redistribute this software, you must obtain permission from me, sohsatoh.
 
 Furthermore, ReProvision (and by extension, libProvision as found in `/Shared/`) IS NOT FOR PIRACY. It is intended to allow users to ensure applications signed with a free development certificate remain signed past the usual 7-day window.
 
