@@ -71,7 +71,7 @@ To build this project, make sure to have the above pre-requisites installed.
 
 A third-party library notice can be found [here](https://raw.githubusercontent.com/sohsatoh/ReProvision/master/iOS/HTML/openSourceLicenses.html).
 
-### License
+## License
 
 Licensed under the AGPLv3 License.
 
