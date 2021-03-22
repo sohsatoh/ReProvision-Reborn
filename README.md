@@ -8,6 +8,8 @@ This project had been EOL and I have resurrected it.
 
 One thing to note is that I do not intend to update for non-iOS. Perhaps an update for iOS make it incompatible with other operating systems.
 
+**ReProvision Reborn does not wish to be a competitor to AltStore. It's an option**
+
 **Please don't bother the original developer about issues on this version.**
 
 #### Changes
@@ -73,7 +75,7 @@ A third-party library notice can be found [here](https://raw.githubusercontent.c
 
 Licensed under the AGPLv3 License.
 
-If you re-distribute this package on a Cydia repository, be aware that I will not provide any support whatsoever for users of it on said repository.
+However, if you modify or redistribute this software, you must obtain permission from me, sohsatoh.
 
 Furthermore, ReProvision (and by extension, libProvision as found in `/Shared/`) IS NOT FOR PIRACY. It is intended to allow users to ensure applications signed with a free development certificate remain signed past the usual 7-day window.
 
