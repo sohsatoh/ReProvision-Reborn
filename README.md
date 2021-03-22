@@ -28,6 +28,9 @@ Like most provisioning software, ReProvision supports free and paid development 
 ### AltStore vs ReProvision
 What separates AltStore and this project is the fact that ReProvision doesn't require a computer, making it a viable option for easy, on-device provisioning. Aside from that, this fork of ReProvision uses the same techniques that AltStore uses to tackle provisioning, and by no means should be considered as a competitor.
 
+### Contributing
+Pull requests, which add a new feature or fix a bug/error, or issue tickets are welcome. Check out the [contributing guidelines](https://github.com/sohsatoh/ReProvision-Reborn/blob/master/CONTRIBUTING.md) for further information.
+
 ## Building
 As long as you have standard libraries for Xcode projects, the only dependencies you need are [CocoaPods](https://github.com/CocoaPods/CocoaPods) and [Git](https://git-scm.com/downloads). You can build the project with 3 simple steps
 1. ``git clone https://github.com/sohsatoh/ReProvision-Reborn.git``
