@@ -26,7 +26,7 @@ Furthermore, while re-distribution of this software is allowed, support for modi
 Like most provisioning software, ReProvision supports free and paid development Apple accounts. While crendentials are stored in the device's Keychain for subsequent re-use, they're only sent to Apple's iTunes Connect API for authentication.
 
 ### AltStore vs ReProvision
-What separates AltStore and this project is the fact that ReProvision doesn't require a computer, making it a viable option for easy, on-device provisioning. Aside from that, this fork of ReProvision uses the same techniques that AltStore uses to tackle provisioning, and by no means should be considered as a competitor.
+This fork of ReProvision uses the same techniques that AltStore uses to tackle provisioning, and by no means should be considered as a competitor.
 
 ### Contributing
 Pull requests, which add a new feature or fix a bug/error, or issue tickets are welcome. Check out the [contributing guidelines](https://github.com/sohsatoh/ReProvision-Reborn/blob/master/CONTRIBUTING.md) for further information.
