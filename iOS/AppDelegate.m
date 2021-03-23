@@ -19,6 +19,7 @@
 #import <RMessageView.h>
 #import "SAMKeychain.h"
 
+#import <dlfcn.h>
 #include <notify.h>
 #import <objc/runtime.h>
 
@@ -170,6 +171,10 @@
     version.minorVersion = 0;
     version.patchVersion = 0;
 
+    // it is unable to load SettingsCellular.framework weakly as bitcode is enabled on this project
+    // so we have to load it manually if the device is on iOS13+
+    void *settingsCellular = dlopen("/System/Library/PrivateFrameworks/SettingsCellular.framework/SettingsCellular", RTLD_LAZY);
+
     if (objc_getClass("PSAppDataUsagePolicyCache")) {
         // iOS 12+
         PSAppDataUsagePolicyCache *cache = [objc_getClass("PSAppDataUsagePolicyCache") sharedInstance];
@@ -183,6 +188,10 @@
                                                             forBundleIdentifier:[NSBundle mainBundle].bundleIdentifier
                                                               completionHandler:nil];
     }
+
+    // close SettingsCellular as it is not needed anymore.
+    if (settingsCellular) dlclose(settingsCellular);
+
     // Not required for iOS 9
 }
 
