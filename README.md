@@ -1,82 +1,45 @@
 ## ReProvision Reborn
+Re-sign applications on your device.
 
-This project provides automatic re-provisioning of iOS and tvOS applications to avoid the 7-day expiration associated with free certificates, along with a macOS application to manually provision a given `.ipa` file.
-
-### Why 'Reborn'?
-
-This project had been EOL and I have resurrected it.
-
-One thing to note is that I do not intend to update for non-iOS. Perhaps an update for iOS make it incompatible with other operating systems.
-
-**ReProvision Reborn does not wish to be a competitor to AltStore. It's an option**
-
-**Please don't bother the original developer about issues on this version.**
-
-#### Changes
-
-- Add support for iOS 14
-- Add support for arm64e devices
-- Fix errors related to certificate (Thanks: [@nyuszika7h](https://github.com/nyuszika7h))
-- Fix signing issues (Thanks: AltSign by [@rileytestut](https://github.com/rileytestut/))
-
-... and more!
-
-This tool uses the code taken from [AltSign](https://github.com/rileytestut/AltSign) by [@rileytestut](https://github.com/rileytestut/).
-
-## Original Description
+This project aims at making it easier to (re-)sign iOS and Apple Watch applications on a **jailbroken** iOS device, allowing users to avoid the 7-day limit of free certificates associated with their normal Apple account.
 
 ### Features
-
-Provisioning is undertaken via the user's Apple ID credentials, and supports both paid and free development accounts. These credentials are stored in the user's Keychain for subsequent re-use, and are only sent to Apple's iTunes Connect API for authentication.
-
-#### iOS
-
-- Automatic re-signing of locally provisioned applications.
-- Basic settings to configure alerts shown by the automatic re-signing.
-- Ability to install any `.ipa` file downloaded through Safari from the device.
-- Support for re-signing Apple Watch applications.
-- 3D Touch menu for starting a new re-signing routine directly from the Homescreen.
+- Automatic re-signing of locally provisioned applications
+- Basic settings to configure alerts shown when applications are (re-)signed
+- Ability to install any ``.ipa`` file downloaded through Safari from the device
+- Support for (re-)signing Apple Watch applications
+- 3D Touch menu for starting a new re-signing routine directly from the Homescreen
 
 Battery optimisations are also in place through the usage of a background daemon to handle automatic signing.
 
-Please note that only jailbroken devices are supported at this time. Follow [issues/44](https://github.com/Matchstic/ReProvision/issues/44) for progress regarding stock devices.
+## Notes
+The original project, ReProvision, has been EOL after Apple changed the process of application provisioning on their servers. This fork of ReProvision attempts to maintain the project and get it up-to-date with support for iOS 13 and above, which also explains the rename of the project.
 
-#### tvOS [TODO]
+Although this is an attempt at resurrecting the project, I ask that you **do not bother** the original developer about specific updates made to **this** fork, since they're no longer behind the project.
 
-- Automatic re-signing of locally provisioned applications.
-- Basic settings to configure alerts shown by the automatic re-signing.
-- Ability to install any `.ipa` file downloaded to the device.
+### Support
+Attempting to maintain this fork comes at the cost of "dropping" tvOS and macOS support, since other viable options, such as [AltStore](https://github.com/rileytestut/AltStore) and AltDeploy are available for their respective platforms; the main focus of this fork is iOS.
 
-#### macOS [N/A]
+Furthermore, while re-distribution of this software is allowed, support for modified versions of this software will not be provided.  
 
-- Not viable with this codebase. See AltDeploy instead: https://github.com/pixelomer/AltDeploy
+### Account Handling
+Like most provisioning software, ReProvision supports free and paid development Apple accounts. While crendentials are stored in the device's Keychain for subsequent re-use, they're only sent to Apple's iTunes Connect API for authentication.
 
-### Pre-Requisites
+### AltStore vs ReProvision
+What separates AltStore and this project is the fact that ReProvision doesn't require a computer, making it a viable option for easy, on-device provisioning. Aside from that, this fork of ReProvision uses the same techniques that AltStore uses to tackle provisioning, and by no means should be considered as a competitor.
 
-~~For compiling the iOS project into a Debian archive, `ldid2` and (currently) `iOSOpenDev`. I plan to integrate these two dependencies into this repository.~~ These are now integrated into this repository under `/bin`.
+### Contributing
+Pull requests, which add a new feature or fix a bug/error, or issue tickets are welcome. Check out the [contributing guidelines](https://github.com/sohsatoh/ReProvision-Reborn/blob/master/CONTRIBUTING.md) for further information.
 
-CocoaPods is also utilised.
+## Building
+As long as you have standard libraries for Xcode projects, the only dependencies you need are [CocoaPods](https://github.com/CocoaPods/CocoaPods) and [Git](https://git-scm.com/downloads). You can build the project with 3 simple steps
+1. ``git clone https://github.com/sohsatoh/ReProvision-Reborn.git``
+2. ``pod install`` in the project's root directory
+3. Open ``ReProvision.xcworkspace``, and roll from there
 
-### Building
+## License and Third-Party Libraries
+Licensed under the AGPLv3 license. This project occupies specific third-party libraries, which have all been listed (and given credit to) in this [notice](https://raw.githubusercontent.com/sohsatoh/ReProvision/master/iOS/HTML/openSourceLicenses.html).
 
-To build this project, make sure to have the above pre-requisites installed.
+The software, ReProvision Reborn (and by extension, ``libReprovision`` as found in ``/Shared/``), and all consecutive copies of the software, are provided without warranty and AS-IS. **This project is NOT intended for piracy.**
 
-1. Clone the project; `git clone https://github.com/sohsatoh/ReProvision.git`
-2. Update CocoaPods, by running `pod install` in the project's root directory.
-3. Open `ReProvision.xcworkspace`, and roll from there.
-
-### Third-Party Libraries
-
-**iOS**
-
-A third-party library notice can be found [here](https://raw.githubusercontent.com/sohsatoh/ReProvision/master/iOS/HTML/openSourceLicenses.html).
-
-## License
-
-Licensed under the AGPLv3 License.
-
-However, if you modify or redistribute this software, you must obtain permission from me, sohsatoh.
-
-Furthermore, ReProvision (and by extension, libProvision as found in `/Shared/`) IS NOT FOR PIRACY. It is intended to allow users to ensure applications signed with a free development certificate remain signed past the usual 7-day window.
-
-Absolutely no warranty or guarantee is provided; the software is provided AS-IS.
+Special thanks to [Matchstic](https://github.com/Matchstic) for originally developing ReProvision, and [rileytestut](https://github.com/rileytestut) for his amazing work on AltStore.
