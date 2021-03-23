@@ -7,7 +7,6 @@
 //
 
 #import "RPVIpaBundleApplication.h"
-#import <dlfcn.h>
 
 #define IS_IPAD (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 
@@ -17,14 +16,14 @@
 
 @interface RPVIpaBundleApplication ()
 
-@property(nonatomic, strong) NSDictionary *cachedInfoPlist;
-@property(nonatomic, strong) NSURL *cachedURL;
-@property(nonatomic, strong) UIImage *cachedIconImage;
-@property(nonatomic, strong) NSNumber *uncompressedSize;
+@property (nonatomic, strong) NSDictionary *cachedInfoPlist;
+@property (nonatomic, strong) NSURL *cachedURL;
+@property (nonatomic, strong) UIImage *cachedIconImage;
+@property (nonatomic, strong) NSNumber *uncompressedSize;
 
-@property(nonatomic, strong) NSString *_tmp_zipFileRequested;
-@property(nonatomic, readwrite) BOOL _tmp_zipUncompressedSizeRequested;
-@property(nonatomic, readwrite) int _tmp_zipUncompressedSize;
+@property (nonatomic, strong) NSString *_tmp_zipFileRequested;
+@property (nonatomic, readwrite) BOOL _tmp_zipUncompressedSizeRequested;
+@property (nonatomic, readwrite) int _tmp_zipUncompressedSize;
 
 @end
 
@@ -92,7 +91,7 @@
         NSString *fileFormat = [NSString stringWithFormat:@"Payload/*/%@", iconFileName];
 
         NSData *data = [self _loadFileWithFormat:fileFormat fromIPA:url multipleCandiateChooser:^NSString *(NSArray *candidates) {
-            NSArray *suffixPreferences = @[ @"@3x", @"@2x", @"" ];
+            NSArray *suffixPreferences = @[@"@3x", @"@2x", @""];
 
             // Choose which candidate is best for the current device, and fallback as needed.
             NSString *currentBest = @"";
@@ -153,30 +152,69 @@
 }
 
 - (UIImage *)_maskApplicationIcon:(UIImage *)icon {
-    if (!icon || UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) return nil;
-
-    static CGImageRef (*LICreateIconForImage)(CGImageRef image, NSUInteger variant, NSUInteger mask) = NULL;
-
-    void *mobileIcons = dlopen("/System/Library/PrivateFrameworks/MobileIcons.framework/MobileIcons", RTLD_NOW);
-    LICreateIconForImage = dlsym(mobileIcons, "LICreateIconForImage");
-
-    if (LICreateIconForImage) {
-        CGFloat scale = [UIScreen mainScreen].scale;
-        NSUInteger variant;
-        if (scale >= 2.0) {
-            variant = 15;
-        } else {
-            variant = 0;
+    UIImage *maskImage;
+    @try {
+        NSBundle *mobileIconsBundle = [NSBundle bundleWithIdentifier:@"com.apple.mobileicons.framework"];
+        if (mobileIconsBundle) {
+            if (IS_IPAD) maskImage = [UIImage imageNamed:@"AppIconMask~ipad" inBundle:mobileIconsBundle compatibleWithTraitCollection:nil];
+            else
+                maskImage = [UIImage imageNamed:@"AppIconMask~iphone" inBundle:mobileIconsBundle compatibleWithTraitCollection:nil];
         }
-
-        CGImageRef appIconImage = LICreateIconForImage(icon.CGImage, variant, 2);
-        UIImage *appIcon = [[UIImage alloc] initWithCGImage:appIconImage scale:scale orientation:UIImageOrientationUp];
-        CGImageRelease(appIconImage);
-        dlclose(mobileIcons);
-        return appIcon;
-    } else {
-        return nil;
+    } @catch (NSException *e) {
+        // Really?! This is usually caused by AnemoneIcons.dylib
     }
+
+    // See: https://stackoverflow.com/a/8127762
+    CGImageRef maskRef = maskImage.CGImage;
+
+#define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
+
+    float width = CGImageGetWidth(maskRef);
+    float height = CGImageGetHeight(maskRef);
+
+    // Make a bitmap context that's only 1 alpha channel
+    // WARNING: the bytes per row probably needs to be a multiple of 4
+    int strideLength = ROUND_UP(width * 1, 4);
+    unsigned char *alphaData = calloc(strideLength * height, sizeof(unsigned char));
+    CGContextRef alphaOnlyContext = CGBitmapContextCreate(alphaData,
+                                                          width,
+                                                          height,
+                                                          8,
+                                                          strideLength,
+                                                          NULL,
+                                                          kCGImageAlphaOnly);
+
+    // Draw the RGBA image into the alpha-only context.
+    CGContextDrawImage(alphaOnlyContext, CGRectMake(0, 0, width, height), maskRef);
+
+    // Walk the pixels and invert the alpha value. This lets you colorize the opaque shapes in the original image.
+    // If you want to do a traditional mask (where the opaque values block) just get rid of these loops.
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            unsigned char val = alphaData[y * strideLength + x];
+            val = 255 - val;
+            alphaData[y * strideLength + x] = val;
+        }
+    }
+
+    CGImageRef alphaMaskImage = CGBitmapContextCreateImage(alphaOnlyContext);
+    CGContextRelease(alphaOnlyContext);
+    free(alphaData);
+
+    // Make a mask
+    CGImageRef finalMaskImage = CGImageMaskCreate(CGImageGetWidth(alphaMaskImage),
+                                                  CGImageGetHeight(alphaMaskImage),
+                                                  CGImageGetBitsPerComponent(alphaMaskImage),
+                                                  CGImageGetBitsPerPixel(alphaMaskImage),
+                                                  CGImageGetBytesPerRow(alphaMaskImage),
+                                                  CGImageGetDataProvider(alphaMaskImage), NULL, false);
+    CGImageRelease(alphaMaskImage);
+
+    CGImageRef masked = CGImageCreateWithMask([icon CGImage], finalMaskImage);
+
+    CGImageRelease(finalMaskImage);
+
+    return [UIImage imageWithCGImage:masked];
 }
 
 - (NSData *)_loadFileWithFormat:(NSString *)fileFormat fromIPA:(NSURL *)url multipleCandiateChooser:(NSString * (^)(NSArray *candidates))candidateChooser {

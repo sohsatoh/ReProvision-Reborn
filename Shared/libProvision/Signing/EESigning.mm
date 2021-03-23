@@ -113,9 +113,9 @@ static auto dummy([](double) {});
     completionHandler(YES, @"");
 }
 
-- (X509 *)_loadCAChainFromDiskForCertificate:(NSData*)certificate {
+- (X509 *)_loadCAChainFromDiskForCertificate:(NSData *)certificate {
     X509 *certForHashCheck;
-    const unsigned char *input = (unsigned char*)[certificate bytes];
+    const unsigned char *input = (unsigned char *)[certificate bytes];
     certForHashCheck = d2i_X509(NULL, &input, (int)[certificate length]);
     if (!certForHashCheck) {
         NSLog(@"Error loading cert into memory.");
@@ -133,22 +133,22 @@ static auto dummy([](double) {});
         NSLog(@"Failed to determine intermediate certificate to use.");
         @throw [NSException exceptionWithName:@"libProvisionSigningException" reason:@"Could not determine intermediate certificate to use!" userInfo:nil];
     }
-    
+
     X509_free(certForHashCheck);
-    
+
     NSLog(@"Loading CA chain from '%@'", filepath);
-    
+
     NSString *contents = [NSString stringWithContentsOfFile:filepath encoding:NSUTF8StringEncoding error:nil];
-    
+
     BIO *bio = BIO_new(BIO_s_mem());
     BIO_puts(bio, [contents cStringUsingEncoding:NSUTF8StringEncoding]);
-    
+
     X509 *cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
     if (!cert) {
         NSLog(@"Failed to load CA chain.");
         @throw [NSException exceptionWithName:@"libProvisionSigningException" reason:@"Could not load CA chain from disk!" userInfo:nil];
     }
-    
+
     return cert;
 }
 
