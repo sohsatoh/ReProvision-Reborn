@@ -90,6 +90,14 @@
 }
 
 - (BOOL)_provisioningProfileReallyExists {
+    // Get provisioning file from app
+    NSString *appProvisioningPath = [[self.proxy.bundleURL path] stringByAppendingString:@"/embedded.mobileprovision"];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:appProvisioningPath]) return NO;
+
+    NSDictionary *appProvisioningFile = [RPVApplication provisioningProfileAtPath:appProvisioningPath];
+    if (!appProvisioningFile) return NO;
+
+    // Check if the same provisioning file exists in "/var/MobileDevice/ProvisioningProfiles".
     NSString *profilesFolderPath = @"/var/MobileDevice/ProvisioningProfiles";
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     NSDirectoryEnumerator *dirEnum = [fileManager enumeratorAtPath:profilesFolderPath];
@@ -97,10 +105,11 @@
     NSString *filePath;
     while ((filePath = [dirEnum nextObject])) {
         filePath = [NSString stringWithFormat:@"%@/%@", profilesFolderPath, filePath];
-        NSString *profileString = [NSString stringWithContentsOfFile:filePath encoding:NSISOLatin1StringEncoding error:nil];
-        NSRange rangeOfAppName = [profileString rangeOfString:self.applicationName];
-
-        if (rangeOfAppName.location != NSNotFound && filePath) return YES;
+        NSDictionary *provisioningProfile = [RPVApplication provisioningProfileAtPath:filePath];
+        if (provisioningProfile) {
+            // Check if two dictionaries are the same
+            if ([appProvisioningFile isEqualToDictionary:provisioningProfile]) return YES;
+        }
     }
 
     return NO;
