@@ -282,6 +282,7 @@
 		C9FF57A923902CEC00296719 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9446A2215F72700F5C556 /* Security.framework */; };
 		CF39DF7825F79B7800D25BE0 /* RPVAppIdsTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */; };
 		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
+		CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */ = {isa = PBXBuildFile; fileRef = CF42CC912609F1B200D36129 /* apple-ios-g3.pem */; };
 		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
 		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
 		DAE0BDC9DC0389DB581AA13D /* libPods-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */; };
@@ -630,6 +631,7 @@
 		CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsTableViewCell.m; sourceTree = "<group>"; };
 		CF39DF7925F79B8F00D25BE0 /* RPVAppIdsTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsTableViewCell.h; sourceTree = "<group>"; };
 		CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ccsrp.m; sourceTree = "<group>"; };
+		CF42CC912609F1B200D36129 /* apple-ios-g3.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "apple-ios-g3.pem"; sourceTree = "<group>"; };
 		CF7C2CE925F7A68500083AB2 /* RPVAppID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppID.m; sourceTree = "<group>"; };
 		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
 		CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsLabel.m; sourceTree = "<group>"; };
@@ -1159,6 +1161,7 @@
 			isa = PBXGroup;
 			children = (
 				C9C6EA7D2004280A00211FDD /* apple-ios.pem */,
+				CF42CC912609F1B200D36129 /* apple-ios-g3.pem */,
 				C9A9446C2215FADC00F5C556 /* root.pem */,
 			);
 			path = Certificates;
@@ -1720,6 +1723,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C974029623B6381D00BA9B25 /* doc_44.png in Resources */,
+				CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */,
 				C974029323B6381D00BA9B25 /* doc_64.png in Resources */,
 				C974029423B6381D00BA9B25 /* doc_320.png in Resources */,
 				C974029523B6381D00BA9B25 /* doc_22.png in Resources */,
