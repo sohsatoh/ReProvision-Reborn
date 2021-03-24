@@ -43,6 +43,7 @@
 @end
 
 @interface RPVInstalledViewController ()
+
 // Views
 @property (nonatomic, strong) UIScrollView *rootScrollView;
 
@@ -77,6 +78,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
     // Do any additional setup after loading the view.
 
     [self.expiringCollectionView registerClass:[RPVInstalledCollectionViewCell class] forCellWithReuseIdentifier:@"installed.cell"];
@@ -100,6 +102,7 @@
 
     // Handle reloading data when the user has signed in.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadDataForUserDidSignIn:) name:@"jp.soh.reprovision.ios/userDidSignIn" object:nil];
+
     // Reload data when the resign threshold changes.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadDataForUserDidSignIn:) name:@"jp.soh.reprovision.ios/resigningThresholdDidChange" object:nil];
 
@@ -110,6 +113,7 @@
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+
     // Dispose of any resources that can be recreated.
 }
 
@@ -304,6 +308,7 @@
 
     // Top background view.
     self.topBackgroundView.frame = CGRectMake(0, 0, self.view.bounds.size.width, yOffset);
+
     // Stop implicit animation.
     [CATransaction begin];
     [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
@@ -389,33 +394,35 @@
         [coordinator addCoordinatedAnimations:^{
             [stickyScrollView setContentOffset:CGPointMake(0, 20.0)];
         } completion:^{
-
         }];
     } else {
         stickyScrollView.stickyYPosition = 140.0;
         [coordinator addCoordinatedAnimations:^{
-            if (stickyScrollView.contentOffset.y < 140.0)
-                [stickyScrollView setContentOffset:CGPointMake(0, 140.0)];
+            if (stickyScrollView.contentOffset.y < 140.0) [stickyScrollView setContentOffset:CGPointMake(0, 140.0)];
         } completion:^{
-
         }];
     }
 }
+
 #endif
 
 - (CGSize)_collectionCellSize {
 #if TARGET_OS_TV
     return CGSizeMake(400, 350);
+
 #else
     return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? CGSizeMake(195, 183) : CGSizeMake(130, 122);
+
 #endif
 }
 
 - (CGFloat)_tableViewCellHeight {
 #if TARGET_OS_TV
     return 120;
+
 #else
     return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 95 : 75;
+
 #endif
 }
 
@@ -424,6 +431,7 @@
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
 }
+
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -472,8 +480,7 @@
 
         // Ensure they all actually have a mobileprovision!
         for (RPVApplication *application in [self.otherApplicationsDataSource copy]) {
-            if (![application hasEmbeddedMobileprovision])
-                [self.otherApplicationsDataSource removeObject:application];
+            if (![application hasEmbeddedMobileprovision]) [self.otherApplicationsDataSource removeObject:application];
         }
 
         [self.otherApplicationsTableView reloadData];
@@ -548,8 +555,7 @@
 
     RPVApplication *application;
     NSString *fallbackString = @"";
-    if (self.expiringSoonDataSource.count > 0)
-        application = [self.expiringSoonDataSource objectAtIndex:indexPath.row];
+    if (self.expiringSoonDataSource.count > 0) application = [self.expiringSoonDataSource objectAtIndex:indexPath.row];
     else
         fallbackString = @"No applications are expiring soon";
 
@@ -574,7 +580,6 @@
 
     return size;
 }
-
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return 1;
@@ -601,8 +606,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if ([tableView isEqual:self.recentTableView])
-        return self.recentlySignedDataSource.count > 0 ? self.recentlySignedDataSource.count : 1;
+    if ([tableView isEqual:self.recentTableView]) return self.recentlySignedDataSource.count > 0 ? self.recentlySignedDataSource.count : 1;
     else
         return self.otherApplicationsDataSource.count > 0 ? self.otherApplicationsDataSource.count : 1;
 }
@@ -617,13 +621,11 @@
     RPVApplication *application;
     NSString *fallbackString = @"";
     if ([tableView isEqual:self.recentTableView]) {
-        if (self.recentlySignedDataSource.count > 0)
-            application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
+        if (self.recentlySignedDataSource.count > 0) application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
         else
             fallbackString = @"No applications are recently signed";
     } else {
-        if (self.otherApplicationsDataSource.count > 0)
-            application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
+        if (self.otherApplicationsDataSource.count > 0) application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
         else
             fallbackString = @"No other sideloaded applications";
     }
@@ -643,11 +645,11 @@
     RPVApplication *application;
     NSString *buttonTitle = @"";
     BOOL isDestructiveResign = NO;
-    if ([tableView isEqual:self.otherApplicationsTableView] && self.otherApplicationsDataSource.count > 0) {
+    if ([tableView isEqual:self.otherApplicationsTableView] && (self.otherApplicationsDataSource.count > 0)) {
         buttonTitle = @"ADD";
         isDestructiveResign = YES;
         application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
-    } else if ([tableView isEqual:self.recentTableView] && self.recentlySignedDataSource.count > 0) {
+    } else if ([tableView isEqual:self.recentTableView] && (self.recentlySignedDataSource.count > 0)) {
         buttonTitle = @"SIGN";
         application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
     } else {
@@ -706,6 +708,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             int oldDataSource = 0;
             RPVApplication *application;
+
             // Check expiring
             for (RPVApplication *app in self.expiringSoonDataSource) {
                 if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -714,6 +717,7 @@
                     break;
                 }
             }
+
             // Check recents
             for (RPVApplication *app in self.recentlySignedDataSource) {
                 if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -722,6 +726,7 @@
                     break;
                 }
             }
+
             // Check others
             for (RPVApplication *app in self.otherApplicationsDataSource) {
                 if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -731,7 +736,7 @@
                 }
             }
 
-            if (!application) {
+            if (!application || oldDataSource == 3) {
                 // We've just had this called from installing an IPA.
                 // Reload data, and reload tables etc.
 
@@ -768,7 +773,6 @@
                         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
                         [self.expiringCollectionView deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath]];
                     } completion:^(BOOL finished){
-
                     }];
                 }
             } else if (oldDataSource == 2) {
@@ -859,13 +863,16 @@
 
 - (void)startApplicationSigningForSection:(NSInteger)section {
     NSString *startAlertString = @"";
+
     switch (section) {
         case 1:
             startAlertString = @"Starting signing for applications expiring soon";
             break;
+
         case 2:
             startAlertString = @"Starting signing for all applications";
             break;
+
         case 3:
             startAlertString = @"Starting signing for other sideloaded applications";
             break;
@@ -893,6 +900,7 @@
 
 - (RPVApplication *)_applicationForBundleIdentifier:(NSString *)bundleIdentifier {
     RPVApplication *application;
+
     // Check expiring
     for (RPVApplication *app in self.expiringSoonDataSource) {
         if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -900,6 +908,7 @@
             break;
         }
     }
+
     // Check recents
     for (RPVApplication *app in self.recentlySignedDataSource) {
         if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -907,6 +916,7 @@
             break;
         }
     }
+
     // Check others
     for (RPVApplication *app in self.otherApplicationsDataSource) {
         if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -929,6 +939,7 @@
             return [self.expiringCollectionView cellForItemAtIndexPath:path];
         }
     }
+
     // Check recents
     for (RPVApplication *app in self.recentlySignedDataSource) {
         if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -937,6 +948,7 @@
             return [self.recentTableView cellForRowAtIndexPath:path];
         }
     }
+
     // Check others
     for (RPVApplication *app in self.otherApplicationsDataSource) {
         if ([app.bundleIdentifier isEqualToString:bundleIdentifier]) {
@@ -963,10 +975,13 @@
     switch (section) {
         case 1:
             return self.expiringSoonDataSource.count > 0;
+
         case 2:
             return self.recentlySignedDataSource.count > 0;
+
         case 3:
             return self.otherApplicationsDataSource.count > 0;
+
         default:
             return NO;
     }

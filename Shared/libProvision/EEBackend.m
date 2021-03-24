@@ -12,6 +12,14 @@
 #import "EESigning.h"
 #import "SSZipArchive.h"
 
+/* Private headers */
+@interface LSApplicationWorkspace : NSObject
++ (instancetype)defaultWorkspace;
+- (BOOL)installApplication:(NSURL *)arg1 withOptions:(NSDictionary *)arg2 error:(NSError **)arg3;
+- (NSArray *)allApplications;
+- (BOOL)uninstallApplication:(id)arg1 withOptions:(id)arg2;
+@end
+
 @implementation EEBackend
 
 + (void)provisionDevice:(NSString *)udid name:(NSString *)name identity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId systemType:(EESystemType)systemType withCallback:(void (^)(NSError *))completionHandler {
@@ -139,38 +147,50 @@
     NSString *embeddedPath = [NSString stringWithFormat:@"%@/embedded.mobileprovision", path];
     BOOL isEmbeddedExists = [[NSFileManager defaultManager] fileExistsAtPath:embeddedPath];
 
-    BOOL isInstalledFromXcode = NO;
-
     if (isEmbeddedExists) {
+        BOOL isInstalledFromXcode = NO;
+        BOOL isInstalledWithAnotherID = NO;
+
         NSString *profileString = [NSString stringWithContentsOfFile:embeddedPath encoding:NSISOLatin1StringEncoding error:nil];
         NSRange rangeOfTeamId = [profileString rangeOfString:teamId];
         NSRange rangeOfXC = [profileString rangeOfString:@"XC "];
         if (rangeOfTeamId.location != NSNotFound && rangeOfXC.location != NSNotFound) isInstalledFromXcode = YES;
+        else if (![applicationId hasSuffix:teamId]) {
+            // application is installed with another apple id
+            isInstalledWithAnotherID = YES;
+        }
+
+        if (isInstalledFromXcode || isInstalledWithAnotherID) {
+            // This process should be done elsewhere and will be changed later
+            // but i don't have enough time to understand the structure of this project.
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+            [userInfo setObject:applicationId forKey:@"bundleIdentifier"];
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision/appShouldBeRemoved" object:nil userInfo:userInfo];
+        }
     }
 
-    if (![applicationId hasSuffix:teamId] && !isInstalledFromXcode) {
-        if ([infoplist objectForKey:@"ALTBundleIdentifier"] != nil)
-            applicationId = [infoplist objectForKey:@"ALTBundleIdentifier"];
-        else if ([infoplist objectForKey:@"REBundleIdentifier"] != nil)
-            applicationId = [infoplist objectForKey:@"REBundleIdentifier"];
-        else
-            [infoplist setObject:applicationId forKey:@"REBundleIdentifier"];
+    if ([infoplist objectForKey:@"ALTBundleIdentifier"] != nil)
+        applicationId = [infoplist objectForKey:@"ALTBundleIdentifier"];
+    else if ([infoplist objectForKey:@"REBundleIdentifier"] != nil)
+        applicationId = [infoplist objectForKey:@"REBundleIdentifier"];
+    else
+        [infoplist setObject:applicationId forKey:@"REBundleIdentifier"];
 
-        applicationId = [applicationId stringByAppendingFormat:@".%@", teamId];
-        [infoplist setObject:applicationId forKey:@"CFBundleIdentifier"];
+    applicationId = [applicationId stringByAppendingFormat:@".%@", teamId];
+    [infoplist setObject:applicationId forKey:@"CFBundleIdentifier"];
 
-        NSError *error = nil;
-        if (@available(iOS 11.0, *)) {
-            [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] error:&error];
-        } else {
-            // Fallback on earlier versions
-            [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] atomically:YES];
-        }
+    NSError *error = nil;
+    if (@available(iOS 11.0, *)) {
+        [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] error:&error];
+    } else {
+        // Fallback on earlier versions
+        [infoplist writeToURL:[NSURL fileURLWithPath:plistPath] atomically:YES];
+    }
 
-        if (error) {
-            NSLog(@"%@", error);
-            return;
-        }
+    if (error) {
+        NSLog(@"%@", error);
+        return;
     }
 
     NSString *applicationName = [infoplist objectForKey:@"CFBundleName"];
@@ -361,9 +381,9 @@
 
 + (NSError *)_errorFromString:(NSString *)string {
     NSDictionary *userInfo = @{
-        NSLocalizedDescriptionKey : NSLocalizedString(string, nil),
-        NSLocalizedFailureReasonErrorKey : NSLocalizedString(string, nil),
-        NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"", nil)
+        NSLocalizedDescriptionKey: NSLocalizedString(string, nil),
+        NSLocalizedFailureReasonErrorKey: NSLocalizedString(string, nil),
+        NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"", nil)
     };
 
     NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain
