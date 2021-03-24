@@ -736,8 +736,9 @@
                 }
             }
 
-            if (!application || oldDataSource == 3) {
+            if (!application || ![[application locationOfApplicationOnFilesystem] checkResourceIsReachableAndReturnError:nil]) {
                 // We've just had this called from installing an IPA.
+                // Or, it is possible that user resigned the app signed with another account.
                 // Reload data, and reload tables etc.
 
                 [self _reloadDataSources];
