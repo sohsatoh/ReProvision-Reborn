@@ -536,6 +536,9 @@
                     self.closeButton.hidden = NO;
                     self.closeGestureRecogniser.enabled = YES;
                 }
+
+                // Close the view if percentage is 100.
+                [self _userDidTapCloseButton:nil];
             }
         }];
     });
