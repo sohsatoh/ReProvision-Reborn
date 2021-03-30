@@ -465,11 +465,11 @@
         }
 
         // Verify that the certificate request has been approved.
-
-        int resultCode = [[plist objectForKey:@"resultCode"] intValue];
-        if (resultCode != 0) {
+        NSDictionary *data = [plist objectForKey:@"data"];
+        NSArray *errors = [plist objectForKey:@"errors"];
+        if (errors != nil) {
             // NOT the userString, since that has an incorrect error reason in.
-            NSString *resultString = [plist objectForKey:@"resultString"];
+            NSString *resultString = [errors[0] objectForKey:@"detail"];
 
             NSString *desc = [NSString stringWithFormat:@"submitDevelopmentCSR: %@", resultString];
 
@@ -481,17 +481,17 @@
 
         // Double check now that we have been approved.
 
-        NSDictionary *certRequest = [plist objectForKey:@"certRequest"];
+        /*NSDictionary *certRequest = [plist objectForKey:@"certRequest"];
 
         if (!certRequest) {
             NSError *error = [EEProvisioning _errorFromString:@"Missing certificate on Apple's servers."];
 
             completionHandler(error, nil, nil);
             return;
-        }
+        }*/
 
         // Grab the certificate, and return it with the private key to the caller.
-        NSString *certificateSerialID = [certRequest objectForKey:@"serialNum"];
+        NSString *certificateSerialID = data[@"attributes"][@"serialNumber"];
 
         [[EEAppleServices sharedInstance] listAllDevelopmentCertificatesForTeamID:[[EEAppleServices sharedInstance] currentTeamID] systemType:systemType withCompletionHandler:^(NSError *error, NSDictionary *plist) {
             if (error) {
