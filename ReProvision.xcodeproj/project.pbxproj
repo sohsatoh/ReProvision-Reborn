@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -283,6 +283,7 @@
 		C9FF57A923902CEC00296719 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9446A2215F72700F5C556 /* Security.framework */; };
 		CF39DF7825F79B7800D25BE0 /* RPVAppIdsTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */; };
 		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
+		CF3FBAF9261B0CE3001ADC91 /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF3FBAF8261B0CE3001ADC91 /* OpenSSL.xcframework */; };
 		CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */ = {isa = PBXBuildFile; fileRef = CF42CC912609F1B200D36129 /* apple-ios-g3.pem */; };
 		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
 		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
@@ -629,6 +630,7 @@
 		CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsTableViewCell.m; sourceTree = "<group>"; };
 		CF39DF7925F79B8F00D25BE0 /* RPVAppIdsTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsTableViewCell.h; sourceTree = "<group>"; };
 		CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ccsrp.m; sourceTree = "<group>"; };
+		CF3FBAF8261B0CE3001ADC91 /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		CF42CC912609F1B200D36129 /* apple-ios-g3.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "apple-ios-g3.pem"; sourceTree = "<group>"; };
 		CF7C2CE925F7A68500083AB2 /* RPVAppID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppID.m; sourceTree = "<group>"; };
 		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
@@ -678,6 +680,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF3FBAF9261B0CE3001ADC91 /* OpenSSL.xcframework in Frameworks */,
 				C9FDB2A2205195E8005934CD /* libMobileGestalt.tbd in Frameworks */,
 				87BDA7032378223700EA4540 /* AuthKit.tbd in Frameworks */,
 				C9313C052005277E000AD4C3 /* Preferences.tbd in Frameworks */,
@@ -718,6 +721,7 @@
 		25B27802FF2D573B29DEC669 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CF3FBAF8261B0CE3001ADC91 /* OpenSSL.xcframework */,
 				87BDA6FF237821FD00EA4540 /* AuthKit.tbd */,
 				87BDA7022378222400EA4540 /* AuthKit.tbd */,
 				87BDA700237821FD00EA4540 /* AuthKitUI.tbd */,
@@ -1584,9 +1588,9 @@
 				C9C6EA3F2004257E00211FDD /* Frameworks */,
 				C9C6EA402004257E00211FDD /* Resources */,
 				C974027723B234E700BA9B25 /* Embed App Extensions */,
-				C996746420EE30EB00EEFBD2 /* Sign application and create .deb */,
 				CA3514EDE601791405C4CBBD /* [CP] Embed Pods Frameworks */,
 				5D0170C7120D2A3C55505595 /* [CP] Copy Pods Resources */,
+				C996746420EE30EB00EEFBD2 /* Sign application and create .deb */,
 			);
 			buildRules = (
 			);
@@ -2374,7 +2378,10 @@
 					"${PROJECT_DIR}/tvOS/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/tvOS/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/tvOS",
@@ -2407,7 +2414,10 @@
 					"${PROJECT_DIR}/tvOS/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/tvOS/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/tvOS",
@@ -2434,7 +2444,11 @@
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "iOS/Share Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.ios.share;
@@ -2455,7 +2469,11 @@
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "iOS/Share Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = jp.soh.reprovision.ios.share;
 				PRODUCT_NAME = Share;
@@ -2597,7 +2615,10 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/iOS",
@@ -2634,7 +2655,10 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/iOS",
@@ -2660,7 +2684,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = macOS/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Shared",
@@ -2683,7 +2710,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = macOS/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Shared",
