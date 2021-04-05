@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "RPVApplicationSigning.h"
 #import "RPVApplicationProtocol.h"
+#import "RPVApplicationSigning.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, RPVApplicationSigningProtocol, RPVApplicationProtocol>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, RPVApplicationSigningProtocol, RPVApplicationProtocol, NSURLSessionDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 
@@ -18,4 +18,3 @@
 - (void)requestPreferencesUpdate;
 
 @end
-

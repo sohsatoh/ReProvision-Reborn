@@ -13,3 +13,4 @@ iOS/Package/Applications/ReProvision.app/
 iOS/Package/usr/bin/reprovisiond
 *xcworkspace/xcuserdata/*
 *xcodeproj/xcuserdata/*
+*xcodeproj/project.xcworkspace/xcuserdata/*
