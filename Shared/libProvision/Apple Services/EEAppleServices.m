@@ -111,32 +111,40 @@ NSString *const REProtocolVersion = @"QH65B2";
     [task resume];
 }
 
-- (void)_sendServiceRequestWithName:(NSString *)name method:(NSString *)method systemType:(EESystemType)systemType extraDictionary:(NSDictionary *)extra andCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
+- (void)_sendRawServiceRequestWithName:(NSString *)name method:(NSString *)method systemType:(EESystemType)systemType extraDictionary:(NSDictionary *)extra andCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
+    
     NSString *urlStr = [NSString stringWithFormat:@"%@%@", self.servicesBaseURL, name];
-
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
+    
+    
     NSLog(@"Service request to URL: %@", urlStr);
 
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
-
-    // Now, body. (thanks altsign)
-    NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
-    [extra enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
-        [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
-    }];
-
-    NSURLComponents *components = [[NSURLComponents alloc] init];
-    components.queryItems = queryItems;
-
-    NSString *queryString = components.query ?: @"";
 
     NSError *serializationError = nil;
-    NSData *data = [NSJSONSerialization dataWithJSONObject:@{ @"urlEncodedQueryParams": queryString } options:0 error:&serializationError];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:extra options:0 error:&serializationError];
     if (data == nil) {
         completionHandler(nil, nil);
         return;
     }
 
     [self _sendRequest:request method:method data:data andCompletionHandler:completionHandler];
+    
+}
+
+- (void)_sendServiceRequestWithName:(NSString *)name method:(NSString *)method systemType:(EESystemType)systemType extraDictionary:(NSDictionary *)extra andCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
+    
+    // Now, body. (thanks altsign)
+    NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
+    [extra enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
+    }];
+    
+    NSURLComponents *components = [[NSURLComponents alloc] init];
+    components.queryItems = queryItems;
+
+    NSString *queryString = components.query ?: @"";
+
+    [self _sendRawServiceRequestWithName:name method:method systemType:systemType extraDictionary:@{ @"urlEncodedQueryParams": queryString } andCompletionHandler:completionHandler];
 }
 
 - (void)_doActionWithName:(NSString *)action systemType:(EESystemType)systemType extraDictionary:(NSDictionary *)extra andCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
@@ -551,7 +559,7 @@ NSString *const REProtocolVersion = @"QH65B2";
 }
 
 - (void)listAllDevelopmentCertificatesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
-    [self listAllDevelopmentCertificatesWithFiltering:YES teamID:teamID systemType:systemType withCompletionHandler:completionHandler];
+    [self listAllDevelopmentCertificatesWithFiltering:NO teamID:teamID systemType:systemType withCompletionHandler:completionHandler];
 }
 
 - (void)listAllProvisioningProfilesForTeamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
@@ -638,12 +646,22 @@ NSString *const REProtocolVersion = @"QH65B2";
     NSString *stringifiedCSR = [[NSString alloc] initWithData:csr encoding:NSUTF8StringEncoding];
 
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
+    [extra setObject:@"DEVELOPMENT" forKey:@"certificateType"];
     [extra setObject:teamId forKey:@"teamId"];
     [extra setObject:stringifiedCSR forKey:@"csrContent"];
     [extra setObject:machineID forKey:@"machineId"];
     [extra setObject:machineName forKey:@"machineName"];
-
-    [self _doActionWithName:@"submitDevelopmentCSR.action" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
+    
+    NSDictionary *obj = @{
+        @"data": @{
+                @"attributes": extra,
+                @"type": @"certificates"
+        },
+    };
+    //[self _doActionWithName:@"submitDevelopmentCSR.action" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
+    
+    [self _sendRawServiceRequestWithName:@"certificates" method:@"post" systemType:systemType extraDictionary:obj andCompletionHandler:completionHandler ];
+    // use post to make existing code to use json
 }
 
 @end
