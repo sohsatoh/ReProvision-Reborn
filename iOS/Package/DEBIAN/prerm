@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "Unloading daemon"
 
-if [[ $1 == remove || $1 == purge ]]; then
+if [ $1 == remove ] || [ $1 == purge ]; then
     /bin/launchctl unload /Library/LaunchDaemons/jp.soh.reprovisiond.plist 2> /dev/null || /sbin/launchctl unload /Library/LaunchDaemons/com.matchstic.reprovisiond.plist
 fi
 
