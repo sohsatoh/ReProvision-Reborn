@@ -15,7 +15,7 @@ function finish() {
 
 # Clear Inbox folder
 if [ -d "/var/mobile/Library/Application Support/Containers/jp.soh.reprovision.ios/Documents/Inbox" ]; then
-    rm -rf "/var/mobile/Library/Application Support/Containers/jp.soh.reprovision.ios/Documents/Inbox"
+	rm -rf "/var/mobile/Library/Application Support/Containers/jp.soh.reprovision.ios/Documents/Inbox"
 fi
 
 # Handle the daemon
@@ -24,11 +24,11 @@ chown root /Library/LaunchDaemons/jp.soh.reprovisiond.plist
 
 # Unload for an upgrade. - Might spew an error, so hide that.
 /bin/launchctl unload /Library/LaunchDaemons/jp.soh.reprovisiond.plist 2>/dev/null || /sbin/launchctl unload /Library/LaunchDaemons/com.matchstic.reprovisiond.plist 2>/dev/null
-/bin/launchctl load /Library/LaunchDaemons/jp.soh.reprovisiond.plist 2> /dev/null || /sbin/launchctl load /Library/LaunchDaemons/com.matchstic.reprovisiond.plist
+/bin/launchctl load /Library/LaunchDaemons/jp.soh.reprovisiond.plist 2>/dev/null || /sbin/launchctl load /Library/LaunchDaemons/com.matchstic.reprovisiond.plist
 
-# Reload application cache
+# # Reload application cache (is this still needed?)
 echo "Reloading application cache"
-uicache
+uicache -p /Applications/ReProvision.app
 
 # Classic easter egg
 echo "Do, or do not. There is no try."
