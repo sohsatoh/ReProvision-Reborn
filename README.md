@@ -9,8 +9,15 @@ This project aims at making it easier to (re-)sign iOS and Apple Watch applicati
 - Ability to install any ``.ipa`` file downloaded through Safari from the device
 - Support for (re-)signing Apple Watch applications
 - 3D Touch menu for starting a new re-signing routine directly from the Homescreen
+- URL scheme to install ipa file from URL
 
 Battery optimisations are also in place through the usage of a background daemon to handle automatic signing.
+
+## URL scheme
+ReProvision Reborn supports URL scheme.
+    ```
+    reprovision://install?url=<IPA URL>
+    ```
 
 ## Notes
 The original project, ReProvision, has been EOL after Apple changed the process of application provisioning on their servers. This fork of ReProvision attempts to maintain the project and get it up-to-date with support for iOS 13 and above, which also explains the rename of the project.

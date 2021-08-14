@@ -42,6 +42,7 @@
 @property (nonatomic, strong) NSXPCConnection *daemonConnection;
 @property (nonatomic, readwrite) BOOL applicationIsActive;
 @property (nonatomic, readwrite) BOOL pendingDaemonConnectionAlert;
+@property (nonatomic) UIAlertController *loadingAlertVC;
 
 @end
 
@@ -112,46 +113,120 @@
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    [self showLoadingAlert];
+
     // Guard case
-    if (![[[url pathExtension] lowercaseString] isEqualToString:@"ipa"] &&
-        ![[url scheme] isEqualToString:@"reprovision"]) {
+    if (![[[url pathExtension] lowercaseString] isEqualToString:@"ipa"] && ![[url scheme] isEqualToString:@"reprovision"]) {
+        [self changeLoadingAlertText:@"Error - Invalid URL" dismissAfterDelay:2];
         return NO;
     }
 
     // Handle opening from URL scheme
     if ([[url scheme] isEqualToString:@"reprovision"] && [[url host] containsString:@"share"]) {
+        // For share extension
         NSString *path = [url path];
         path = [path substringFromIndex:1];  // strip preceeding /
 
         url = [NSURL fileURLWithPath:path];
 
         NSLog(@"ReProvision :: trying to load from %@", path);
+
+        // Incoming URL is a fileURL!
+        [self _showApplicationDetailControllerFromFileURL:url];
+        [self dismissLoadingAlert];
+
+    } else if ([[url scheme] isEqualToString:@"reprovision"] && [[url host] containsString:@"install"] && [url query]) {
+        // For other applications
+
+        // First, check params
+        // Ref: https://ez-net.jp/article/7C/tje7tU1I/ip9n8f88grK2/
+        NSMutableDictionary *queries = [[NSMutableDictionary alloc] init];
+        NSArray *parameters = [[url query] componentsSeparatedByString:@"&"];
+
+        for (NSString *parameter in parameters) {
+            if (parameter.length > 0) {
+                NSArray *elements = [parameter componentsSeparatedByString:@"="];
+                id key = [elements[0] stringByRemovingPercentEncoding];
+                id value = (elements.count == 1 ? @YES : [elements[1] stringByRemovingPercentEncoding]);
+                [queries setObject:value forKey:key];
+            }
+        }
+
+        // Next, check whether the same file exist on tmp folder.
+        // If exist, delete it.
+        if (!queries[@"url"]) {
+            [self changeLoadingAlertText:@"Invalid URL" dismissAfterDelay:2];
+            return NO;
+        }
+
+        NSURL *tmpFolderPath = [NSURL fileURLWithPath:NSTemporaryDirectory()];
+        NSString *originalFileName = [queries[@"url"] lastPathComponent];
+        NSURL *tmpFilePath = [tmpFolderPath URLByAppendingPathComponent:originalFileName];
+        if ([tmpFilePath checkResourceIsReachableAndReturnError:nil]) [[NSFileManager defaultManager] removeItemAtPath:[tmpFilePath path] error:nil];
+
+        NSString *identifier = @"BackgroundSessionConfiguration";
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:identifier];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration
+                                                              delegate:self
+                                                         delegateQueue:nil];
+
+        NSURL *ipaUrl = [NSURL URLWithString:queries[@"url"]];
+        NSURLSessionDownloadTask *task = [session downloadTaskWithURL:ipaUrl];
+
+        [task resume];
     }
 
-    // Incoming URL is a fileURL!
-
-    // Create an RPVApplication for this incoming .ipa, and display the installation popup.
-    RPVIpaBundleApplication *ipaApplication = [[RPVIpaBundleApplication alloc] initWithIpaURL:url];
-
-    RPVApplicationDetailController *detailController = [[RPVApplicationDetailController alloc] initWithApplication:ipaApplication];
-
-    // Update with current states.
-    [detailController setButtonTitle:@"INSTALL"];
-    detailController.lockWhenInstalling = YES;
-
-    // Add to the rootViewController of the application, as an effective overlay.
-    detailController.view.alpha = 0.0;
-
-    UIViewController *rootController = [UIApplication sharedApplication].keyWindow.rootViewController;
-    [rootController addChildViewController:detailController];
-    [rootController.view addSubview:detailController.view];
-
-    detailController.view.frame = rootController.view.bounds;
-
-    // Animate in!
-    [detailController animateForPresentation];
-
     return YES;
+}
+
+- (void)_showApplicationDetailControllerFromFileURL:(NSURL *)url {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Create an RPVApplication for this incoming .ipa, and display the installation popup.
+
+        RPVIpaBundleApplication *ipaApplication = [[RPVIpaBundleApplication alloc] initWithIpaURL:url];
+
+        RPVApplicationDetailController *detailController = [[RPVApplicationDetailController alloc] initWithApplication:ipaApplication];
+
+        // Update with current states.
+        [detailController setButtonTitle:@"INSTALL"];
+        detailController.lockWhenInstalling = YES;
+
+        // Add to the rootViewController of the application, as an effective overlay.
+        detailController.view.alpha = 0.0;
+
+        UIViewController *rootController = [UIApplication sharedApplication].keyWindow.rootViewController;
+        [rootController addChildViewController:detailController];
+        [rootController.view addSubview:detailController.view];
+
+        detailController.view.frame = rootController.view.bounds;
+
+        // Animate in!
+        [detailController animateForPresentation];
+    });
+}
+
+- (void)showLoadingAlert {
+    self.loadingAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                              message:@"Loading..."
+                                                       preferredStyle:UIAlertControllerStyleAlert];
+    [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:self.loadingAlertVC animated:YES completion:nil];
+}
+
+- (void)dismissLoadingAlert {
+    if (self.loadingAlertVC) {
+        [self.loadingAlertVC dismissViewControllerAnimated:YES completion:nil];
+        self.loadingAlertVC = nil;
+    }
+}
+
+- (void)changeLoadingAlertText:(NSString *)text dismissAfterDelay:(int)delay {
+    if (self.loadingAlertVC) {
+        self.loadingAlertVC.message = text;
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self dismissLoadingAlert];
+        });
+    }
 }
 
 - (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL succeeded))completionHandler {
@@ -265,6 +340,55 @@
                 [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"Error" body:error.localizedDescription isDebugMessage:NO isUrgentMessage:YES andNotificationID:nil];
                 break;
         }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// NSURLSession delegate methods.
+//////////////////////////////////////////////////////////////////////////////////
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+    // Check file size
+    NSNumber *fileSizeValue = nil;
+    NSError *fileSizeError = nil;
+    [location getResourceValue:&fileSizeValue forKey:NSURLFileSizeKey error:&fileSizeError];
+
+    if (fileSizeError || !fileSizeValue) {
+        [self changeLoadingAlertText:@"Error - The file does not exist." dismissAfterDelay:2];
+        [session invalidateAndCancel];
+        return;
+    }
+
+    // Successfully downloaded the file
+
+    // Move ipa file to /tmp directory
+    NSURL *tmpFolderPath = [NSURL fileURLWithPath:NSTemporaryDirectory()];
+    NSString *originalFileName = downloadTask.originalRequest.URL.lastPathComponent;
+    NSURL *tmpFilePath = [tmpFolderPath URLByAppendingPathComponent:originalFileName];
+    NSError *error;
+    [[NSFileManager defaultManager] copyItemAtURL:location toURL:tmpFilePath error:&error];
+
+    if (error) {
+        NSString *errorMessage = [NSString stringWithFormat:@"Error - %@", error.localizedDescription];
+        [self changeLoadingAlertText:errorMessage dismissAfterDelay:2];
+    } else {
+        // And show application detail view
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self dismissLoadingAlert];
+        });
+        [self _showApplicationDetailControllerFromFileURL:tmpFilePath];
+    }
+
+    [session invalidateAndCancel];
+}
+
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    if (error) {
+        // Could not download the ipa file
+        NSString *errorMessage = [NSString stringWithFormat:@"Error - %@", error.localizedDescription];
+        [self changeLoadingAlertText:errorMessage dismissAfterDelay:2];
+        [session invalidateAndCancel];
     }
 }
 
