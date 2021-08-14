@@ -1,6 +1,6 @@
 Package: jp.soh.reprovision
 Name: ReProvision Reborn
-Version: 0.6.2~release
+Version: 0.7.0~release
 Description: Re-sign applications on your device
 Section: Utilities
 Depends: firmware (>= 9.0)
