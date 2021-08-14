@@ -2,7 +2,7 @@ Package: jp.soh.reprovision
 Name: ReProvision Reborn
 Version: 0.6.2~release
 Description: Re-sign applications on your device
-Section: System
+Section: Utilities
 Depends: firmware (>= 9.0)
 Priority: optional
 Replaces: com.matchstic.Extender-Installer, com.matchstic.reprovision
