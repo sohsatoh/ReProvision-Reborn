@@ -1,3 +1,4 @@
+
 //
 //  RPVTroubleshootingCertificatesViewController.m
 //  iOS
@@ -220,10 +221,11 @@
             // Fill from data source
             NSDictionary *dictionary = [self.dataSource objectAtIndex:indexPath.row][@"attributes"];
 
-            NSString *machineName = [dictionary objectForKey:@"machineName"];
+            NSString *machineName = [dictionary objectForKey:@"machineName"] ? [dictionary objectForKey:@"machineName"] : @"Unknown";
+            NSString *applicationName = @"Unknown";
+
             machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
 
-            NSString *applicationName = @"Unknown";
             if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
                 applicationName = @"ReProvision";
             else if ([(NSString *)[dictionary objectForKey:@"machineName"] isEqualToString:@"AltStore"])
