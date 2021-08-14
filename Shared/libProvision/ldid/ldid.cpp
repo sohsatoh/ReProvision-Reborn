@@ -19,10 +19,6 @@
 **/
 /* }}} */
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wshorten-64-to-32"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -88,7 +84,7 @@
 #endif
 
 #ifndef LDID_NOPLIST
-#include "plist2.h"
+#include "../libplist/plist.h"
 #endif
 
 #include "ldid.hpp"
@@ -808,22 +804,24 @@ class FatHeader :
     }
 };
 
-#define CSMAGIC_REQUIREMENT            uint32_t(0xfade0c00)
-#define CSMAGIC_REQUIREMENTS           uint32_t(0xfade0c01)
-#define CSMAGIC_CODEDIRECTORY          uint32_t(0xfade0c02)
-#define CSMAGIC_EMBEDDED_SIGNATURE     uint32_t(0xfade0cc0)
-#define CSMAGIC_EMBEDDED_SIGNATURE_OLD uint32_t(0xfade0b02)
-#define CSMAGIC_EMBEDDED_ENTITLEMENTS  uint32_t(0xfade7171)
-#define CSMAGIC_DETACHED_SIGNATURE     uint32_t(0xfade0cc1)
-#define CSMAGIC_BLOBWRAPPER            uint32_t(0xfade0b01)
+#define CSMAGIC_REQUIREMENT               uint32_t(0xfade0c00)
+#define CSMAGIC_REQUIREMENTS              uint32_t(0xfade0c01)
+#define CSMAGIC_CODEDIRECTORY             uint32_t(0xfade0c02)
+#define CSMAGIC_EMBEDDED_SIGNATURE        uint32_t(0xfade0cc0)
+#define CSMAGIC_EMBEDDED_SIGNATURE_OLD    uint32_t(0xfade0b02)
+#define CSMAGIC_EMBEDDED_ENTITLEMENTS     uint32_t(0xfade7171)
+#define CSMAGIC_EMBEDDED_RAW_ENTITLEMENTS uint32_t(0xfade7172)
+#define CSMAGIC_DETACHED_SIGNATURE        uint32_t(0xfade0cc1)
+#define CSMAGIC_BLOBWRAPPER               uint32_t(0xfade0b01)
 
-#define CSSLOT_CODEDIRECTORY uint32_t(0x00000)
-#define CSSLOT_INFOSLOT      uint32_t(0x00001)
-#define CSSLOT_REQUIREMENTS  uint32_t(0x00002)
-#define CSSLOT_RESOURCEDIR   uint32_t(0x00003)
-#define CSSLOT_APPLICATION   uint32_t(0x00004)
-#define CSSLOT_ENTITLEMENTS  uint32_t(0x00005)
-#define CSSLOT_ALTERNATE     uint32_t(0x01000)
+#define CSSLOT_CODEDIRECTORY    uint32_t(0x00000)
+#define CSSLOT_INFOSLOT         uint32_t(0x00001)
+#define CSSLOT_REQUIREMENTS     uint32_t(0x00002)
+#define CSSLOT_RESOURCEDIR      uint32_t(0x00003)
+#define CSSLOT_APPLICATION      uint32_t(0x00004)
+#define CSSLOT_ENTITLEMENTS     uint32_t(0x00005)
+#define CSSLOT_RAW_ENTITLEMENTS uint32_t(0x00007)
+#define CSSLOT_ALTERNATE        uint32_t(0x01000)
 
 #define CSSLOT_SIGNATURESLOT uint32_t(0x10000)
 
@@ -832,9 +830,8 @@ class FatHeader :
 #define CS_HASHTYPE_SHA256_160 3
 #define CS_HASHTYPE_SHA386_386 4
 
-#define CS_REQUIREMENT_TYPE_HOST       1
-#define CS_REQUIREMENT_TYPE_GUEST      2
-#define CS_REQUIREMENT_TYPE_DESIGNATED 3
+#define CS_EXECSEG_MAIN_BINARY      0x1
+#define CS_EXECSEG_ALLOW_UNSIGNED   0x10
 
 struct BlobIndex {
     uint32_t type;
@@ -851,6 +848,183 @@ struct SuperBlob {
     uint32_t count;
     struct BlobIndex index[];
 } _packed;
+
+struct EntitlementValue
+{
+    enum struct Type : uint8_t
+    {
+        Boolean = 0x01,
+        String =  0x0c,
+    };
+    
+    Type type;
+    uint8_t length; // Excludes .type and .length
+    std::string value;
+    
+    EntitlementValue(Type type, std::string value) : type(type), length(value.length()), value(value)
+    {
+    }
+    
+    uint8_t totalLength()
+    {
+        return this->length + 2;
+    }
+    
+    std::string data()
+    {
+        std::stringbuf data;
+        
+        put(data, (char *)&this->type, 1);
+        put(data, (char *)&this->length, 1);
+        put(data, this->value.c_str(), this->value.length());
+        
+        return data.str();
+    }
+};
+
+struct EntitlementBlob
+{
+    uint8_t padding = 0x30;
+    uint8_t length; // Excludes .padding and .length
+    
+    EntitlementValue key;
+    std::vector<EntitlementValue> values = {};
+        
+    EntitlementBlob(std::string key, std::string v) : key(EntitlementValue::Type::String, key)
+    {
+        EntitlementValue value(EntitlementValue::Type::String, v);
+        this->values.push_back(value);
+        
+        this->length = this->key.totalLength() + value.totalLength();
+    }
+    
+    EntitlementBlob(std::string key, bool v) : key(EntitlementValue::Type::String, key)
+    {
+        EntitlementValue value(EntitlementValue::Type::Boolean, v ? "\1" : "\0");
+        this->values.push_back(value);
+        
+        this->length = this->key.totalLength() + value.totalLength();
+    }
+    
+    EntitlementBlob(std::string key, std::vector<std::string> values) : key(EntitlementValue::Type::String, key), isArray(true)
+    {
+        int8_t valuesLength = 0;
+        for (auto &value : values)
+        {
+            EntitlementValue entitlementValue(EntitlementValue::Type::String, value);
+            this->values.push_back(entitlementValue);
+            
+            valuesLength += entitlementValue.totalLength();
+        }
+        
+        this->length = this->key.totalLength() + valuesLength + 2; // Arrays require 2 extra bytes.
+    }
+    
+    uint8_t totalLength()
+    {
+        return this->length + 2;
+    }
+    
+    std::string data()
+    {
+        std::stringbuf data;
+        put(data, (char *)&this->padding, 1);
+        put(data, (char *)&this->length, 1);
+        put(data, this->key.data().data(), this->key.totalLength());
+        
+        if (this->isArray)
+        {
+            // Arrays need 2 extra bytes:
+            // - 0x30
+            // - Total length of all values in array (including their 2 byte headers)
+            
+            int8_t padding = 0x30;
+            int8_t length = 0;
+            
+            for (auto &value : this->values)
+            {
+                length += value.totalLength();
+            }
+            
+            put(data, (char *)&padding, 1);
+            put(data, (char *)&length, 1);
+        }
+        
+        for (auto &value : this->values)
+        {
+            put(data, value.data().data(), value.totalLength());
+        }
+        
+        return data.str();
+    }
+    
+private:
+    bool isArray = false;
+};
+
+struct EntitlementsSuperBlob
+{
+    uint32_t magic = CSMAGIC_EMBEDDED_RAW_ENTITLEMENTS;
+    uint32_t length; // Total length, _including_ .magic and .length
+    
+    uint8_t byte1 = 0x31;
+    uint8_t byte2;
+    
+    uint16_t blobsLength;
+    std::vector<EntitlementBlob> blobs;
+    
+    EntitlementsSuperBlob(std::vector<EntitlementBlob> blobs) : blobs(blobs)
+    {
+        uint32_t blobsLength = 0;
+        for (auto &blob : blobs)
+        {
+            blobsLength += blob.totalLength();
+        }
+        
+        this->blobsLength = blobsLength;
+        
+        if (this->blobsLength > UCHAR_MAX)
+        {
+            this->length = blobsLength + 10 + 2; // blobsLength is > 255, so we need 2 bytes to encode it.
+            this->byte2 = 0x82;
+        }
+        else
+        {
+            this->length = blobsLength + 10 + 1; // blobsLength is <= 255, so we only need 1 byte to encode it.
+            this->byte2 = 0x81;
+        }
+    }
+    
+    std::string data()
+    {
+        std::stringbuf data;
+        
+        uint32_t swappedMagic = Swap(this->magic);
+        uint32_t swappedLength = Swap(this->length);
+        
+        put(data, (char *)&swappedMagic, 4);
+        put(data, (char *)&swappedLength, 4);
+        put(data, (char *)&this->byte1, 1);
+        put(data, (char *)&this->byte2, 1);
+        
+        if (this->blobsLength > UCHAR_MAX)
+        {
+            uint32_t swappedBlobsLength = Swap(this->blobsLength);
+            put(data, (char *)&swappedBlobsLength, 2);
+        }
+        else
+        {
+            put(data, (char *)&this->blobsLength, 1);
+        }
+                
+        for (auto &blob : this->blobs)
+        {
+            put(data, blob.data().data(), blob.totalLength());
+        }
+        
+        return data.str();
+    }
+};
 
 struct CodeDirectory {
     uint32_t version;
@@ -869,6 +1043,9 @@ struct CodeDirectory {
     uint32_t teamIDOffset;
     uint32_t spare3;
     uint64_t codeLimit64;
+    uint64_t execSegBase;
+    uint64_t execSegLimit;
+    uint64_t execSegFlags;
 } _packed;
 
 #ifndef LDID_NOFLAGT
@@ -1107,7 +1284,7 @@ std::string Analyze(const void *data, size_t size) {
     return entitlements;
 }
 
-static void Allocate(const void *idata, size_t isize, std::streambuf &output, const Functor<size_t (const MachHeader &, size_t)> &allocate, const Functor<size_t (const MachHeader &, std::streambuf &output, size_t, const std::string &, const char *, const Functor<void (double)> &)> &save, const Functor<void (double)> &percent) {
+static void Allocate(const void *idata, size_t isize, std::streambuf &output, const Functor<size_t (const MachHeader &, size_t)> &allocate, const Functor<size_t (const MachHeader &, std::streambuf &output, size_t, size_t, const std::string &, const char *, const Functor<void (double)> &)> &save, const Functor<void (double)> &percent) {
     FatHeader source(const_cast<void *>(idata), isize);
 
     size_t offset(0);
@@ -1207,6 +1384,7 @@ static void Allocate(const void *idata, size_t isize, std::streambuf &output, co
         position = allocation.offset_;
 
         std::vector<std::string> commands;
+        size_t execSegLimit = 0;
 
         _foreach (load_command, mach_header.GetLoadCommands()) {
             std::string copy(reinterpret_cast<const char *>(load_command), load_command->cmdsize);
@@ -1218,8 +1396,12 @@ static void Allocate(const void *idata, size_t isize, std::streambuf &output, co
 
                 case LC_SEGMENT: {
                     auto segment_command(reinterpret_cast<struct segment_command *>(&copy[0]));
-                    if (strncmp(segment_command->segname, "__LINKEDIT", 16) != 0)
+                    if (strncmp(segment_command->segname, "__TEXT", 7) == 0) {
+                        execSegLimit = segment_command->vmsize;
                         break;
+                    } else if (strncmp(segment_command->segname, "__LINKEDIT", 16) != 0) {
+                        break;
+                    }
                     size_t size(mach_header.Swap(allocation.limit_ + allocation.alloc_ - mach_header.Swap(segment_command->fileoff)));
                     segment_command->filesize = size;
                     segment_command->vmsize = Align(size, 1 << allocation.align_);
@@ -1227,8 +1409,12 @@ static void Allocate(const void *idata, size_t isize, std::streambuf &output, co
 
                 case LC_SEGMENT_64: {
                     auto segment_command(reinterpret_cast<struct segment_command_64 *>(&copy[0]));
-                    if (strncmp(segment_command->segname, "__LINKEDIT", 16) != 0)
+                    if (strncmp(segment_command->segname, "__TEXT", 7) == 0) {
+                        execSegLimit = segment_command->vmsize;
                         break;
+                    } else if (strncmp(segment_command->segname, "__LINKEDIT", 16) != 0) {
+                        break;
+                    }
                     size_t size(mach_header.Swap(allocation.limit_ + allocation.alloc_ - mach_header.Swap(segment_command->fileoff)));
                     segment_command->filesize = size;
                     segment_command->vmsize = Align(size, 1 << allocation.align_);
@@ -1293,7 +1479,7 @@ static void Allocate(const void *idata, size_t isize, std::streambuf &output, co
         pad(output, allocation.limit_ - allocation.size_);
         position += allocation.limit_ - allocation.size_;
 
-        size_t saved(save(mach_header, output, allocation.limit_, overlap, top, percent));
+        size_t saved(save(mach_header, output, allocation.limit_, execSegLimit, overlap, top, percent));
         if (allocation.alloc_ > saved)
             pad(output, allocation.alloc_ - saved);
         else
@@ -1455,24 +1641,13 @@ class Signature {
         
         CMS_ContentInfo *stream = CMS_sign(NULL, NULL, stuff, NULL, flags);
         
-        // Setup SHA1 and SHA256 signing digests.
-        // By default, SHA1 is used by CMS_sign. In iOS 12, CoreTrust requires both
-        // the SHA1 and SHA256 digest.
+        // iOS 12 requires both SHA1 and SHA256 signing digests.
         CMS_add1_signer(stream, stuff, stuff, EVP_sha256(), flags);
         CMS_add1_signer(stream, stuff, stuff, EVP_sha1(), flags);
-        
-        // Cert chain is added in CMS_sign(). If this ever changes, just use the below.
-        /*for (int i = 0; i < sk_X509_num(stuff); i++)
-        {
-            X509 *x = sk_X509_value(stuff, i);
-            if (!CMS_add1_cert(stream, x))
-                printf("ERROR ADDING CERT OF CHAIN\n");
-        }*/
         
         CMS_final(stream, data, NULL, flags);
         
         value_ = stream;
-        
         _assert(value_ != NULL);
     }
 
@@ -1672,6 +1847,12 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
             alloc += sizeof(struct Blob);
             alloc += entitlements.size();
         }
+        
+        if (!entitlements.empty())
+        {
+            // TODO: Calculate exact amount necessary to embed raw entitlements.
+            alloc += entitlements.length(); // Overestimate
+        }
 
         size_t directory(0);
 
@@ -1693,8 +1874,9 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
         }
 
         return alloc;
-    }), fun([&](const MachHeader &mach_header, std::streambuf &output, size_t limit, const std::string &overlap, const char *top, const Functor<void (double)> &percent) -> size_t {
+    }), fun([&](const MachHeader &mach_header, std::streambuf &output, size_t limit, size_t execSegLimit, const std::string &overlap, const char *top, const Functor<void (double)> &percent) -> size_t {
         Blobs blobs;
+        uint64_t execSegFlags = 0;
 
         if (true) {
             std::stringbuf data;
@@ -1703,12 +1885,7 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
                 Blobs requirements;
                 put(data, CSMAGIC_REQUIREMENTS, requirements);
             } else {
-                std::stringbuf _data;
-                put(_data, requirement.data(), requirement.size());
-                
-                Blobs requirements;
-                insert(requirements, CS_REQUIREMENT_TYPE_DESIGNATED, _data);
-                put(data, CSMAGIC_REQUIREMENTS, requirements);
+                put(data, requirement.data(), requirement.size());
             }
 
             insert(blobs, CSSLOT_REQUIREMENTS, data);
@@ -1718,6 +1895,98 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
             std::stringbuf data;
             put(data, entitlements.data(), entitlements.size());
             insert(blobs, CSSLOT_ENTITLEMENTS, CSMAGIC_EMBEDDED_ENTITLEMENTS, data);
+            if (entitlements.find("<key>get-task-allow</key>") != std::string::npos) {
+                // TODO: parse entitlements, avoid cases where `get-task-allow` is false or appears elsewhere
+                execSegFlags = CS_EXECSEG_MAIN_BINARY | CS_EXECSEG_ALLOW_UNSIGNED;
+            }
+        }
+        
+        if (!entitlements.empty())
+        {
+            std::vector<EntitlementBlob> entitlementBlobs;
+            
+            plist_t plist = NULL;
+            plist_from_xml(entitlements.data(), (uint32_t)entitlements.length(), &plist);
+            
+            plist_dict_iter it = NULL;
+            plist_dict_new_iter(plist, &it);
+            
+            char *key = NULL;
+            plist_t node = NULL;
+            plist_dict_next_item(plist, it, &key, &node);
+            
+            while (node)
+            {
+                plist_type type = plist_get_node_type(node);
+                switch (type)
+                {
+                    case PLIST_STRING:
+                    {
+                        char *value = NULL;
+                        plist_get_string_val(node, &value);
+                        
+                        EntitlementBlob blob(key, std::string(value)); // Explicitly cast value to std::string or else it will (annoyingly) call bool constructor.
+                        entitlementBlobs.push_back(blob);
+                        
+                        free(value);
+                        
+                        break;
+                    }
+                        
+                    case PLIST_BOOLEAN:
+                    {
+                        uint8_t value = 0;
+                        plist_get_bool_val(node, &value);
+                        
+                        EntitlementBlob blob(key, value != 0);
+                        entitlementBlobs.push_back(blob);
+                        break;
+                    }
+                        
+                    case PLIST_ARRAY:
+                    {
+                        std::vector<std::string> values;
+                        
+                        int size = plist_array_get_size(node);
+                        for (int i = 0; i < size; i++)
+                        {
+                            plist_t subnode = plist_array_get_item(node, i);
+                            
+                            char *value = NULL;
+                            plist_get_string_val(subnode, &value);
+                            
+                            values.push_back(value);
+                            
+                            free(value);
+                        }
+                        
+                        EntitlementBlob blob(key, values);
+                        entitlementBlobs.push_back(blob);
+                        break;
+                    }
+                        
+                    default:
+                    {
+                        printf("[ldid] Unsupported entitlement type: %d\n", type);
+                        break;
+                    }
+                }
+                
+                free(key);
+                key = NULL;
+                
+                plist_dict_next_item(plist, it, &key, &node);
+            }
+            
+            free(it);
+            plist_free(plist);
+
+            std::stringbuf data;
+
+            EntitlementsSuperBlob superBlob(entitlementBlobs);
+            put(data, superBlob.data().data(), superBlob.length);
+
+            insert(blobs, CSSLOT_RAW_ENTITLEMENTS, data);
         }
 
         Slots posts(slots);
@@ -1744,7 +2013,7 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
             uint32_t normal((limit + PageSize_ - 1) / PageSize_);
 
             CodeDirectory directory;
-            directory.version = Swap(uint32_t(0x00020200));
+            directory.version = Swap(uint32_t(0x00020400));
             directory.flags = Swap(uint32_t(0));
             directory.nSpecialSlots = Swap(special);
             directory.codeLimit = Swap(uint32_t(limit));
@@ -1757,6 +2026,9 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
             directory.scatterOffset = Swap(uint32_t(0));
             directory.spare3 = Swap(uint32_t(0));
             directory.codeLimit64 = Swap(uint64_t(0));
+            directory.execSegBase = Swap(uint64_t(0));
+            directory.execSegLimit = Swap(uint64_t(execSegLimit));
+            directory.execSegFlags = Swap(execSegFlags);
 
             uint32_t offset(sizeof(Blob) + sizeof(CodeDirectory));
 
@@ -1839,7 +2111,7 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
 static void Unsign(void *idata, size_t isize, std::streambuf &output, const Functor<void (double)> &percent) {
     Allocate(idata, isize, output, fun([](const MachHeader &mach_header, size_t size) -> size_t {
         return 0;
-    }), fun([](const MachHeader &mach_header, std::streambuf &output, size_t limit, const std::string &overlap, const char *top, const Functor<void (double)> &percent) -> size_t {
+    }), fun([](const MachHeader &mach_header, std::streambuf &output, size_t limit, size_t execSegLimit, const std::string &overlap, const char *top, const Functor<void (double)> &percent) -> size_t {
         return 0;
     }), percent);
 }
@@ -2012,19 +2284,20 @@ void UnionFolder::Open(const std::string &path, const Functor<void (std::streamb
         return parent_.Open(Map(path), code);
     auto &entry(file->second);
 
-    auto &data(entry.first);
+    auto &data(*entry.data_);
     auto length(data.pubseekoff(0, std::ios::end, std::ios::in));
     data.pubseekpos(0, std::ios::in);
-    code(data, length, entry.second);
+    code(data, length, entry.flag_);
 }
 
 void UnionFolder::Find(const std::string &path, const Functor<void (const std::string &)> &code, const Functor<void (const std::string &, const Functor<std::string ()> &)> &link) const {
     for (auto &reset : resets_)
         Map(path, code, reset.first, fun([&](const Functor<void (std::streambuf &, size_t, const void *)> &code) {
             auto &entry(reset.second);
-            auto length(entry.first.pubseekoff(0, std::ios::end, std::ios::in));
-            entry.first.pubseekpos(0, std::ios::in);
-            code(entry.first, length, entry.second);
+            auto &data(*entry.data_);
+            auto length(data.pubseekoff(0, std::ios::end, std::ios::in));
+            data.pubseekpos(0, std::ios::in);
+            code(data, length, entry.flag_);
         }));
 
     for (auto &remap : remaps_)
@@ -2316,9 +2589,7 @@ Bundle Sign(const std::string &root, Folder &folder, const std::string &key, std
 
             auto size(most(data, &header.bytes, sizeof(header.bytes)));
 
-            if (name != "_WatchKitStub/WK"
-                && size == sizeof(header.bytes)
-                && !Starts(name, "Watch"))
+            if (name != "_WatchKitStub/WK" && size == sizeof(header.bytes))
                 switch (Swap(header.magic)) {
                     case FAT_MAGIC:
                         // Java class file format
@@ -2811,5 +3082,3 @@ int main(int argc, char *argv[]) {
     return filee;
 }
 #endif*/
-
-#pragma clang diagnostic pop
