@@ -39,6 +39,7 @@
 
 @interface LSApplicationProxy : NSObject
 @property (nonatomic, readonly) NSString *applicationIdentifier;
+@property (getter=isInstalled, nonatomic, readonly) BOOL installed;
 + (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
 @end
 
@@ -257,6 +258,18 @@
 #else
     self.appIdsLabel = [[RPVAppIdsLabel alloc] init];
     [self.rootScrollView addSubview:self.appIdsLabel];
+#endif
+
+    // Add long press gesture recognizer to table view(s)
+#if TARGET_OS_TV
+#else
+    UILongPressGestureRecognizer *longPressGestureRecognizerForRecent = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressOnTableView:)];
+    longPressGestureRecognizerForRecent.minimumPressDuration = 0.75;
+    [self.recentTableView addGestureRecognizer:longPressGestureRecognizerForRecent];
+
+    UILongPressGestureRecognizer *longPressGestureRecognizerForOther = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressOnTableView:)];
+    longPressGestureRecognizerForOther.minimumPressDuration = 0.75;
+    [self.otherApplicationsTableView addGestureRecognizer:longPressGestureRecognizerForOther];
 #endif
 }
 
@@ -555,7 +568,8 @@
 
     RPVApplication *application;
     NSString *fallbackString = @"";
-    if (self.expiringSoonDataSource.count > 0) application = [self.expiringSoonDataSource objectAtIndex:indexPath.row];
+    if (self.expiringSoonDataSource.count > 0)
+        application = [self.expiringSoonDataSource objectAtIndex:indexPath.row];
     else
         fallbackString = @"No applications are expiring soon";
 
@@ -606,7 +620,8 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if ([tableView isEqual:self.recentTableView]) return self.recentlySignedDataSource.count > 0 ? self.recentlySignedDataSource.count : 1;
+    if ([tableView isEqual:self.recentTableView])
+        return self.recentlySignedDataSource.count > 0 ? self.recentlySignedDataSource.count : 1;
     else
         return self.otherApplicationsDataSource.count > 0 ? self.otherApplicationsDataSource.count : 1;
 }
@@ -621,11 +636,13 @@
     RPVApplication *application;
     NSString *fallbackString = @"";
     if ([tableView isEqual:self.recentTableView]) {
-        if (self.recentlySignedDataSource.count > 0) application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
+        if (self.recentlySignedDataSource.count > 0)
+            application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
         else
             fallbackString = @"No applications are recently signed";
     } else {
-        if (self.otherApplicationsDataSource.count > 0) application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
+        if (self.otherApplicationsDataSource.count > 0)
+            application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
         else
             fallbackString = @"No other sideloaded applications";
     }
@@ -691,6 +708,50 @@
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
     return UITableViewCellEditingStyleNone;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Table View gesture methods.
+//////////////////////////////////////////////////////////////////////////////////
+
+- (void)handleLongPressOnTableView:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        // Table = sender.view
+        UITableView *tableView = (UITableView *)sender.view;
+        CGPoint touchPoint = [sender locationInView:tableView];
+        NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:touchPoint];
+        if (indexPath != nil) {
+            RPVInstalledTableViewCell *selectedCell = (RPVInstalledTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+            NSString *bundleIdentifierForSelectedApplication = [selectedCell bundleIdentifier];
+            RPVApplication *selectedApplication = [self _applicationForBundleIdentifier:bundleIdentifierForSelectedApplication];
+            if (selectedApplication != nil) {
+                NSString *title = [NSString stringWithFormat:@"Selected: %@", selectedApplication.applicationName];
+                NSString *message = [NSString stringWithFormat:@"(%@)", bundleIdentifierForSelectedApplication];
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                                     BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForSelectedApplication];
+                                     if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApplication] isInstalled]) {
+                                         BOOL isRecent = [tableView isEqual:self.recentTableView];
+                                         NSMutableArray *dataSourceForSelectedCell = isRecent ? self.recentlySignedDataSource : self.otherApplicationsDataSource;
+                                         UITableView *collectionViewForSelectedCell = isRecent ? self.recentTableView : self.expiringCollectionView;
+                                         [dataSourceForSelectedCell removeObject:selectedApplication];
+                                         [collectionViewForSelectedCell reloadData];
+                                         [self.view setNeedsLayout];
+                                     } else {
+                                         // Error
+                                         [selectedCell flashNotificationFailure];
+                                     }
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                               //ボタンがタップされた際の処理
+                                           }]];
+
+                [self presentViewController:alertController animated:YES completion:nil];
+            }
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
