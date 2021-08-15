@@ -835,12 +835,12 @@ free_all:
                 }
             }
 
-            // Remove get-task-allow, to avoid breaking e.g. H3lix.
-            // This works since the provisioning profile contains all entitlements+values we're allowed.
-            // We are allowed a subset of this profile's listing, not necessarily all of them!
-            if ([[entitlements allKeys] containsObject:@"get-task-allow"]) {
-                [entitlements removeObjectForKey:@"get-task-allow"];
-            }
+            // // Remove get-task-allow, to avoid breaking e.g. H3lix.
+            // // This works since the provisioning profile contains all entitlements+values we're allowed.
+            // // We are allowed a subset of this profile's listing, not necessarily all of them!
+            // if ([[entitlements allKeys] containsObject:@"get-task-allow"]) {
+            //     [entitlements removeObjectForKey:@"get-task-allow"];
+            // }
 
             // APG3427HIY -> App Groups. This can be used without a paid account.
             BOOL wantsApplicationGroups = NO;
