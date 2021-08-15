@@ -10,6 +10,7 @@
 #import "RPVApplication.h"
 #import "RPVApplicationSigning.h"
 #import "RPVCalendarController.h"
+#import "RPVEntitlementsViewController.h"
 #import "RPVIpaBundleApplication.h"
 #import "RPVResources.h"
 
@@ -17,6 +18,28 @@
 #import <MarqueeLabel.h>
 
 #define IS_IPAD UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad
+
+@interface LSResourceProxy : NSObject
+@property (nonatomic, readonly) NSString *localizedName;
+@end
+
+@interface LSBundleProxy : LSResourceProxy
+@property (nonatomic, readonly) NSString *bundleIdentifier;  //@synthesize bundleIdentifier=_bundleIdentifier - In the implementation block
+@property (nonatomic, readonly) NSString *bundleType;
+@property (nonatomic, readonly) NSURL *bundleURL;            //@synthesize bundleURL=_bundleURL - In the implementation block
+@property (nonatomic, readonly) NSString *bundleExecutable;  //@synthesize bundleExecutable=_bundleExecutable - In the implementation block
+@property (nonatomic, readonly) NSString *canonicalExecutablePath;
+@property (nonatomic, readonly) NSURL *containerURL;
+@property (nonatomic, readonly) NSURL *dataContainerURL;
+@property (nonatomic, readonly) NSURL *bundleContainerURL;  //@synthesize bundleContainerURL=_bundleContainerURL - In the implementation block
+@property (nonatomic, readonly) NSURL *appStoreReceiptURL;
+@end
+
+@interface LSApplicationProxy : LSBundleProxy
+@property (nonatomic, readonly) NSString *applicationIdentifier;
+@property (getter=isInstalled, nonatomic, readonly) BOOL installed;
++ (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
+@end
 
 @interface RPVApplicationDetailController ()
 
@@ -144,9 +167,18 @@
     // Installed size
     [self _addApplicationInstalledSizeComponent];
 
-    // Calendar
-    if ([self.application.class isEqual:[RPVApplication class]])
+    // Calendar & Gesture recognizers
+    if ([self.application.class isEqual:[RPVApplication class]]) {
         [self _addCalendarComponent];
+
+        UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handleLongPressForInstalledApps:)];
+        longPressGestureRecognizer.minimumPressDuration = 1.0;
+        [self.view addGestureRecognizer:longPressGestureRecognizer];
+    } else {
+        UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handleLongPressForIPA:)];
+        longPressGestureRecognizer.minimumPressDuration = 1.0;
+        [self.view addGestureRecognizer:longPressGestureRecognizer];
+    }
 
     // Progress bar etc
     [self _addProgressComponents];
@@ -469,6 +501,148 @@
         [self _initiateSigningForCurrentApplication];
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// UILongPressGestureRecognizer callbacks
+////////////////////////////////////////////////////////////////////////////////
+
+- (void)_handleLongPressForInstalledApps:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        NSString *bundleIdentifierForApp = [self.application bundleIdentifier];
+        LSApplicationProxy *selectedApp = [LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp];
+        NSString *bundleLocation = [selectedApp bundleURL].path;
+        NSString *dataLocation = [selectedApp containerURL].path;
+
+        if (selectedApp != nil && self.percentCompleteLabel.hidden) {
+            NSString *title = selectedApp.localizedName;
+            NSString *message = [NSString stringWithFormat:@"Bundle ID: %@\nBundle: %@\n Data: %@", bundleIdentifierForApp, bundleLocation, dataLocation];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = bundleIdentifierForApp;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = bundleLocation;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Data Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = dataLocation;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 RPVEntitlementsViewController *entitlementsViewController = [[RPVEntitlementsViewController alloc] init];
+                                 UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+                                 entitlementsViewController.onDismiss = ^{
+                                     [UIView animateWithDuration:0.25 animations:^{
+                                         alertWindow.alpha = 0.0;
+                                     } completion:^(BOOL finished) {
+                                         if (finished) {
+                                             [alertWindow setHidden:YES];
+                                         }
+                                     }];
+                                 };
+
+                                 alertWindow.rootViewController = entitlementsViewController;
+                                 alertWindow.windowLevel = UIWindowLevelStatusBar;
+                                 alertWindow.alpha = 0;
+                                 [alertWindow setTintColor:[UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0]];
+
+                                 entitlementsViewController.titleLabel.text = @"Entitlements";
+
+                                 NSDictionary *infoplist = [NSDictionary dictionaryWithContentsOfFile:[NSString stringWithFormat:@"%@/Info.plist", bundleLocation]];
+                                 if (!infoplist || [infoplist allKeys].count == 0) return;
+                                 NSString *binaryLocation = [bundleLocation stringByAppendingFormat:@"/%@", [infoplist objectForKey:@"CFBundleExecutable"]];
+                                 [entitlementsViewController updateEntitlementsViewForBinaryAtLocation:binaryLocation];
+
+                                 [alertWindow makeKeyAndVisible];
+
+                                 [UIView animateWithDuration:0.25 animations:^{
+                                     alertWindow.alpha = 1.0;
+                                 } completion:^(BOOL finished){
+                                 }];
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                                 BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForApp];
+                                 if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp] isInstalled]) {
+                                     // Update View
+                                 } else {
+                                     // Error
+                                 }
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                       }]];
+
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
+    }
+}
+
+- (void)_handleLongPressForIPA:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        if (self.percentCompleteLabel.hidden) {
+            NSString *bundleIdentifierForApp = [self.application bundleIdentifier];
+            NSString *applicationName = self.application.applicationName;
+            NSString *title = applicationName;
+            NSString *message = [NSString stringWithFormat:@"Bundle ID: %@", bundleIdentifierForApp];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = bundleIdentifierForApp;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 RPVEntitlementsViewController *entitlementsViewController = [[RPVEntitlementsViewController alloc] init];
+                                 UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+                                 entitlementsViewController.onDismiss = ^{
+                                     [UIView animateWithDuration:0.25 animations:^{
+                                         alertWindow.alpha = 0.0;
+                                     } completion:^(BOOL finished) {
+                                         if (finished) {
+                                             [alertWindow setHidden:YES];
+                                         }
+                                     }];
+                                 };
+
+                                 alertWindow.rootViewController = entitlementsViewController;
+                                 alertWindow.windowLevel = UIWindowLevelStatusBar;
+                                 alertWindow.alpha = 0;
+                                 [alertWindow setTintColor:[UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0]];
+
+                                 entitlementsViewController.titleLabel.text = @"Entitlements";
+
+                                 NSData *binaryData = [(RPVIpaBundleApplication *)self.application _loadFileWithFormat:[NSString stringWithFormat:@"Payload/*/%@", applicationName] fromIPA:[(RPVIpaBundleApplication *)[self application] cachedURL] multipleCandiateChooser:^NSString *(NSArray *candidates) {
+                                     return [candidates firstObject];
+                                 }];
+                                 NSString *binaryLocation = [NSString stringWithFormat:@"/tmp/%@", applicationName];
+                                 [binaryData writeToURL:[NSURL fileURLWithPath:binaryLocation] atomically:YES];
+
+                                 [entitlementsViewController updateEntitlementsViewForBinaryAtLocation:binaryLocation];
+
+                                 [alertWindow makeKeyAndVisible];
+
+                                 [UIView animateWithDuration:0.25 animations:^{
+                                     alertWindow.alpha = 1.0;
+                                 } completion:^(BOOL finished){
+                                 }];
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                       }]];
+
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // UITapGesture callbacks

@@ -10,7 +10,7 @@
 #import "SSZipArchive.h"
 
 @interface RPVIpaBundleApplication : RPVApplication <SSZipArchiveDelegate>
-
+@property (nonatomic, strong) NSURL *cachedURL;
 - (instancetype)initWithIpaURL:(NSURL*)url;
-
+- (NSData *)_loadFileWithFormat:(NSString *)fileFormat fromIPA:(NSURL *)url multipleCandiateChooser:(NSString * (^)(NSArray *candidates))candidateChooser;
 @end

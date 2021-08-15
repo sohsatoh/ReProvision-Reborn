@@ -10,6 +10,8 @@
 #import "RPVInstalledMainHeaderView.h"
 #import "RPVResources.h"
 
+#import "RPVEntitlementsViewController.h"
+
 #import "RPVApplication.h"
 #import "RPVApplicationDatabase.h"
 #import "RPVErrors.h"
@@ -37,7 +39,23 @@
 
 #define TABLE_VIEWS_INSET 20
 
-@interface LSApplicationProxy : NSObject
+@interface LSResourceProxy : NSObject
+@property (nonatomic, readonly) NSString *localizedName;
+@end
+
+@interface LSBundleProxy : LSResourceProxy
+@property (nonatomic, readonly) NSString *bundleIdentifier;  //@synthesize bundleIdentifier=_bundleIdentifier - In the implementation block
+@property (nonatomic, readonly) NSString *bundleType;
+@property (nonatomic, readonly) NSURL *bundleURL;            //@synthesize bundleURL=_bundleURL - In the implementation block
+@property (nonatomic, readonly) NSString *bundleExecutable;  //@synthesize bundleExecutable=_bundleExecutable - In the implementation block
+@property (nonatomic, readonly) NSString *canonicalExecutablePath;
+@property (nonatomic, readonly) NSURL *containerURL;
+@property (nonatomic, readonly) NSURL *dataContainerURL;
+@property (nonatomic, readonly) NSURL *bundleContainerURL;  //@synthesize bundleContainerURL=_bundleContainerURL - In the implementation block
+@property (nonatomic, readonly) NSURL *appStoreReceiptURL;
+@end
+
+@interface LSApplicationProxy : LSBundleProxy
 @property (nonatomic, readonly) NSString *applicationIdentifier;
 @property (getter=isInstalled, nonatomic, readonly) BOOL installed;
 + (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
@@ -722,30 +740,81 @@
         NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:touchPoint];
         if (indexPath != nil) {
             RPVInstalledTableViewCell *selectedCell = (RPVInstalledTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
-            NSString *bundleIdentifierForSelectedApplication = [selectedCell bundleIdentifier];
-            RPVApplication *selectedApplication = [self _applicationForBundleIdentifier:bundleIdentifierForSelectedApplication];
-            if (selectedApplication != nil) {
-                NSString *title = [NSString stringWithFormat:@"Selected: %@", selectedApplication.applicationName];
-                NSString *message = [NSString stringWithFormat:@"(%@)", bundleIdentifierForSelectedApplication];
+            NSString *bundleIdentifierForSelectedApp = [selectedCell bundleIdentifier];
+
+            LSApplicationProxy *selectedApp = [LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApp];
+            NSString *bundleLocation = [selectedApp bundleURL].path;
+            NSString *dataLocation = [selectedApp containerURL].path;
+
+            if (selectedApp != nil) {
+                NSString *title = selectedApp.localizedName;
+                NSString *message = [NSString stringWithFormat:@"Bundle ID: %@\nBundle: %@\n Data: %@", bundleIdentifierForSelectedApp, bundleLocation, dataLocation];
                 UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
 
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                     pasteboard.string = bundleIdentifierForSelectedApp;
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                     pasteboard.string = bundleLocation;
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Data Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                     pasteboard.string = dataLocation;
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     RPVEntitlementsViewController *entitlementsViewController = [[RPVEntitlementsViewController alloc] init];
+                                     UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+                                     entitlementsViewController.onDismiss = ^{
+                                         [UIView animateWithDuration:0.25 animations:^{
+                                             alertWindow.alpha = 0.0;
+                                         } completion:^(BOOL finished) {
+                                             if (finished) {
+                                                 [alertWindow setHidden:YES];
+                                             }
+                                         }];
+                                     };
+
+                                     alertWindow.rootViewController = entitlementsViewController;
+                                     alertWindow.windowLevel = UIWindowLevelStatusBar;
+                                     alertWindow.alpha = 0;
+                                     [alertWindow setTintColor:[UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0]];
+
+                                     entitlementsViewController.titleLabel.text = @"Entitlements";
+
+                                     NSDictionary *infoplist = [NSDictionary dictionaryWithContentsOfFile:[NSString stringWithFormat:@"%@/Info.plist", bundleLocation]];
+                                     if (!infoplist || [infoplist allKeys].count == 0) return;
+                                     NSString *binaryLocation = [bundleLocation stringByAppendingFormat:@"/%@", [infoplist objectForKey:@"CFBundleExecutable"]];
+                                     [entitlementsViewController updateEntitlementsViewForBinaryAtLocation:binaryLocation];
+
+                                     [alertWindow makeKeyAndVisible];
+
+                                     [UIView animateWithDuration:0.25 animations:^{
+                                         alertWindow.alpha = 1.0;
+                                     } completion:^(BOOL finished){
+                                     }];
+                                 }]];
+
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
-                                     BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForSelectedApplication];
-                                     if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApplication] isInstalled]) {
+                                     BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForSelectedApp];
+                                     if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApp] isInstalled]) {
                                          BOOL isRecent = [tableView isEqual:self.recentTableView];
                                          NSMutableArray *dataSourceForSelectedCell = isRecent ? self.recentlySignedDataSource : self.otherApplicationsDataSource;
                                          UITableView *collectionViewForSelectedCell = isRecent ? self.recentTableView : self.expiringCollectionView;
-                                         [dataSourceForSelectedCell removeObject:selectedApplication];
+                                         [dataSourceForSelectedCell removeObject:[self _applicationForBundleIdentifier:bundleIdentifierForSelectedApp]];
                                          [collectionViewForSelectedCell reloadData];
                                          [self.view setNeedsLayout];
                                      } else {
-                                         // Error
                                          [selectedCell flashNotificationFailure];
                                      }
                                  }]];
 
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
-                                               //ボタンがタップされた際の処理
                                            }]];
 
                 [self presentViewController:alertController animated:YES completion:nil];
