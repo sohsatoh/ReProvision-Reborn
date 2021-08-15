@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "RPVFullscreenAlertController.h"
+#import "RPVAppIDViewController.h"
 
 @interface RPVAppIdsLabel : UILabel
 @property (nonatomic, getter=isUpdating) BOOL updating;
 @property (nonatomic, strong) UIWindow *alertWindow;
-@property (nonatomic, strong) RPVFullscreenAlertController *alertController;
+@property (nonatomic, strong) RPVAppIDViewController *alertController;
 - (void)updateText;
 @end

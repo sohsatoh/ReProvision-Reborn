@@ -284,6 +284,7 @@
 		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
 		CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */ = {isa = PBXBuildFile; fileRef = CF42CC912609F1B200D36129 /* apple-ios-g3.pem */; };
 		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
+		CFE0CBFB26C984DE0033B63E /* RPVAppIDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */; };
 		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
 		DAE0BDC9DC0389DB581AA13D /* libPods-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */; };
 		FDC46406FBD5ED313E3C450E /* libPods-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56C208AF9B386EA848EA9D18 /* libPods-macOS.a */; };
@@ -634,6 +635,8 @@
 		CF42CC912609F1B200D36129 /* apple-ios-g3.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "apple-ios-g3.pem"; sourceTree = "<group>"; };
 		CF7C2CE925F7A68500083AB2 /* RPVAppID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppID.m; sourceTree = "<group>"; };
 		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
+		CFE0CBF926C984BC0033B63E /* RPVAppIDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIDViewController.h; sourceTree = "<group>"; };
+		CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIDViewController.m; sourceTree = "<group>"; };
 		CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsLabel.m; sourceTree = "<group>"; };
 		CFFBA88925F5751400C93D9F /* RPVAppIdsLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsLabel.h; sourceTree = "<group>"; };
 		DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1031,6 +1034,8 @@
 				C99C883423D0C36500CC48BB /* RPVFullscreenAlertController.h */,
 				CF7C2CE825F7A65A00083AB2 /* App ID */,
 				C99C883523D0C36500CC48BB /* RPVFullscreenAlertController.m */,
+				CFE0CBF926C984BC0033B63E /* RPVAppIDViewController.h */,
+				CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */,
 			);
 			path = "Fullscreen Alert";
 			sourceTree = "<group>";
@@ -2034,6 +2039,7 @@
 				C9C6EB2B2004280A00211FDD /* ioapi_mem.c in Sources */,
 				C93F3B6C20F21C9000B573E6 /* HookUtil.c in Sources */,
 				C9C6EB242004280A00211FDD /* hmac.c in Sources */,
+				CFE0CBFB26C984DE0033B63E /* RPVAppIDViewController.m in Sources */,
 				C9C6EB2D2004280A00211FDD /* unzip.c in Sources */,
 				C9E7C2AC20ECFC1A00FDF3B0 /* RPVTroubleshootingNavigationViewController.m in Sources */,
 				C96B0CD52005704F00F713AF /* RPVApplication.m in Sources */,
