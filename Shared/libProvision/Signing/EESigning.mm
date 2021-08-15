@@ -46,7 +46,7 @@ static auto dummy([](double) {});
     return self;
 }
 
-+ (NSDictionary *)updateEntitlementsForBinaryAtLocation:(NSString *)binaryLocation bundleIdentifier:(NSString *)bundleIdentifier teamID:(NSString *)teamid {
++ (NSMutableDictionary *)getEntitlementsForBinaryAtLocation:(NSString *)binaryLocation {
     NSMutableDictionary *plist = [NSMutableDictionary dictionary];
 
     NSLog(@"Loading entitlements for: '%@'", binaryLocation);
@@ -54,7 +54,7 @@ static auto dummy([](double) {});
     // Make sure to pass in the entitlements already present, updating as needed.
     NSData *binaryData = [NSData dataWithContentsOfFile:binaryLocation];
     if (!binaryData || binaryData.length == 0) {
-        return [NSDictionary dictionary];
+        return nil;
     }
 
     // If entitlements are present, we MUST update the following keys first:
@@ -71,6 +71,13 @@ static auto dummy([](double) {});
         NSPropertyListFormat format;
         plist = [[NSPropertyListSerialization propertyListWithData:plistData options:0 format:&format error:&error] mutableCopy];
     }
+
+    return plist;
+}
+
++ (NSDictionary *)updateEntitlementsForBinaryAtLocation:(NSString *)binaryLocation bundleIdentifier:(NSString *)bundleIdentifier teamID:(NSString *)teamid {
+    NSMutableDictionary *plist = [EESigning getEntitlementsForBinaryAtLocation:binaryLocation];
+    if (plist == nil) return [NSMutableDictionary dictionary];
 
     [plist setValue:[NSString stringWithFormat:@"%@.%@", teamid, bundleIdentifier] forKey:@"application-identifier"];
     [plist setValue:teamid forKey:@"com.apple.developer.team-identifier"];
