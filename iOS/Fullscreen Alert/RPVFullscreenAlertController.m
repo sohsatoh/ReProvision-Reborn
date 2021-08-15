@@ -65,7 +65,7 @@
 
     self.dismissButton.frame = CGRectMake(size.width * 0.1, self.view.frame.size.height - self.dismissButton.frame.size.height - safeAreaBottomInset, size.width * 0.8, self.dismissButton.frame.size.height);
 
-    self.bodyContainerView.frame = CGRectMake(size.width * 0.1, self.topBackgroundView.frame.origin.y + self.topBackgroundView.frame.size.height + (statusBarFrame.size.height / 2), size.width * 0.8, size.height - self.topBackgroundView.frame.size.height - (statusBarFrame.size.height / 2) - self.dismissButton.frame.size.height - safeAreaBottomInset);
+    self.bodyContainerView.frame = CGRectMake(size.width * 0.1, self.topBackgroundView.frame.origin.y + self.topBackgroundView.frame.size.height + (statusBarFrame.size.height / 2), size.width * 0.8, size.height - self.topBackgroundView.frame.size.height - statusBarFrame.size.height - self.dismissButton.frame.size.height - safeAreaBottomInset);
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {

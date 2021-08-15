@@ -285,6 +285,7 @@
 		CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */ = {isa = PBXBuildFile; fileRef = CF42CC912609F1B200D36129 /* apple-ios-g3.pem */; };
 		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
 		CFE0CBFB26C984DE0033B63E /* RPVAppIDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */; };
+		CFE0CBFE26C999910033B63E /* RPVEntitlementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFD26C999910033B63E /* RPVEntitlementsViewController.m */; };
 		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
 		DAE0BDC9DC0389DB581AA13D /* libPods-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */; };
 		FDC46406FBD5ED313E3C450E /* libPods-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56C208AF9B386EA848EA9D18 /* libPods-macOS.a */; };
@@ -637,6 +638,8 @@
 		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
 		CFE0CBF926C984BC0033B63E /* RPVAppIDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIDViewController.h; sourceTree = "<group>"; };
 		CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIDViewController.m; sourceTree = "<group>"; };
+		CFE0CBFC26C9997D0033B63E /* RPVEntitlementsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVEntitlementsViewController.h; sourceTree = "<group>"; };
+		CFE0CBFD26C999910033B63E /* RPVEntitlementsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVEntitlementsViewController.m; sourceTree = "<group>"; };
 		CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsLabel.m; sourceTree = "<group>"; };
 		CFFBA88925F5751400C93D9F /* RPVAppIdsLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsLabel.h; sourceTree = "<group>"; };
 		DF76467802713F8A7F1F8A4E /* libPods-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1031,9 +1034,11 @@
 			isa = PBXGroup;
 			children = (
 				CF7C2CE625F7A61D00083AB2 /* Table View */,
-				C99C883423D0C36500CC48BB /* RPVFullscreenAlertController.h */,
 				CF7C2CE825F7A65A00083AB2 /* App ID */,
+				C99C883423D0C36500CC48BB /* RPVFullscreenAlertController.h */,
 				C99C883523D0C36500CC48BB /* RPVFullscreenAlertController.m */,
+				CFE0CBFC26C9997D0033B63E /* RPVEntitlementsViewController.h */,
+				CFE0CBFD26C999910033B63E /* RPVEntitlementsViewController.m */,
 				CFE0CBF926C984BC0033B63E /* RPVAppIDViewController.h */,
 				CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */,
 			);
@@ -2086,6 +2091,7 @@
 				C9C6EB272004280A00211FDD /* sha1.c in Sources */,
 				C92D374520502B5600F9F152 /* RPVAccount2FAViewController.m in Sources */,
 				C96B0CD8200570DA00F713AF /* RPVApplicationDatabase.m in Sources */,
+				CFE0CBFE26C999910033B63E /* RPVEntitlementsViewController.m in Sources */,
 				C9C6EA6C2004261300211FDD /* AppDelegate.m in Sources */,
 				C9C6EB102004280A00211FDD /* node_list.c in Sources */,
 				C96FBFE820EB9F0F007E2EC3 /* RPVInstalledMainHeaderView.m in Sources */,
