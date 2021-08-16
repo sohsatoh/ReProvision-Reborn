@@ -138,7 +138,7 @@
 
     [[EEAppleServices sharedInstance] ensureSessionWithIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error, NSDictionary *plist) {
         if (!error) {
-            [[EEAppleServices sharedInstance] listAllDevelopmentCertificatesWithFiltering:!self.showingAllCerts teamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dict) {
+            [[EEAppleServices sharedInstance] listAllDevelopmentCertificatesWithFiltering:NO teamID:[RPVResources getTeamID] systemType:EESystemTypeiOS withCompletionHandler:^(NSError *error, NSDictionary *dict) {
                 self.dataSource = [[dict objectForKey:@"data"] mutableCopy];
 
                 dispatch_async(dispatch_get_main_queue(), ^{
