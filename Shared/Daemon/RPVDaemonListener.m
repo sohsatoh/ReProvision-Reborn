@@ -81,7 +81,6 @@ typedef enum : NSUInteger {
 
 @property (nonatomic, readwrite) BOOL updateQueuedForUnlock;
 @property (nonatomic, readwrite) BOOL showQueuedAlertWhenDisplayOn;
-@property (nonatomic, readwrite) BOOL uiLockState;
 @property (nonatomic, readwrite) BOOL displayState;
 @property (nonatomic, readwrite) BOOL springboardDidLaunchSeen;
 
@@ -147,7 +146,6 @@ typedef enum : NSUInteger {
 
     // Setup states - assuming that we're starting with Cydia etc open
     // If from reboot, SpringBoard states will override this
-    self.uiLockState = NO;
     self.updateQueuedForUnlock = NO;
     self.displayState = YES;
 
@@ -210,28 +208,20 @@ typedef enum : NSUInteger {
 }
 
 - (void)signingTimerDidFire:(id)sender {
-    // Queue the update if needed.
-    if (self.uiLockState == YES) {
-        NSLog(@"*** [reprovisiond] :: Signing timer fired: update queued");
-        self.updateQueuedForUnlock = YES;
-
-        [self _showApplicationNotificationForQueuedUpdate];
-    } else {
-        // Do checks for Low Power Mode stuff.
-        BOOL isInLPM = [[NSProcessInfo processInfo] isLowPowerModeEnabled];
-        if (isInLPM && ![self canSignInLowPowerMode]) {
-            NSLog(@"*** [reprovisiond] :: Signing skipped: in Low Power Mode, and user set to not sign.");
-            return;
-        }
-
-        if (![self shouldAutomaticallyResign]) {
-            NSLog(@"*** [reprovisiond] :: Signing skipped: user disabled automatic re-signing.");
-            return;
-        }
-
-        NSLog(@"*** [reprovisiond] :: Signing timer fired: update now");
-        [self _initiateNewSigningRoutine];
+    // Do checks for Low Power Mode stuff.
+    BOOL isInLPM = [[NSProcessInfo processInfo] isLowPowerModeEnabled];
+    if (isInLPM && ![self canSignInLowPowerMode]) {
+        NSLog(@"*** [reprovisiond] :: Signing skipped: in Low Power Mode, and user set to not sign.");
+        return;
     }
+
+    if (![self shouldAutomaticallyResign]) {
+        NSLog(@"*** [reprovisiond] :: Signing skipped: user disabled automatic re-signing.");
+        return;
+    }
+
+    NSLog(@"*** [reprovisiond] :: Signing timer fired: update now");
+    [self _initiateNewSigningRoutine];
 
     // Restart the timer with the full duration.
     [self _restartSigningTimerWithInterval:[self heartbeatTimerInterval]];
@@ -392,15 +382,7 @@ typedef enum : NSUInteger {
 
     // Setup state for new SpringBoard launch
     self.springboardDidLaunchSeen = YES;
-    self.uiLockState = YES;
-    // self.updateQueuedForUnlock = NO; -> Not resetting since there may actually be a queued signing!
     self.displayState = NO;
-}
-
-- (void)sb_didUILockNotification {
-    // Just update state.
-    NSLog(@"*** [reprovisiond] :: Device was locked.");
-    self.uiLockState = YES;
 }
 
 - (void)sb_didUIUnlockNotification {
