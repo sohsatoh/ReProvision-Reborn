@@ -38,6 +38,7 @@
 @interface LSApplicationProxy : LSBundleProxy
 @property (nonatomic, readonly) NSString *applicationIdentifier;
 @property (getter=isInstalled, nonatomic, readonly) BOOL installed;
+@property (nonatomic, readonly) NSString *localizedName;  //@synthesize itemName=_itemName - In the implementation block
 + (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
 @end
 
@@ -112,7 +113,8 @@
         [self loadView];
     }
 
-    [self.signingButton setTitle:title forState:UIControlStateNormal];
+    [self.signingButton setTitle:title
+                        forState:UIControlStateNormal];
     [self.signingButton setTitle:title forState:UIControlStateHighlighted];
 }
 
@@ -567,14 +569,27 @@
                                  }];
                              }]];
 
-            [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
-                                 BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForApp];
-                                 if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp] isInstalled]) {
-                                     // Update View
-                                 } else {
-                                     // Error
-                                 }
-                             }]];
+            // [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+            //                      BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForApp];
+            //                      if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp] isInstalled]) {
+            //                          UIAlertController *doneAlertVC = [UIAlertController alertControllerWithTitle:nil
+            //                                                                                               message:[NSString stringWithFormat:@"Successfully uninstalled %@", selectedApp.localizedName]
+            //                                                                                        preferredStyle:UIAlertControllerStyleAlert];
+            //                          [self presentViewController:doneAlertVC animated:YES completion:nil];
+            //                          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            //                              [doneAlertVC dismissViewControllerAnimated:YES completion:nil];
+            //                          });
+            //                      } else {
+            //                          // Error
+            //                          UIAlertController *errorAlertVC = [UIAlertController alertControllerWithTitle:nil
+            //                                                                                                message:[NSString stringWithFormat:@"Failed to uninstall %@", selectedApp.localizedName]
+            //                                                                                         preferredStyle:UIAlertControllerStyleAlert];
+            //                          [self presentViewController:errorAlertVC animated:YES completion:nil];
+            //                          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            //                              [errorAlertVC dismissViewControllerAnimated:YES completion:nil];
+            //                          });
+            //                      }
+            //                  }]];
 
             [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
                                        }]];
@@ -692,29 +707,31 @@
         }
 
         // Update progess bar!
-        [UIView animateWithDuration:percent == 0 ? 0.0 : 0.35 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-            self.progressBar.value = percent;
-            self.percentCompleteLabel.text = [NSString stringWithFormat:@"%d%% complete", percent];
-        } completion:^(BOOL finished) {
-            if (finished && percent == 100) {
-                self.percentCompleteLabel.hidden = YES;
-                self.progressBar.hidden = YES;
+        [UIView animateWithDuration:percent == 0 ? 0.0 : 0.35
+            delay:0.0
+            options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+                self.progressBar.value = percent;
+                self.percentCompleteLabel.text = [NSString stringWithFormat:@"%d%% complete", percent];
+            } completion:^(BOOL finished) {
+                if (finished && percent == 100) {
+                    self.percentCompleteLabel.hidden = YES;
+                    self.progressBar.hidden = YES;
 
-                self.signingButton.alpha = 1.0;
-                self.signingButton.enabled = YES;
+                    self.signingButton.alpha = 1.0;
+                    self.signingButton.enabled = YES;
 
-                self.applicationBundleIdentifierLabel.hidden = NO;
+                    self.applicationBundleIdentifierLabel.hidden = NO;
 
-                // If necessary, "unlock" user exit controls.
-                if (self.lockWhenInstalling) {
-                    self.closeButton.hidden = NO;
-                    self.closeGestureRecogniser.enabled = YES;
+                    // If necessary, "unlock" user exit controls.
+                    if (self.lockWhenInstalling) {
+                        self.closeButton.hidden = NO;
+                        self.closeGestureRecogniser.enabled = YES;
+                    }
+
+                    // Close the view if percentage is 100.
+                    [self _userDidTapCloseButton:nil];
                 }
-
-                // Close the view if percentage is 100.
-                [self _userDidTapCloseButton:nil];
-            }
-        }];
+            }];
     });
 }
 
