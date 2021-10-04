@@ -58,6 +58,7 @@
 @interface LSApplicationProxy : LSBundleProxy
 @property (nonatomic, readonly) NSString *applicationIdentifier;
 @property (getter=isInstalled, nonatomic, readonly) BOOL installed;
+@property (nonatomic, readonly) NSString *localizedName;  //@synthesize itemName=_itemName - In the implementation block
 + (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
 @end
 
@@ -665,7 +666,9 @@
             fallbackString = @"No other sideloaded applications";
     }
 
-    [cell configureWithApplication:application fallbackDisplayName:fallbackString andExpiryDate:[application applicationExpiryDate]];
+    [cell configureWithApplication:application
+               fallbackDisplayName:fallbackString
+                     andExpiryDate:[application applicationExpiryDate]];
 
     return cell;
 }
@@ -691,7 +694,9 @@
         return;
     }
 
-    [self _showApplicationDetailController:application withButtonTitle:buttonTitle isDestructiveResign:isDestructiveResign];
+    [self _showApplicationDetailController:application
+                           withButtonTitle:buttonTitle
+                       isDestructiveResign:isDestructiveResign];
 }
 
 - (void)_showApplicationDetailController:(RPVApplication *)application withButtonTitle:(NSString *)buttonTitle isDestructiveResign:(BOOL)isDestructiveResign {
@@ -803,14 +808,25 @@
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
                                      BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForSelectedApp];
                                      if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApp] isInstalled]) {
-                                         BOOL isRecent = [tableView isEqual:self.recentTableView];
-                                         NSMutableArray *dataSourceForSelectedCell = isRecent ? self.recentlySignedDataSource : self.otherApplicationsDataSource;
-                                         UITableView *collectionViewForSelectedCell = isRecent ? self.recentTableView : self.expiringCollectionView;
-                                         [dataSourceForSelectedCell removeObject:[self _applicationForBundleIdentifier:bundleIdentifierForSelectedApp]];
-                                         [collectionViewForSelectedCell reloadData];
-                                         [self.view setNeedsLayout];
+                                         [self _reloadDataSources];
+
+                                         UIAlertController *doneAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                              message:[NSString stringWithFormat:@"Successfully uninstalled %@", selectedApp.localizedName]
+                                                                                                       preferredStyle:UIAlertControllerStyleAlert];
+                                         [self presentViewController:doneAlertVC animated:YES completion:nil];
+                                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                             [doneAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                         });
                                      } else {
                                          [selectedCell flashNotificationFailure];
+
+                                         UIAlertController *errorAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                               message:[NSString stringWithFormat:@"Failed to uninstall %@", selectedApp.localizedName]
+                                                                                                        preferredStyle:UIAlertControllerStyleAlert];
+                                         [self presentViewController:errorAlertVC animated:YES completion:nil];
+                                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                             [errorAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                         });
                                      }
                                  }]];
 
@@ -1012,7 +1028,10 @@
             break;
     }
 
-    [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"DEBUG" body:startAlertString isDebugMessage:YES andNotificationID:nil];
+    [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"DEBUG"
+                                                                  body:startAlertString
+                                                        isDebugMessage:YES
+                                                     andNotificationID:nil];
 
     if (section == 3) {
         // Sign all other sideloaded applications to this Team ID.
