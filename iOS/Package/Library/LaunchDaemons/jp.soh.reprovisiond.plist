@@ -12,7 +12,7 @@
     <key>ProgramArguments</key>
     <array>
       <!-- <string>/usr/bin/env</string> <string>_MSSafeMode=1</string> <string>_SafeMode=1</string> -->
-      <string>/usr/bin/reprovisiond</string>
+      <string>/usr/libexec/reprovisiond</string>
     </array>
     <key>UserName</key>
     <string>mobile</string>
