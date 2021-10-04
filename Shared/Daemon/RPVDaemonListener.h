@@ -10,6 +10,7 @@
 #import "RPVDaemonProtocol.h"
 
 @interface RPVDaemonListener : NSObject <NSXPCListenerDelegate, RPVDaemonProtocol> {
+    int _lockstateToken;
     int _springboardBootToken;
     int _backboardBacklightChangedToken;
 }

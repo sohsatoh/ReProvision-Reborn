@@ -389,7 +389,7 @@ typedef enum : NSUInteger {
     // Start a signing routine since we had one trigger whilst locked.
     NSLog(@"*** [reprovisiond] :: Device was unlocked.");
 
-    self.uiLockState = NO;
+//    self.uiLockState = NO;
 
     // Handle queued signing
     if (self.updateQueuedForUnlock) {
@@ -546,9 +546,10 @@ typedef enum : NSUInteger {
 
         if (state == 0) {
             [weakSelf sb_didUIUnlockNotification];
-        } else {
-            [weakSelf sb_didUILockNotification];
         }
+//        else {
+//            [weakSelf sb_didUILockNotification];
+//        }
     });
 
     // SpringBoard boot-up
