@@ -219,6 +219,14 @@
     }
 }
 
+- (void)updateLoadingAlertWithProgress:(int)progress {
+    if (self.loadingAlertVC) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.loadingAlertVC.message = [NSString stringWithFormat:@"Loading...\n%d%%", progress];
+        });
+    }
+}
+
 - (void)changeLoadingAlertText:(NSString *)text dismissAfterDelay:(int)delay {
     if (self.loadingAlertVC) {
         self.loadingAlertVC.message = text;
@@ -390,6 +398,11 @@
         [self changeLoadingAlertText:errorMessage dismissAfterDelay:2];
         [session invalidateAndCancel];
     }
+}
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    CGFloat progress = (int)round((float)totalBytesWritten / totalBytesExpectedToWrite * 100);
+    [self updateLoadingAlertWithProgress:progress];
 }
 
 //////////////////////////////////////////////////////////////////////////////
