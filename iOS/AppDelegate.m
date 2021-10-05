@@ -363,7 +363,7 @@
 
     if (fileSizeError || !fileSizeValue) {
         [self changeLoadingAlertText:@"Error - The file does not exist." dismissAfterDelay:2];
-        [session invalidateAndCancel];
+        [session finishTasksAndInvalidate];
         return;
     }
 
@@ -387,7 +387,7 @@
         [self _showApplicationDetailControllerFromFileURL:tmpFilePath];
     }
 
-    [session invalidateAndCancel];
+    [session finishTasksAndInvalidate];
 }
 
 
@@ -395,8 +395,36 @@
     if (error) {
         // Could not download the ipa file
         NSString *errorMessage = [NSString stringWithFormat:@"Error - %@", error.localizedDescription];
-        [self changeLoadingAlertText:errorMessage dismissAfterDelay:2];
-        [session invalidateAndCancel];
+        NSData *resumeData = [error.userInfo objectForKey:NSURLSessionDownloadTaskResumeData];
+
+        if ([[error.userInfo objectForKey:NSURLErrorBackgroundTaskCancelledReasonKey] integerValue] == NSURLErrorCancelledReasonUserForceQuitApplication && resumeData) {
+            errorMessage = [errorMessage stringByAppendingString:@"\nThe app seems to have quit while downloading. Would you like to resume?"];
+
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil
+                                                                                     message:errorMessage
+                                                                              preferredStyle:UIAlertControllerStyleAlert];
+
+            UIAlertAction *resumeButton = [UIAlertAction actionWithTitle:@"Resume"
+                                                                   style:UIAlertActionStyleDefault
+                                                                 handler:^(UIAlertAction *action) {
+                                                                     NSURLSessionDownloadTask *task = [session downloadTaskWithResumeData:resumeData];
+                                                                     [task resume];
+                                                                 }];
+
+            UIAlertAction *cancelButton = [UIAlertAction actionWithTitle:@"Cancel"
+                                                                   style:UIAlertActionStyleCancel
+                                                                 handler:^(UIAlertAction *action) {
+                                                                     [task cancel];
+                                                                     [session finishTasksAndInvalidate];
+                                                                 }];
+            [alertController addAction:resumeButton];
+            [alertController addAction:cancelButton];
+            [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alertController animated:YES completion:nil];
+        } else {
+            [self changeLoadingAlertText:errorMessage
+                       dismissAfterDelay:2];
+            [session finishTasksAndInvalidate];
+        }
     }
 }
 
