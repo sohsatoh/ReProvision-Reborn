@@ -9,6 +9,7 @@ iOS/CydiaPackages/
 Pods/
 Legacy/
 Output/
+iOS/GoogleService-Info.plist
 iOS/Package/Applications/ReProvision.app/
 iOS/Package/usr/libexec/reprovisiond
 *xcworkspace/xcuserdata/*
