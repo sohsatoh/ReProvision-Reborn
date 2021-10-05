@@ -389,7 +389,7 @@ typedef enum : NSUInteger {
     // Start a signing routine since we had one trigger whilst locked.
     NSLog(@"*** [reprovisiond] :: Device was unlocked.");
 
-//    self.uiLockState = NO;
+    //    self.uiLockState = NO;
 
     // Handle queued signing
     if (self.updateQueuedForUnlock) {
@@ -421,7 +421,7 @@ typedef enum : NSUInteger {
             NSDate *nextFireDate = [self getPreferenceKey:@"nextFireDate"];
             NSTimeInterval nextFireInterval = [nextFireDate timeIntervalSinceDate:[NSDate date]];
 
-            if (nextFireInterval <= 5) {  // seconds
+            if (nextFireInterval <= 5 || state == 5) {  // seconds
                 NSLog(@"*** [reprovisiond] :: DEBUG :: Timer would have (or is about to) expire, so requesting signing checks");
                 [self signingTimerDidFire:nil];
             } else {
@@ -547,9 +547,9 @@ typedef enum : NSUInteger {
         if (state == 0) {
             [weakSelf sb_didUIUnlockNotification];
         }
-//        else {
-//            [weakSelf sb_didUILockNotification];
-//        }
+        // else {
+        //     [weakSelf sb_didUILockNotification];
+        // }
     });
 
     // SpringBoard boot-up
@@ -565,6 +565,9 @@ typedef enum : NSUInteger {
 
         [weakSelf bb_backlightChanged:(int)state];
     });
-}
 
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSCalendarDayChangedNotification object:nil queue:nil usingBlock:^(NSNotification *notification) {
+        [weakSelf bb_backlightChanged:5];
+    }];
+}
 @end
