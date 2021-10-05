@@ -569,27 +569,29 @@
                                  }];
                              }]];
 
-            // [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
-            //                      BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForApp];
-            //                      if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp] isInstalled]) {
-            //                          UIAlertController *doneAlertVC = [UIAlertController alertControllerWithTitle:nil
-            //                                                                                               message:[NSString stringWithFormat:@"Successfully uninstalled %@", selectedApp.localizedName]
-            //                                                                                        preferredStyle:UIAlertControllerStyleAlert];
-            //                          [self presentViewController:doneAlertVC animated:YES completion:nil];
-            //                          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            //                              [doneAlertVC dismissViewControllerAnimated:YES completion:nil];
-            //                          });
-            //                      } else {
-            //                          // Error
-            //                          UIAlertController *errorAlertVC = [UIAlertController alertControllerWithTitle:nil
-            //                                                                                                message:[NSString stringWithFormat:@"Failed to uninstall %@", selectedApp.localizedName]
-            //                                                                                         preferredStyle:UIAlertControllerStyleAlert];
-            //                          [self presentViewController:errorAlertVC animated:YES completion:nil];
-            //                          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            //                              [errorAlertVC dismissViewControllerAnimated:YES completion:nil];
-            //                          });
-            //                      }
-            //                  }]];
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                                 BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForApp];
+                                 if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp] isInstalled]) {
+                                     UIAlertController *doneAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                          message:[NSString stringWithFormat:@"Successfully uninstalled %@", selectedApp.localizedName]
+                                                                                                   preferredStyle:UIAlertControllerStyleAlert];
+                                     [self presentViewController:doneAlertVC animated:YES completion:nil];
+                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                         [self _userDidTapCloseButton:nil];
+                                         [doneAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                     });
+                                     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:@"jp.soh.reprovision.ios/resigningThresholdDidChange" object:nil]];  // Fake notification to update table
+                                 } else {
+                                     // Error
+                                     UIAlertController *errorAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                           message:[NSString stringWithFormat:@"Failed to uninstall %@", selectedApp.localizedName]
+                                                                                                    preferredStyle:UIAlertControllerStyleAlert];
+                                     [self presentViewController:errorAlertVC animated:YES completion:nil];
+                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                         [errorAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                     });
+                                 }
+                             }]];
 
             [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
                                        }]];
