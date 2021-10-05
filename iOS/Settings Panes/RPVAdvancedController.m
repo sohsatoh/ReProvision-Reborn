@@ -68,6 +68,19 @@
 
     [array addObject:forceResign];
 
+    NSDate *nextFireDate = [RPVResources preferenceValueForKey:@"nextFireDate"];
+    NSMutableString *nextFireDateStr = [NSMutableString stringWithString:@"Next Fire Date: "];
+    if (nextFireDate) {
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.dateStyle = NSDateFormatterMediumStyle;
+        dateFormatter.timeStyle = NSDateFormatterMediumStyle;
+        [nextFireDateStr appendString:[dateFormatter stringFromDate:nextFireDate]];
+    } else {
+        [nextFireDateStr appendString:@"-"];
+    }
+    PSSpecifier *nextFire = [PSSpecifier preferenceSpecifierNamed:nextFireDateStr target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
+    [array addObject:nextFire];
+
     PSSpecifier *threshold = [PSSpecifier preferenceSpecifierNamed:@"Check Expiry Times:" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:NSClassFromString(@"PSListItemsController") cell:PSLinkListCell edit:nil];
     [threshold setProperty:@YES forKey:@"enabled"];
     [threshold setProperty:@2 forKey:@"default"];
