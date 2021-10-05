@@ -1,3 +1,0 @@
-- Add checks for network connectivity
-- Provide localisation support
-- Official support Resign apps installed using Xcode, with another account

@@ -30,7 +30,7 @@
     self.textColor = [UIColor blackColor];
     self.font = [UIFont systemFontOfSize:IS_IPAD ? 20 : 16 weight:UIFontWeightRegular];
     self.textAlignment = NSTextAlignmentCenter;
-    self.alertController = [[RPVFullscreenAlertController alloc] init];
+    self.alertController = [[RPVAppIDViewController alloc] init];
 
     self.userInteractionEnabled = YES;
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(labelTapped)];

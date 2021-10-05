@@ -526,6 +526,14 @@ static RPVApplicationSigning *sharedInstance;
 // Application handling callbacks
 ////////////////////////////////////////////////////////////////////////////////
 
+- (BOOL)removeApplicationWithBundleIdentifier:(NSString *)bundleIdentifier {
+    BOOL ret = NO;
+    if (bundleIdentifier) {
+        ret = [[LSApplicationWorkspace defaultWorkspace] uninstallApplication:bundleIdentifier withOptions:nil];
+    }
+    return ret;
+}
+
 - (void)_appShouldBeRemoved:(NSNotification *)notification {
     NSString *bundleIdentifier = [[notification userInfo] objectForKey:@"bundleIdentifier"];
     if (bundleIdentifier) {

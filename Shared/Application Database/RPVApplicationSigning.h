@@ -19,17 +19,17 @@
 /**
  Called when progress is made on the re-signing pipeline for a given bundle identifier. arg0 is the bundle identifier, and arg1 is the progress in percent (0-100)
  */
-- (void)applicationSigningUpdateProgress:(int)progress forBundleIdentifier:(NSString*)bundleIdentifier;
+- (void)applicationSigningUpdateProgress:(int)progress forBundleIdentifier:(NSString *)bundleIdentifier;
 
 /**
  Called when an error occurs for a single application's pipeline.
  */
-- (void)applicationSigningDidEncounterError:(NSError*)error forBundleIdentifier:(NSString*)bundleIdentifier;
+- (void)applicationSigningDidEncounterError:(NSError *)error forBundleIdentifier:(NSString *)bundleIdentifier;
 
 /**
  Called when the pipeline is finished for all applications.
  */
-- (void)applicationSigningCompleteWithError:(NSError*)error;
+- (void)applicationSigningCompleteWithError:(NSError *)error;
 @end
 
 @interface RPVApplicationSigning : NSObject
@@ -47,12 +47,14 @@
  @param username The user's username to authenticate with Apple's Developer Portal
  @param password The user's password to authenticate with Apple's Developer Portal
  */
-- (void)resignApplications:(BOOL)onlyExpiringApplications thresholdForExpiration:(int)thresholdForExpiration withTeamID:(NSString*)teamID username:(NSString*)username password:(NSString*)password;
+- (void)resignApplications:(BOOL)onlyExpiringApplications thresholdForExpiration:(int)thresholdForExpiration withTeamID:(NSString *)teamID username:(NSString *)username password:(NSString *)password;
 
-- (void)resignSpecificApplications:(NSArray*)applications withTeamID:(NSString*)teamID username:(NSString*)username password:(NSString*)password;
+- (void)resignSpecificApplications:(NSArray *)applications withTeamID:(NSString *)teamID username:(NSString *)username password:(NSString *)password;
 
 - (void)addSigningUpdatesObserver:(id<RPVApplicationSigningProtocol>)observer;
 
 - (void)removeSigningUpdatesObserver:(id<RPVApplicationSigningProtocol>)observer;
+
+- (BOOL)removeApplicationWithBundleIdentifier:(NSString *)bundleIdentifier;
 
 @end

@@ -219,6 +219,14 @@
     }
 }
 
+- (void)updateLoadingAlertWithProgress:(int)progress {
+    if (self.loadingAlertVC) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.loadingAlertVC.message = [NSString stringWithFormat:@"Loading...\n%d%%", progress];
+        });
+    }
+}
+
 - (void)changeLoadingAlertText:(NSString *)text dismissAfterDelay:(int)delay {
     if (self.loadingAlertVC) {
         self.loadingAlertVC.message = text;
@@ -355,7 +363,7 @@
 
     if (fileSizeError || !fileSizeValue) {
         [self changeLoadingAlertText:@"Error - The file does not exist." dismissAfterDelay:2];
-        [session invalidateAndCancel];
+        [session finishTasksAndInvalidate];
         return;
     }
 
@@ -379,7 +387,7 @@
         [self _showApplicationDetailControllerFromFileURL:tmpFilePath];
     }
 
-    [session invalidateAndCancel];
+    [session finishTasksAndInvalidate];
 }
 
 
@@ -387,9 +395,42 @@
     if (error) {
         // Could not download the ipa file
         NSString *errorMessage = [NSString stringWithFormat:@"Error - %@", error.localizedDescription];
-        [self changeLoadingAlertText:errorMessage dismissAfterDelay:2];
-        [session invalidateAndCancel];
+        NSData *resumeData = [error.userInfo objectForKey:NSURLSessionDownloadTaskResumeData];
+
+        if ([[error.userInfo objectForKey:NSURLErrorBackgroundTaskCancelledReasonKey] integerValue] == NSURLErrorCancelledReasonUserForceQuitApplication && resumeData) {
+            errorMessage = [errorMessage stringByAppendingString:@"\nThe app seems to have quit while downloading. Would you like to resume?"];
+
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil
+                                                                                     message:errorMessage
+                                                                              preferredStyle:UIAlertControllerStyleAlert];
+
+            UIAlertAction *resumeButton = [UIAlertAction actionWithTitle:@"Resume"
+                                                                   style:UIAlertActionStyleDefault
+                                                                 handler:^(UIAlertAction *action) {
+                                                                     NSURLSessionDownloadTask *task = [session downloadTaskWithResumeData:resumeData];
+                                                                     [task resume];
+                                                                 }];
+
+            UIAlertAction *cancelButton = [UIAlertAction actionWithTitle:@"Cancel"
+                                                                   style:UIAlertActionStyleCancel
+                                                                 handler:^(UIAlertAction *action) {
+                                                                     [task cancel];
+                                                                     [session finishTasksAndInvalidate];
+                                                                 }];
+            [alertController addAction:resumeButton];
+            [alertController addAction:cancelButton];
+            [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alertController animated:YES completion:nil];
+        } else {
+            [self changeLoadingAlertText:errorMessage
+                       dismissAfterDelay:2];
+            [session finishTasksAndInvalidate];
+        }
     }
+}
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    CGFloat progress = (int)round((float)totalBytesWritten / totalBytesExpectedToWrite * 100);
+    [self updateLoadingAlertWithProgress:progress];
 }
 
 //////////////////////////////////////////////////////////////////////////////

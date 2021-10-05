@@ -10,7 +10,9 @@
 
 @interface RPVInstalledTableViewCell : UITableViewCell
 
-- (void)configureWithApplication:(id)application fallbackDisplayName:(NSString*)fallback andExpiryDate:(NSDate*)date;
+@property (nonatomic, strong) NSString *bundleIdentifier;
+
+- (void)configureWithApplication:(id)application fallbackDisplayName:(NSString *)fallback andExpiryDate:(NSDate *)date;
 
 - (void)flashNotificationSuccess;
 - (void)flashNotificationFailure;

@@ -15,15 +15,17 @@
 @interface EESigning : NSObject {
     NSData *_certificate;
     NSString *_privateKey;
-    #ifdef __cplusplus
+#ifdef __cplusplus
     std::string _PKCS12;
-    #endif
+#endif
 }
 
-+ (instancetype)signerWithCertificate:(NSData*)certificate privateKey:(NSString*)privateKey;
++ (instancetype)signerWithCertificate:(NSData *)certificate privateKey:(NSString *)privateKey;
 
-+ (NSDictionary*)updateEntitlementsForBinaryAtLocation:(NSString*)binaryLocation bundleIdentifier:(NSString*)bundleIdentifier teamID:(NSString*)teamid;
++ (NSMutableDictionary *)getEntitlementsForBinaryAtLocation:(NSString *)binaryLocation;
 
-- (void)signBundleAtPath:(NSString*)absolutePath entitlements:(NSDictionary*)entitlements identifier:(NSString*)bundleIdentifier withCallback:(void (^)(BOOL, NSString*))completionHandler;
++ (NSDictionary *)updateEntitlementsForBinaryAtLocation:(NSString *)binaryLocation bundleIdentifier:(NSString *)bundleIdentifier teamID:(NSString *)teamid;
+
+- (void)signBundleAtPath:(NSString *)absolutePath entitlements:(NSDictionary *)entitlements identifier:(NSString *)bundleIdentifier withCallback:(void (^)(BOOL, NSString *))completionHandler;
 
 @end

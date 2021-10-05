@@ -10,6 +10,8 @@
 #import "RPVInstalledMainHeaderView.h"
 #import "RPVResources.h"
 
+#import "RPVEntitlementsViewController.h"
+
 #import "RPVApplication.h"
 #import "RPVApplicationDatabase.h"
 #import "RPVErrors.h"
@@ -37,8 +39,26 @@
 
 #define TABLE_VIEWS_INSET 20
 
-@interface LSApplicationProxy : NSObject
+@interface LSResourceProxy : NSObject
+@property (nonatomic, readonly) NSString *localizedName;
+@end
+
+@interface LSBundleProxy : LSResourceProxy
+@property (nonatomic, readonly) NSString *bundleIdentifier;  //@synthesize bundleIdentifier=_bundleIdentifier - In the implementation block
+@property (nonatomic, readonly) NSString *bundleType;
+@property (nonatomic, readonly) NSURL *bundleURL;            //@synthesize bundleURL=_bundleURL - In the implementation block
+@property (nonatomic, readonly) NSString *bundleExecutable;  //@synthesize bundleExecutable=_bundleExecutable - In the implementation block
+@property (nonatomic, readonly) NSString *canonicalExecutablePath;
+@property (nonatomic, readonly) NSURL *containerURL;
+@property (nonatomic, readonly) NSURL *dataContainerURL;
+@property (nonatomic, readonly) NSURL *bundleContainerURL;  //@synthesize bundleContainerURL=_bundleContainerURL - In the implementation block
+@property (nonatomic, readonly) NSURL *appStoreReceiptURL;
+@end
+
+@interface LSApplicationProxy : LSBundleProxy
 @property (nonatomic, readonly) NSString *applicationIdentifier;
+@property (getter=isInstalled, nonatomic, readonly) BOOL installed;
+@property (nonatomic, readonly) NSString *localizedName;  //@synthesize itemName=_itemName - In the implementation block
 + (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
 @end
 
@@ -257,6 +277,18 @@
 #else
     self.appIdsLabel = [[RPVAppIdsLabel alloc] init];
     [self.rootScrollView addSubview:self.appIdsLabel];
+#endif
+
+    // Add long press gesture recognizer to table view(s)
+#if TARGET_OS_TV
+#else
+    UILongPressGestureRecognizer *longPressGestureRecognizerForRecent = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressOnTableView:)];
+    longPressGestureRecognizerForRecent.minimumPressDuration = 0.75;
+    [self.recentTableView addGestureRecognizer:longPressGestureRecognizerForRecent];
+
+    UILongPressGestureRecognizer *longPressGestureRecognizerForOther = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressOnTableView:)];
+    longPressGestureRecognizerForOther.minimumPressDuration = 0.75;
+    [self.otherApplicationsTableView addGestureRecognizer:longPressGestureRecognizerForOther];
 #endif
 }
 
@@ -555,7 +587,8 @@
 
     RPVApplication *application;
     NSString *fallbackString = @"";
-    if (self.expiringSoonDataSource.count > 0) application = [self.expiringSoonDataSource objectAtIndex:indexPath.row];
+    if (self.expiringSoonDataSource.count > 0)
+        application = [self.expiringSoonDataSource objectAtIndex:indexPath.row];
     else
         fallbackString = @"No applications are expiring soon";
 
@@ -606,7 +639,8 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if ([tableView isEqual:self.recentTableView]) return self.recentlySignedDataSource.count > 0 ? self.recentlySignedDataSource.count : 1;
+    if ([tableView isEqual:self.recentTableView])
+        return self.recentlySignedDataSource.count > 0 ? self.recentlySignedDataSource.count : 1;
     else
         return self.otherApplicationsDataSource.count > 0 ? self.otherApplicationsDataSource.count : 1;
 }
@@ -621,16 +655,20 @@
     RPVApplication *application;
     NSString *fallbackString = @"";
     if ([tableView isEqual:self.recentTableView]) {
-        if (self.recentlySignedDataSource.count > 0) application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
+        if (self.recentlySignedDataSource.count > 0)
+            application = [self.recentlySignedDataSource objectAtIndex:indexPath.row];
         else
             fallbackString = @"No applications are recently signed";
     } else {
-        if (self.otherApplicationsDataSource.count > 0) application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
+        if (self.otherApplicationsDataSource.count > 0)
+            application = [self.otherApplicationsDataSource objectAtIndex:indexPath.row];
         else
             fallbackString = @"No other sideloaded applications";
     }
 
-    [cell configureWithApplication:application fallbackDisplayName:fallbackString andExpiryDate:[application applicationExpiryDate]];
+    [cell configureWithApplication:application
+               fallbackDisplayName:fallbackString
+                     andExpiryDate:[application applicationExpiryDate]];
 
     return cell;
 }
@@ -656,7 +694,9 @@
         return;
     }
 
-    [self _showApplicationDetailController:application withButtonTitle:buttonTitle isDestructiveResign:isDestructiveResign];
+    [self _showApplicationDetailController:application
+                           withButtonTitle:buttonTitle
+                       isDestructiveResign:isDestructiveResign];
 }
 
 - (void)_showApplicationDetailController:(RPVApplication *)application withButtonTitle:(NSString *)buttonTitle isDestructiveResign:(BOOL)isDestructiveResign {
@@ -691,6 +731,112 @@
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
     return UITableViewCellEditingStyleNone;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Table View gesture methods.
+//////////////////////////////////////////////////////////////////////////////////
+
+- (void)handleLongPressOnTableView:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        // Table = sender.view
+        UITableView *tableView = (UITableView *)sender.view;
+        CGPoint touchPoint = [sender locationInView:tableView];
+        NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:touchPoint];
+        if (indexPath != nil) {
+            RPVInstalledTableViewCell *selectedCell = (RPVInstalledTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+            NSString *bundleIdentifierForSelectedApp = [selectedCell bundleIdentifier];
+
+            LSApplicationProxy *selectedApp = [LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApp];
+            NSString *bundleLocation = [selectedApp bundleURL].path;
+            NSString *dataLocation = [selectedApp containerURL].path;
+
+            if (selectedApp != nil) {
+                NSString *title = selectedApp.localizedName;
+                NSString *message = [NSString stringWithFormat:@"Bundle ID: %@\nBundle: %@\n Data: %@", bundleIdentifierForSelectedApp, bundleLocation, dataLocation];
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                     pasteboard.string = bundleIdentifierForSelectedApp;
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                     pasteboard.string = bundleLocation;
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Data Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                     pasteboard.string = dataLocation;
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                     RPVEntitlementsViewController *entitlementsViewController = [[RPVEntitlementsViewController alloc] init];
+                                     UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+                                     entitlementsViewController.onDismiss = ^{
+                                         [UIView animateWithDuration:0.25 animations:^{
+                                             alertWindow.alpha = 0.0;
+                                         } completion:^(BOOL finished) {
+                                             if (finished) {
+                                                 [alertWindow setHidden:YES];
+                                             }
+                                         }];
+                                     };
+
+                                     alertWindow.rootViewController = entitlementsViewController;
+                                     alertWindow.windowLevel = UIWindowLevelStatusBar;
+                                     alertWindow.alpha = 0;
+                                     [alertWindow setTintColor:[UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0]];
+
+                                     entitlementsViewController.titleLabel.text = @"Entitlements";
+
+                                     NSDictionary *infoplist = [NSDictionary dictionaryWithContentsOfFile:[NSString stringWithFormat:@"%@/Info.plist", bundleLocation]];
+                                     if (!infoplist || [infoplist allKeys].count == 0) return;
+                                     NSString *binaryLocation = [bundleLocation stringByAppendingFormat:@"/%@", [infoplist objectForKey:@"CFBundleExecutable"]];
+                                     [entitlementsViewController updateEntitlementsViewForBinaryAtLocation:binaryLocation];
+
+                                     [alertWindow makeKeyAndVisible];
+
+                                     [UIView animateWithDuration:0.25 animations:^{
+                                         alertWindow.alpha = 1.0;
+                                     } completion:^(BOOL finished){
+                                     }];
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                                     BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForSelectedApp];
+                                     if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForSelectedApp] isInstalled]) {
+                                         [self _reloadDataSources];
+
+                                         UIAlertController *doneAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                              message:[NSString stringWithFormat:@"Successfully uninstalled %@", selectedApp.localizedName]
+                                                                                                       preferredStyle:UIAlertControllerStyleAlert];
+                                         [self presentViewController:doneAlertVC animated:YES completion:nil];
+                                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                             [doneAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                         });
+                                     } else {
+                                         [selectedCell flashNotificationFailure];
+
+                                         UIAlertController *errorAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                               message:[NSString stringWithFormat:@"Failed to uninstall %@", selectedApp.localizedName]
+                                                                                                        preferredStyle:UIAlertControllerStyleAlert];
+                                         [self presentViewController:errorAlertVC animated:YES completion:nil];
+                                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                             [errorAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                         });
+                                     }
+                                 }]];
+
+                [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                           }]];
+
+                [self presentViewController:alertController animated:YES completion:nil];
+            }
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -882,7 +1028,10 @@
             break;
     }
 
-    [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"DEBUG" body:startAlertString isDebugMessage:YES andNotificationID:nil];
+    [[RPVNotificationManager sharedInstance] sendNotificationWithTitle:@"DEBUG"
+                                                                  body:startAlertString
+                                                        isDebugMessage:YES
+                                                     andNotificationID:nil];
 
     if (section == 3) {
         // Sign all other sideloaded applications to this Team ID.

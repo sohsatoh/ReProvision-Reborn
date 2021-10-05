@@ -20,7 +20,7 @@ ReProvision Reborn supports URL scheme.
     ```
 
 ## Notes
-The original project, ReProvision, has been EOL after Apple changed the process of application provisioning on their servers. This fork of ReProvision attempts to maintain the project and get it up-to-date with support for iOS 13 and above, which also explains the rename of the project.
+[The original project, ReProvision](https://github.com/Matchstic/ReProvision), has been EOL after Apple changed the process of application provisioning on their servers. This fork of ReProvision attempts to maintain the project and get it up-to-date with support for iOS 13 and above, which also explains the rename of the project.
 
 Although this is an attempt at resurrecting the project, I ask that you **do not bother** the original developer about specific updates made to **this** fork, since they're no longer behind the project.
 
@@ -39,7 +39,7 @@ This fork of ReProvision uses the same techniques that AltStore uses to tackle p
 Pull requests, which add a new feature or fix a bug/error, or issue tickets are welcome. Check out the [contributing guidelines](https://github.com/sohsatoh/ReProvision-Reborn/blob/master/CONTRIBUTING.md) for further information.
 
 ## Building
-As long as you have standard libraries for Xcode projects, the only dependencies you need are [CocoaPods](https://github.com/CocoaPods/CocoaPods) and [Git](https://git-scm.com/downloads). You can build the project with 3 simple steps
+As long as you have standard libraries for Xcode projects, the only dependencies you need are [CocoaPods](https://github.com/CocoaPods/CocoaPods), [Git](https://git-scm.com/downloads), and [iOSOpenDev](https://github.com/Matchstic/iOSOpenDev.git). You can build the project with 3 simple steps
 1. ``git clone https://github.com/sohsatoh/ReProvision-Reborn.git``
 2. ``pod install`` in the project's root directory
 3. Open ``ReProvision.xcworkspace``, and roll from there

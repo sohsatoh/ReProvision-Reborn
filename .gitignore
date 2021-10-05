@@ -10,7 +10,7 @@ Pods/
 Legacy/
 Output/
 iOS/Package/Applications/ReProvision.app/
-iOS/Package/usr/bin/reprovisiond
+iOS/Package/usr/libexec/reprovisiond
 *xcworkspace/xcuserdata/*
 *xcodeproj/xcuserdata/*
 *xcodeproj/project.xcworkspace/xcuserdata/*

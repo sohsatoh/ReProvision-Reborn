@@ -10,6 +10,7 @@
 #import "RPVApplication.h"
 #import "RPVApplicationSigning.h"
 #import "RPVCalendarController.h"
+#import "RPVEntitlementsViewController.h"
 #import "RPVIpaBundleApplication.h"
 #import "RPVResources.h"
 
@@ -17,6 +18,29 @@
 #import <MarqueeLabel.h>
 
 #define IS_IPAD UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad
+
+@interface LSResourceProxy : NSObject
+@property (nonatomic, readonly) NSString *localizedName;
+@end
+
+@interface LSBundleProxy : LSResourceProxy
+@property (nonatomic, readonly) NSString *bundleIdentifier;  //@synthesize bundleIdentifier=_bundleIdentifier - In the implementation block
+@property (nonatomic, readonly) NSString *bundleType;
+@property (nonatomic, readonly) NSURL *bundleURL;            //@synthesize bundleURL=_bundleURL - In the implementation block
+@property (nonatomic, readonly) NSString *bundleExecutable;  //@synthesize bundleExecutable=_bundleExecutable - In the implementation block
+@property (nonatomic, readonly) NSString *canonicalExecutablePath;
+@property (nonatomic, readonly) NSURL *containerURL;
+@property (nonatomic, readonly) NSURL *dataContainerURL;
+@property (nonatomic, readonly) NSURL *bundleContainerURL;  //@synthesize bundleContainerURL=_bundleContainerURL - In the implementation block
+@property (nonatomic, readonly) NSURL *appStoreReceiptURL;
+@end
+
+@interface LSApplicationProxy : LSBundleProxy
+@property (nonatomic, readonly) NSString *applicationIdentifier;
+@property (getter=isInstalled, nonatomic, readonly) BOOL installed;
+@property (nonatomic, readonly) NSString *localizedName;  //@synthesize itemName=_itemName - In the implementation block
++ (instancetype)applicationProxyForIdentifier:(NSString *)arg1;
+@end
 
 @interface RPVApplicationDetailController ()
 
@@ -89,7 +113,8 @@
         [self loadView];
     }
 
-    [self.signingButton setTitle:title forState:UIControlStateNormal];
+    [self.signingButton setTitle:title
+                        forState:UIControlStateNormal];
     [self.signingButton setTitle:title forState:UIControlStateHighlighted];
 }
 
@@ -144,9 +169,18 @@
     // Installed size
     [self _addApplicationInstalledSizeComponent];
 
-    // Calendar
-    if ([self.application.class isEqual:[RPVApplication class]])
+    // Calendar & Gesture recognizers
+    if ([self.application.class isEqual:[RPVApplication class]]) {
         [self _addCalendarComponent];
+
+        UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handleLongPressForInstalledApps:)];
+        longPressGestureRecognizer.minimumPressDuration = 1.0;
+        [self.view addGestureRecognizer:longPressGestureRecognizer];
+    } else {
+        UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handleLongPressForIPA:)];
+        longPressGestureRecognizer.minimumPressDuration = 1.0;
+        [self.view addGestureRecognizer:longPressGestureRecognizer];
+    }
 
     // Progress bar etc
     [self _addProgressComponents];
@@ -471,6 +505,163 @@
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// UILongPressGestureRecognizer callbacks
+////////////////////////////////////////////////////////////////////////////////
+
+- (void)_handleLongPressForInstalledApps:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        NSString *bundleIdentifierForApp = [self.application bundleIdentifier];
+        LSApplicationProxy *selectedApp = [LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp];
+        NSString *bundleLocation = [selectedApp bundleURL].path;
+        NSString *dataLocation = [selectedApp containerURL].path;
+
+        if (selectedApp != nil && self.percentCompleteLabel.hidden) {
+            NSString *title = selectedApp.localizedName;
+            NSString *message = [NSString stringWithFormat:@"Bundle ID: %@\nBundle: %@\n Data: %@", bundleIdentifierForApp, bundleLocation, dataLocation];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = bundleIdentifierForApp;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = bundleLocation;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Data Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = dataLocation;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 RPVEntitlementsViewController *entitlementsViewController = [[RPVEntitlementsViewController alloc] init];
+                                 UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+                                 entitlementsViewController.onDismiss = ^{
+                                     [UIView animateWithDuration:0.25 animations:^{
+                                         alertWindow.alpha = 0.0;
+                                     } completion:^(BOOL finished) {
+                                         if (finished) {
+                                             [alertWindow setHidden:YES];
+                                         }
+                                     }];
+                                 };
+
+                                 alertWindow.rootViewController = entitlementsViewController;
+                                 alertWindow.windowLevel = UIWindowLevelStatusBar;
+                                 alertWindow.alpha = 0;
+                                 [alertWindow setTintColor:[UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0]];
+
+                                 entitlementsViewController.titleLabel.text = @"Entitlements";
+
+                                 NSDictionary *infoplist = [NSDictionary dictionaryWithContentsOfFile:[NSString stringWithFormat:@"%@/Info.plist", bundleLocation]];
+                                 if (!infoplist || [infoplist allKeys].count == 0) return;
+                                 NSString *binaryLocation = [bundleLocation stringByAppendingFormat:@"/%@", [infoplist objectForKey:@"CFBundleExecutable"]];
+                                 [entitlementsViewController updateEntitlementsViewForBinaryAtLocation:binaryLocation];
+
+                                 [alertWindow makeKeyAndVisible];
+
+                                 [UIView animateWithDuration:0.25 animations:^{
+                                     alertWindow.alpha = 1.0;
+                                 } completion:^(BOOL finished){
+                                 }];
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Uninstall" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                                 BOOL result = [[RPVApplicationSigning sharedInstance] removeApplicationWithBundleIdentifier:bundleIdentifierForApp];
+                                 if (result && ![[LSApplicationProxy applicationProxyForIdentifier:bundleIdentifierForApp] isInstalled]) {
+                                     UIAlertController *doneAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                          message:[NSString stringWithFormat:@"Successfully uninstalled %@", selectedApp.localizedName]
+                                                                                                   preferredStyle:UIAlertControllerStyleAlert];
+                                     [self presentViewController:doneAlertVC animated:YES completion:nil];
+                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                         [self _userDidTapCloseButton:nil];
+                                         [doneAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                     });
+                                     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:@"jp.soh.reprovision.ios/resigningThresholdDidChange" object:nil]];  // Fake notification to update table
+                                 } else {
+                                     // Error
+                                     UIAlertController *errorAlertVC = [UIAlertController alertControllerWithTitle:nil
+                                                                                                           message:[NSString stringWithFormat:@"Failed to uninstall %@", selectedApp.localizedName]
+                                                                                                    preferredStyle:UIAlertControllerStyleAlert];
+                                     [self presentViewController:errorAlertVC animated:YES completion:nil];
+                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                         [errorAlertVC dismissViewControllerAnimated:YES completion:nil];
+                                     });
+                                 }
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                       }]];
+
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
+    }
+}
+
+- (void)_handleLongPressForIPA:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        if (self.percentCompleteLabel.hidden) {
+            NSString *bundleIdentifierForApp = [self.application bundleIdentifier];
+            NSString *applicationName = self.application.applicationName;
+            NSString *title = applicationName;
+            NSString *message = [NSString stringWithFormat:@"Bundle ID: %@", bundleIdentifierForApp];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                                 pasteboard.string = bundleIdentifierForApp;
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                 RPVEntitlementsViewController *entitlementsViewController = [[RPVEntitlementsViewController alloc] init];
+                                 UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+                                 entitlementsViewController.onDismiss = ^{
+                                     [UIView animateWithDuration:0.25 animations:^{
+                                         alertWindow.alpha = 0.0;
+                                     } completion:^(BOOL finished) {
+                                         if (finished) {
+                                             [alertWindow setHidden:YES];
+                                         }
+                                     }];
+                                 };
+
+                                 alertWindow.rootViewController = entitlementsViewController;
+                                 alertWindow.windowLevel = UIWindowLevelStatusBar;
+                                 alertWindow.alpha = 0;
+                                 [alertWindow setTintColor:[UIColor colorWithRed:147.0 / 255.0 green:99.0 / 255.0 blue:207.0 / 255.0 alpha:1.0]];
+
+                                 entitlementsViewController.titleLabel.text = @"Entitlements";
+
+                                 NSData *binaryData = [(RPVIpaBundleApplication *)self.application _loadFileWithFormat:[NSString stringWithFormat:@"Payload/*/%@", applicationName] fromIPA:[(RPVIpaBundleApplication *)[self application] cachedURL] multipleCandiateChooser:^NSString *(NSArray *candidates) {
+                                     return [candidates firstObject];
+                                 }];
+                                 NSString *binaryLocation = [NSString stringWithFormat:@"/tmp/%@", applicationName];
+                                 [binaryData writeToURL:[NSURL fileURLWithPath:binaryLocation] atomically:YES];
+
+                                 [entitlementsViewController updateEntitlementsViewForBinaryAtLocation:binaryLocation];
+
+                                 [alertWindow makeKeyAndVisible];
+
+                                 [UIView animateWithDuration:0.25 animations:^{
+                                     alertWindow.alpha = 1.0;
+                                 } completion:^(BOOL finished){
+                                 }];
+                             }]];
+
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                       }]];
+
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // UITapGesture callbacks
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -518,29 +709,31 @@
         }
 
         // Update progess bar!
-        [UIView animateWithDuration:percent == 0 ? 0.0 : 0.35 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-            self.progressBar.value = percent;
-            self.percentCompleteLabel.text = [NSString stringWithFormat:@"%d%% complete", percent];
-        } completion:^(BOOL finished) {
-            if (finished && percent == 100) {
-                self.percentCompleteLabel.hidden = YES;
-                self.progressBar.hidden = YES;
+        [UIView animateWithDuration:percent == 0 ? 0.0 : 0.35
+            delay:0.0
+            options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+                self.progressBar.value = percent;
+                self.percentCompleteLabel.text = [NSString stringWithFormat:@"%d%% complete", percent];
+            } completion:^(BOOL finished) {
+                if (finished && percent == 100) {
+                    self.percentCompleteLabel.hidden = YES;
+                    self.progressBar.hidden = YES;
 
-                self.signingButton.alpha = 1.0;
-                self.signingButton.enabled = YES;
+                    self.signingButton.alpha = 1.0;
+                    self.signingButton.enabled = YES;
 
-                self.applicationBundleIdentifierLabel.hidden = NO;
+                    self.applicationBundleIdentifierLabel.hidden = NO;
 
-                // If necessary, "unlock" user exit controls.
-                if (self.lockWhenInstalling) {
-                    self.closeButton.hidden = NO;
-                    self.closeGestureRecogniser.enabled = YES;
+                    // If necessary, "unlock" user exit controls.
+                    if (self.lockWhenInstalling) {
+                        self.closeButton.hidden = NO;
+                        self.closeGestureRecogniser.enabled = YES;
+                    }
+
+                    // Close the view if percentage is 100.
+                    [self _userDidTapCloseButton:nil];
                 }
-
-                // Close the view if percentage is 100.
-                [self _userDidTapCloseButton:nil];
-            }
-        }];
+            }];
     });
 }
 

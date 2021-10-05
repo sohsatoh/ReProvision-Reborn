@@ -17,7 +17,6 @@
 @interface RPVIpaBundleApplication ()
 
 @property (nonatomic, strong) NSDictionary *cachedInfoPlist;
-@property (nonatomic, strong) NSURL *cachedURL;
 @property (nonatomic, strong) UIImage *cachedIconImage;
 @property (nonatomic, strong) NSNumber *uncompressedSize;
 
