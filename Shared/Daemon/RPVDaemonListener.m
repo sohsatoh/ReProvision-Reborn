@@ -173,13 +173,31 @@ typedef enum : NSUInteger {
     NSLog(@"*** [reprovisiond] :: Starting signing timer, next fire in: %f minutes", (float)nextFireInterval / 60.0);
 
     self.signingTimer = [NSTimer timerWithTimeInterval:nextFireInterval target:self selector:@selector(signingTimerDidFire:) userInfo:nil repeats:NO];
-    NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(nextFireInterval - 10)];
-    IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
-    if (ret == kIOReturnSuccess)
-        NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
-    else
-        NSLog(@"*** [reprovisiond] :: Error occured when set wake timer");
-    [[NSRunLoop currentRunLoop] addTimer:self.signingTimer forMode:NSDefaultRunLoopMode];
+
+    if ([self trueBgResign]) {
+        [self _cancelAllWakeTimer];
+        NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(nextFireInterval - 10)];
+        IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
+        if (ret == kIOReturnSuccess)
+            NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
+        else
+            NSLog(@"*** [reprovisiond] :: Error occured when set wake timer");
+
+        CFMutableDictionaryRef scheduleDict = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFDictionaryAddValue(scheduleDict, CFSTR(kIOPMPowerEventTimeKey), (__bridge CFDateRef)[wakeTime dateByAddingTimeInterval:5]);
+        CFDictionaryAddValue(scheduleDict, CFSTR(kIOPMPowerEventAppNameKey), CFSTR("jp.soh.reprovisiond"));
+        CFDictionaryAddValue(scheduleDict, CFSTR(kIOPMPowerEventUserVisible), kCFBooleanTrue);
+
+        ret = IOPMRequestSysWake(scheduleDict);
+        if (ret == kIOReturnSuccess)
+            NSLog(@"*** [reprovisiond] :: Success IOPMRequestSysWake (at %@)", wakeTime);
+        else
+            NSLog(@"*** [reprovisiond] :: occured when set sys wake %s", mach_error_string(ret));
+        CFRelease(scheduleDict);
+    }
+
+    [[NSRunLoop currentRunLoop] addTimer:self.signingTimer
+                                 forMode:NSDefaultRunLoopMode];
 }
 
 - (void)_restartSigningTimerWithInterval:(NSTimeInterval)interval {
@@ -191,13 +209,27 @@ typedef enum : NSUInteger {
     self.signingTimer = [NSTimer timerWithTimeInterval:interval target:self selector:@selector(signingTimerDidFire:) userInfo:nil repeats:NO];
 
     NSDate *nextFireDate = (NSDate *)[self getPreferenceKey:@"nextFireDate"];
-    if ([nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] < -10 || [nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] > 10) {
+    if (([nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] < -10 || [nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] > 10) && [self trueBgResign]) {
+        [self _cancelAllWakeTimer];
+
         NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(interval - 10)];
         IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
         if (ret == kIOReturnSuccess)
             NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
         else
             NSLog(@"*** [reprovisiond] :: Error occured when set wake timer");
+
+        CFMutableDictionaryRef scheduleDict = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFDictionaryAddValue(scheduleDict, CFSTR(kIOPMPowerEventTimeKey), (__bridge CFDateRef)[wakeTime dateByAddingTimeInterval:5]);
+        CFDictionaryAddValue(scheduleDict, CFSTR(kIOPMPowerEventAppNameKey), CFSTR("jp.soh.reprovisiond"));
+        CFDictionaryAddValue(scheduleDict, CFSTR(kIOPMPowerEventUserVisible), kCFBooleanTrue);
+
+        ret = IOPMRequestSysWake(scheduleDict);
+        if (ret == kIOReturnSuccess)
+            NSLog(@"*** [reprovisiond] :: Success IOPMRequestSysWake (at %@)", wakeTime);
+        else
+            NSLog(@"*** [reprovisiond] :: occured when set sys wake %s", mach_error_string(ret));
+        CFRelease(scheduleDict);
     }
 
     [[NSRunLoop currentRunLoop] addTimer:self.signingTimer
@@ -205,6 +237,28 @@ typedef enum : NSUInteger {
 
     // Persist next fire date in the event of crash or shutdown
     [self setPreferenceKey:@"nextFireDate" withValue:[[NSDate date] dateByAddingTimeInterval:interval]];
+}
+
+- (void)_cancelAllWakeTimer {
+    CFArrayRef events = IOPMCopyScheduledPowerEvents();
+    if (events) {
+        int i;
+        CFIndex count = CFArrayGetCount(events);
+        for (i = 0; i < count; i++) {
+            CFDictionaryRef dict = (CFDictionaryRef)CFArrayGetValueAtIndex(events, i);
+            CFStringRef id = (CFStringRef)CFDictionaryGetValue(dict, CFSTR(kIOPMPowerEventAppNameKey));
+            if (CFEqual(id, CFSTR("jp.soh.reprovisiond"))) {
+                CFDateRef EventTime = (CFDateRef)CFDictionaryGetValue(dict, CFSTR(kIOPMPowerEventTimeKey));
+                CFStringRef EventType = (CFStringRef)CFDictionaryGetValue(dict, CFSTR(kIOPMPowerEventTypeKey));
+                IOReturn ret = IOPMCancelScheduledPowerEvent(EventTime, id, EventType);
+                if (ret == kIOReturnSuccess)
+                    NSLog(@"Success cancel scheduled power event(s)");
+                else
+                    NSLog(@"Error: %s", mach_error_string(ret));
+            }
+        }
+        CFRelease(events);
+    }
 }
 
 - (NSTimeInterval)heartbeatTimerInterval {
@@ -219,6 +273,11 @@ typedef enum : NSUInteger {
 
 - (BOOL)canSignInLowPowerMode {
     id value = [self.settings objectForKey:@"resignInLowPowerMode"];
+    return value ? [value boolValue] : NO;
+}
+
+- (BOOL)trueBgResign {
+    id value = [self.settings objectForKey:@"trueBgResign"];
     return value ? [value boolValue] : NO;
 }
 

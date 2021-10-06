@@ -56,18 +56,6 @@
     [group setProperty:@"Set how often checks are made for if any applications are in need of re-signing." forKey:@"footerText"];
     [array addObject:group];
 
-    PSSpecifier *resign = [PSSpecifier preferenceSpecifierNamed:@"Re-sign in Low Power Mode" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
-    [resign setProperty:@"resignInLowPowerMode" forKey:@"key"];
-    [resign setProperty:@0 forKey:@"default"];
-
-    [array addObject:resign];
-
-    PSSpecifier *forceResign = [PSSpecifier preferenceSpecifierNamed:@"Force Re-sign" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
-    [forceResign setProperty:@"forceResign" forKey:@"key"];
-    [forceResign setProperty:@1 forKey:@"default"];
-
-    [array addObject:forceResign];
-
     NSDate *nextFireDate = [RPVResources preferenceValueForKey:@"nextFireDate"];
     NSMutableString *nextFireDateStr = [NSMutableString stringWithString:@"Next Fire Date: "];
     if (nextFireDate) {
@@ -80,6 +68,24 @@
     }
     PSSpecifier *nextFire = [PSSpecifier preferenceSpecifierNamed:nextFireDateStr target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
     [array addObject:nextFire];
+
+    PSSpecifier *resign = [PSSpecifier preferenceSpecifierNamed:@"Re-sign in Low Power Mode" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+    [resign setProperty:@"resignInLowPowerMode" forKey:@"key"];
+    [resign setProperty:@0 forKey:@"default"];
+
+    [array addObject:resign];
+
+    PSSpecifier *forceResign = [PSSpecifier preferenceSpecifierNamed:@"Force Re-sign" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+    [forceResign setProperty:@"forceResign" forKey:@"key"];
+    [forceResign setProperty:@1 forKey:@"default"];
+
+    [array addObject:forceResign];
+
+    PSSpecifier *trueBgResign = [PSSpecifier preferenceSpecifierNamed:@"True Background Re-sign (Beta)" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+    [trueBgResign setProperty:@"trueBgResign" forKey:@"key"];
+    [trueBgResign setProperty:@0 forKey:@"default"];
+
+    [array addObject:trueBgResign];
 
     PSSpecifier *threshold = [PSSpecifier preferenceSpecifierNamed:@"Check Expiry Times:" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:NSClassFromString(@"PSListItemsController") cell:PSLinkListCell edit:nil];
     [threshold setProperty:@YES forKey:@"enabled"];
@@ -172,6 +178,8 @@
             return [NSNumber numberWithBool:NO];
         } else if ([key isEqualToString:@"forceResign"]) {
             return [NSNumber numberWithBool:YES];
+        } else if ([key isEqualToString:@"trueBgResign"]) {
+            return [NSNumber numberWithBool:NO];
         } else if ([key isEqualToString:@"heartbeatTimerInterval"]) {
             return [NSNumber numberWithInt:2];
         } else if ([key isEqualToString:@"shouldAutoRevokeIfNeeded"]) {
