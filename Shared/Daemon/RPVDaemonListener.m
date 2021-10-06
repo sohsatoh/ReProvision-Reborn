@@ -174,7 +174,7 @@ typedef enum : NSUInteger {
 
     self.signingTimer = [NSTimer timerWithTimeInterval:nextFireInterval target:self selector:@selector(signingTimerDidFire:) userInfo:nil repeats:NO];
     NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(nextFireInterval - 10)];
-    IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWake));
+    IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
     if (ret == kIOReturnSuccess)
         NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
     else
@@ -193,7 +193,7 @@ typedef enum : NSUInteger {
     NSDate *nextFireDate = (NSDate *)[self getPreferenceKey:@"nextFireDate"];
     if ([nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] < -10 || [nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] > 10) {
         NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(interval - 10)];
-        IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWake));
+        IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
         if (ret == kIOReturnSuccess)
             NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
         else
