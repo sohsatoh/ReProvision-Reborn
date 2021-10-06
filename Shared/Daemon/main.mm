@@ -9,26 +9,27 @@
 #import "RPVDaemonListener.h"
 
 @interface NSXPCListener (Private)
-- (id)initWithMachServiceName:(NSString*)arg1;
+- (id)initWithMachServiceName:(NSString *)arg1;
 @end
 
-int main(int argc, const char *argv[])
-{
+int main(int argc, const char *argv[]) {
+    setuid(0);
+
     NSLog(@"*** [reprovisiond] :: Loading up daemon.");
-    
+
     // initialize our daemon
     RPVDaemonListener *daemon = [[RPVDaemonListener alloc] init];
     [daemon initialiseListener];
-    
+
     // Bypass compiler prohibited errors
     Class NSXPCListenerClass = NSClassFromString(@"NSXPCListener");
-    
+
     NSXPCListener *listener = [[NSXPCListenerClass alloc] initWithMachServiceName:@"jp.soh.reprovisiond"];
     listener.delegate = daemon;
     [listener resume];
-    
+
     // Run the run loop forever.
     [[NSRunLoop currentRunLoop] run];
-    
+
     return EXIT_SUCCESS;
 }

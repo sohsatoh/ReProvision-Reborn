@@ -52,8 +52,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Enable Firebase Analytics if the plist file exists
-    if([[NSFileManager defaultManager] fileExistsAtPath:[[NSBundle mainBundle] pathForResource:@"GoogleService-Info" ofType:@"plist"]]) [FIRApp configure];
-    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[[NSBundle mainBundle] pathForResource:@"GoogleService-Info" ofType:@"plist"]]) [FIRApp configure];
+
     // Override point for customization after application launch.
     [[RPVApplicationSigning sharedInstance] addSigningUpdatesObserver:self];
 

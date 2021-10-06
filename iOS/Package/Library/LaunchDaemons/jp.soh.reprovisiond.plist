@@ -17,7 +17,7 @@
       <string>/usr/libexec/reprovisiond</string>
     </array>
     <key>UserName</key>
-    <string>mobile</string>
+    <string>root</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
