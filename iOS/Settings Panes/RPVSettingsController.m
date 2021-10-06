@@ -25,7 +25,7 @@
 
     NSArray *names = @[@"Soh", @"Matchstic", @"Riles", @"Aesign"];
     NSArray *titles = @[@"Developer of Reborn Version / New Icon Design", @"Developer of Original Version", @"Developer of AltStore", @"Designer"];
-    NSArray *imagePaths = @[@"developer_of_reborn", @"author", @"developer_of_altstore", @"designer"];
+    NSArray *imagePaths = @[@"Developer_of_Reborn", @"author", @"Developer_of_AltStore", @"designer"];
     NSArray *usernames = @[@"soh_satoh", @"_Matchstic", @"rileytestut", @"aesign_"];
 
     NSDictionary *contributers = @{ @"names": names,

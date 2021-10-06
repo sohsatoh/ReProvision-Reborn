@@ -7,7 +7,9 @@
 //
 
 #import "RPVDaemonListener.h"
+#import <mach/mach_error.h>
 #import <notify.h>
+#import "Headers/IOKit/pwr_mgt/IOPMLibPrivate.h"
 #import "RPVApplicationProtocol.h"
 
 #if TARGET_OS_TV
@@ -100,12 +102,12 @@ typedef enum : NSUInteger {
 
     CFPreferencesAppSynchronize(CFSTR(APPLICATION_IDENTIFIER));
 
-    CFArrayRef keyList = CFPreferencesCopyKeyList(CFSTR(APPLICATION_IDENTIFIER), kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFArrayRef keyList = CFPreferencesCopyKeyList(CFSTR(APPLICATION_IDENTIFIER), CFSTR("mobile"), kCFPreferencesAnyHost);
 
     if (!keyList) {
         self.settings = [NSMutableDictionary dictionary];
     } else {
-        CFDictionaryRef dictionary = CFPreferencesCopyMultiple(keyList, CFSTR(APPLICATION_IDENTIFIER), kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        CFDictionaryRef dictionary = CFPreferencesCopyMultiple(keyList, CFSTR(APPLICATION_IDENTIFIER), CFSTR("mobile"), kCFPreferencesAnyHost);
 
         self.settings = [(__bridge NSDictionary *)dictionary copy];
 
@@ -125,7 +127,7 @@ typedef enum : NSUInteger {
     [mutableSettings setObject:value forKey:key];
 
     // Write to CFPreferences
-    CFPreferencesSetValue((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, CFSTR(APPLICATION_IDENTIFIER), kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    CFPreferencesSetValue((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, CFSTR(APPLICATION_IDENTIFIER), CFSTR("mobile"), kCFPreferencesCurrentHost);
 
     self.settings = mutableSettings;
 
@@ -171,6 +173,12 @@ typedef enum : NSUInteger {
     NSLog(@"*** [reprovisiond] :: Starting signing timer, next fire in: %f minutes", (float)nextFireInterval / 60.0);
 
     self.signingTimer = [NSTimer timerWithTimeInterval:nextFireInterval target:self selector:@selector(signingTimerDidFire:) userInfo:nil repeats:NO];
+    NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(nextFireInterval - 10)];
+    IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
+    if (ret == kIOReturnSuccess)
+        NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
+    else
+        NSLog(@"*** [reprovisiond] :: Error occured when set wake timer");
     [[NSRunLoop currentRunLoop] addTimer:self.signingTimer forMode:NSDefaultRunLoopMode];
 }
 
@@ -181,7 +189,19 @@ typedef enum : NSUInteger {
         [self.signingTimer invalidate];
 
     self.signingTimer = [NSTimer timerWithTimeInterval:interval target:self selector:@selector(signingTimerDidFire:) userInfo:nil repeats:NO];
-    [[NSRunLoop currentRunLoop] addTimer:self.signingTimer forMode:NSDefaultRunLoopMode];
+
+    NSDate *nextFireDate = (NSDate *)[self getPreferenceKey:@"nextFireDate"];
+    if ([nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] < -10 || [nextFireDate timeIntervalSinceDate:self.signingTimer.fireDate] > 10) {
+        NSDate *wakeTime = [[NSDate date] dateByAddingTimeInterval:(interval - 10)];
+        IOReturn ret = IOPMSchedulePowerEvent((__bridge CFDateRef)wakeTime, CFSTR("jp.soh.reprovisiond"), CFSTR(kIOPMAutoWakeOrPowerOn));
+        if (ret == kIOReturnSuccess)
+            NSLog(@"*** [reprovisiond] :: Successfully set wake timer");
+        else
+            NSLog(@"*** [reprovisiond] :: Error occured when set wake timer");
+    }
+
+    [[NSRunLoop currentRunLoop] addTimer:self.signingTimer
+                                 forMode:NSDefaultRunLoopMode];
 
     // Persist next fire date in the event of crash or shutdown
     [self setPreferenceKey:@"nextFireDate" withValue:[[NSDate date] dateByAddingTimeInterval:interval]];
@@ -421,8 +441,9 @@ typedef enum : NSUInteger {
             NSDate *nextFireDate = [self getPreferenceKey:@"nextFireDate"];
             NSTimeInterval nextFireInterval = [nextFireDate timeIntervalSinceDate:[NSDate date]];
 
-            if (nextFireInterval <= 5 || state == 5) {  // seconds
+            if (nextFireInterval <= 5) {  // seconds
                 NSLog(@"*** [reprovisiond] :: DEBUG :: Timer would have (or is about to) expire, so requesting signing checks");
+                NSLog(@"state: %i / nextFireDate: %@ / nextFireInterval: %f", state, nextFireDate, nextFireInterval);
                 [self signingTimerDidFire:nil];
             } else {
                 // Restart the timer for this remaining interval
@@ -565,9 +586,5 @@ typedef enum : NSUInteger {
 
         [weakSelf bb_backlightChanged:(int)state];
     });
-
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSCalendarDayChangedNotification object:nil queue:nil usingBlock:^(NSNotification *notification) {
-        [weakSelf bb_backlightChanged:5];
-    }];
 }
 @end

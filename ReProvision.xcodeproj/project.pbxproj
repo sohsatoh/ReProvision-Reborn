@@ -280,9 +280,11 @@
 		C9FDB29B20518712005934CD /* RPVAccountFinalController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FDB29A20518712005934CD /* RPVAccountFinalController.m */; };
 		C9FDB2A2205195E8005934CD /* libMobileGestalt.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */; };
 		C9FF57A923902CEC00296719 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9446A2215F72700F5C556 /* Security.framework */; };
+		CF0A9115270CF1C80022A1A2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CF0A9114270CF1C80022A1A2 /* GoogleService-Info.plist */; };
 		CF39DF7825F79B7800D25BE0 /* RPVAppIdsTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */; };
 		CF3B6AAF25F2EE09008D3CA2 /* ccsrp.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */; };
 		CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */ = {isa = PBXBuildFile; fileRef = CF42CC912609F1B200D36129 /* apple-ios-g3.pem */; };
+		CF70B4D9270D7823009B98A8 /* IOKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CF70B4D8270D7812009B98A8 /* IOKit.tbd */; };
 		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
 		CFE0CBFB26C984DE0033B63E /* RPVAppIDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */; };
 		CFE0CBFE26C999910033B63E /* RPVEntitlementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFD26C999910033B63E /* RPVEntitlementsViewController.m */; };
@@ -630,10 +632,39 @@
 		C9FDB29A20518712005934CD /* RPVAccountFinalController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAccountFinalController.m; sourceTree = "<group>"; };
 		C9FDB29C2051941D005934CD /* libMobileGestalt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libMobileGestalt.h; sourceTree = "<group>"; };
 		C9FDB2A1205195E8005934CD /* libMobileGestalt.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libMobileGestalt.tbd; path = usr/lib/libMobileGestalt.tbd; sourceTree = SDKROOT; };
+		CF0A9114270CF1C80022A1A2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		CF39DF7725F79B7800D25BE0 /* RPVAppIdsTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIdsTableViewCell.m; sourceTree = "<group>"; };
 		CF39DF7925F79B8F00D25BE0 /* RPVAppIdsTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIdsTableViewCell.h; sourceTree = "<group>"; };
 		CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ccsrp.m; sourceTree = "<group>"; };
 		CF42CC912609F1B200D36129 /* apple-ios-g3.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "apple-ios-g3.pem"; sourceTree = "<group>"; };
+		CF70B4D8270D7812009B98A8 /* IOKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = IOKit.tbd; path = Shared/IOKit.tbd; sourceTree = "<group>"; };
+		CF70B500270D7AD8009B98A8 /* IOTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOTypes.h; sourceTree = "<group>"; };
+		CF70B501270D7AD8009B98A8 /* IOKitKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOKitKeys.h; sourceTree = "<group>"; };
+		CF70B502270D7AD8009B98A8 /* IOMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOMessage.h; sourceTree = "<group>"; };
+		CF70B503270D7AD8009B98A8 /* IOReturn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOReturn.h; sourceTree = "<group>"; };
+		CF70B504270D7AD8009B98A8 /* OSMessageNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSMessageNotification.h; sourceTree = "<group>"; };
+		CF70B506270D7AD8009B98A8 /* IOPM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPM.h; sourceTree = "<group>"; };
+		CF70B507270D7AD8009B98A8 /* IOPMLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPMLib.h; sourceTree = "<group>"; };
+		CF70B508270D7AD8009B98A8 /* IOPMKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPMKeys.h; sourceTree = "<group>"; };
+		CF70B509270D7AD8009B98A8 /* IOPMLibPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPMLibPrivate.h; sourceTree = "<group>"; };
+		CF70B50A270D7AD8009B98A8 /* IOPMLibDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPMLibDefs.h; sourceTree = "<group>"; };
+		CF70B50C270D7AD8009B98A8 /* IOPSKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPSKeys.h; sourceTree = "<group>"; };
+		CF70B50D270D7AD8009B98A8 /* IOUPSPlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOUPSPlugIn.h; sourceTree = "<group>"; };
+		CF70B50E270D7AD8009B98A8 /* IOPowerSources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPowerSources.h; sourceTree = "<group>"; };
+		CF70B50F270D7AD8009B98A8 /* OSKext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSKext.h; sourceTree = "<group>"; };
+		CF70B511270D7AD8009B98A8 /* IOHIDEventSystemClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDEventSystemClient.h; sourceTree = "<group>"; };
+		CF70B512270D7AD8009B98A8 /* IOHIDService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDService.h; sourceTree = "<group>"; };
+		CF70B513270D7AD8009B98A8 /* IOHIDNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDNotification.h; sourceTree = "<group>"; };
+		CF70B514270D7AD8009B98A8 /* IOHIDEventQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDEventQueue.h; sourceTree = "<group>"; };
+		CF70B515270D7AD8009B98A8 /* IOHIDEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDEvent.h; sourceTree = "<group>"; };
+		CF70B516270D7AD8009B98A8 /* IOHIDEventSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDEventSystem.h; sourceTree = "<group>"; };
+		CF70B517270D7AD8009B98A8 /* IOHIDEventData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDEventData.h; sourceTree = "<group>"; };
+		CF70B518270D7AD8009B98A8 /* IOHIDEventTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDEventTypes.h; sourceTree = "<group>"; };
+		CF70B519270D7AD8009B98A8 /* IOHIDDisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDDisplay.h; sourceTree = "<group>"; };
+		CF70B51A270D7AD8009B98A8 /* IOHIDSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDSession.h; sourceTree = "<group>"; };
+		CF70B51B270D7AD8009B98A8 /* IOHIDUserDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOHIDUserDevice.h; sourceTree = "<group>"; };
+		CF70B51C270D7AD8009B98A8 /* IOKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOKit.h; sourceTree = "<group>"; };
+		CF70B51D270D7AD8009B98A8 /* IOKitLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOKitLib.h; sourceTree = "<group>"; };
 		CF7C2CE925F7A68500083AB2 /* RPVAppID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppID.m; sourceTree = "<group>"; };
 		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
 		CFE0CBF926C984BC0033B63E /* RPVAppIDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIDViewController.h; sourceTree = "<group>"; };
@@ -709,6 +740,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9C5922221206F0300DF2E19 /* AssertionServices.tbd in Frameworks */,
+				CF70B4D9270D7823009B98A8 /* IOKit.tbd in Frameworks */,
 				87BDA7062378225300EA4540 /* AuthKitUI.tbd in Frameworks */,
 				C9C5922321206F0300DF2E19 /* BackBoardServices.tbd in Frameworks */,
 				C9C5922421206F0300DF2E19 /* SpringBoardServices.tbd in Frameworks */,
@@ -724,6 +756,7 @@
 		25B27802FF2D573B29DEC669 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CF70B4D8270D7812009B98A8 /* IOKit.tbd */,
 				87BDA6FF237821FD00EA4540 /* AuthKit.tbd */,
 				87BDA7022378222400EA4540 /* AuthKit.tbd */,
 				87BDA700237821FD00EA4540 /* AuthKitUI.tbd */,
@@ -1105,6 +1138,7 @@
 			children = (
 				C99C883323D0C34600CC48BB /* Fullscreen Alert */,
 				C9C6EA5F2004261300211FDD /* AppDelegate.h */,
+				CF0A9114270CF1C80022A1A2 /* GoogleService-Info.plist */,
 				C9C6EA602004261300211FDD /* AppDelegate.m */,
 				C9C6EA612004261300211FDD /* Assets.xcassets */,
 				C9C6EA622004261300211FDD /* LaunchScreen.storyboard */,
@@ -1389,6 +1423,7 @@
 				C9D5BACC20EE3D54000D5970 /* RPVDaemonListener.h */,
 				C9D5BACD20EE3D54000D5970 /* RPVDaemonListener.m */,
 				C9E7C2C620EE296500FDF3B0 /* main.mm */,
+				CF70B4FE270D7AD8009B98A8 /* Headers */,
 				C9E7C2C320EE296500FDF3B0 /* Supporting Files */,
 			);
 			path = Daemon;
@@ -1463,6 +1498,72 @@
 				CF3B6AAE25F2EE09008D3CA2 /* ccsrp.m */,
 			);
 			path = CoreCrypt;
+			sourceTree = "<group>";
+		};
+		CF70B4FE270D7AD8009B98A8 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				CF70B4FF270D7AD8009B98A8 /* IOKit */,
+			);
+			path = Headers;
+			sourceTree = "<group>";
+		};
+		CF70B4FF270D7AD8009B98A8 /* IOKit */ = {
+			isa = PBXGroup;
+			children = (
+				CF70B500270D7AD8009B98A8 /* IOTypes.h */,
+				CF70B501270D7AD8009B98A8 /* IOKitKeys.h */,
+				CF70B502270D7AD8009B98A8 /* IOMessage.h */,
+				CF70B503270D7AD8009B98A8 /* IOReturn.h */,
+				CF70B504270D7AD8009B98A8 /* OSMessageNotification.h */,
+				CF70B505270D7AD8009B98A8 /* pwr_mgt */,
+				CF70B50B270D7AD8009B98A8 /* ps */,
+				CF70B50F270D7AD8009B98A8 /* OSKext.h */,
+				CF70B510270D7AD8009B98A8 /* hid */,
+				CF70B51C270D7AD8009B98A8 /* IOKit.h */,
+				CF70B51D270D7AD8009B98A8 /* IOKitLib.h */,
+			);
+			path = IOKit;
+			sourceTree = "<group>";
+		};
+		CF70B505270D7AD8009B98A8 /* pwr_mgt */ = {
+			isa = PBXGroup;
+			children = (
+				CF70B506270D7AD8009B98A8 /* IOPM.h */,
+				CF70B507270D7AD8009B98A8 /* IOPMLib.h */,
+				CF70B508270D7AD8009B98A8 /* IOPMKeys.h */,
+				CF70B509270D7AD8009B98A8 /* IOPMLibPrivate.h */,
+				CF70B50A270D7AD8009B98A8 /* IOPMLibDefs.h */,
+			);
+			path = pwr_mgt;
+			sourceTree = "<group>";
+		};
+		CF70B50B270D7AD8009B98A8 /* ps */ = {
+			isa = PBXGroup;
+			children = (
+				CF70B50C270D7AD8009B98A8 /* IOPSKeys.h */,
+				CF70B50D270D7AD8009B98A8 /* IOUPSPlugIn.h */,
+				CF70B50E270D7AD8009B98A8 /* IOPowerSources.h */,
+			);
+			path = ps;
+			sourceTree = "<group>";
+		};
+		CF70B510270D7AD8009B98A8 /* hid */ = {
+			isa = PBXGroup;
+			children = (
+				CF70B511270D7AD8009B98A8 /* IOHIDEventSystemClient.h */,
+				CF70B512270D7AD8009B98A8 /* IOHIDService.h */,
+				CF70B513270D7AD8009B98A8 /* IOHIDNotification.h */,
+				CF70B514270D7AD8009B98A8 /* IOHIDEventQueue.h */,
+				CF70B515270D7AD8009B98A8 /* IOHIDEvent.h */,
+				CF70B516270D7AD8009B98A8 /* IOHIDEventSystem.h */,
+				CF70B517270D7AD8009B98A8 /* IOHIDEventData.h */,
+				CF70B518270D7AD8009B98A8 /* IOHIDEventTypes.h */,
+				CF70B519270D7AD8009B98A8 /* IOHIDDisplay.h */,
+				CF70B51A270D7AD8009B98A8 /* IOHIDSession.h */,
+				CF70B51B270D7AD8009B98A8 /* IOHIDUserDevice.h */,
+			);
+			path = hid;
 			sourceTree = "<group>";
 		};
 		CF7C2CE625F7A61D00083AB2 /* Table View */ = {
@@ -1590,12 +1691,14 @@
 			buildPhases = (
 				E7B8235B02A4CDD86F4E0C07 /* [CP] Check Pods Manifest.lock */,
 				C996746A20EE32D500EEFBD2 /* Move daemon binary into Package */,
+				CF9E59E8270D016900757D3B /* Change the version */,
 				C9C6EA3E2004257E00211FDD /* Sources */,
 				C9C6EA3F2004257E00211FDD /* Frameworks */,
 				C9C6EA402004257E00211FDD /* Resources */,
 				38659AA49377400431BBBE6E /* [CP] Copy Pods Resources */,
 				C974027723B234E700BA9B25 /* Embed App Extensions */,
 				C996746420EE30EB00EEFBD2 /* Sign application and create .deb */,
+				CF9E59E6270CF34300757D3B /* Firebase */,
 			);
 			buildRules = (
 			);
@@ -1734,6 +1837,7 @@
 			files = (
 				C974029623B6381D00BA9B25 /* doc_44.png in Resources */,
 				CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */,
+				CF0A9115270CF1C80022A1A2 /* GoogleService-Info.plist in Resources */,
 				C974029323B6381D00BA9B25 /* doc_64.png in Resources */,
 				C974029423B6381D00BA9B25 /* doc_320.png in Resources */,
 				C974029523B6381D00BA9B25 /* doc_22.png in Resources */,
@@ -1854,6 +1958,45 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "echo \"Copying application into Package\"\n\n# Clean out existing .app\nrm -rf \"${PROJECT_DIR}/tvOS/Package/Applications/${CONTENTS_FOLDER_PATH}\"\n\nbuiltpath=\"${BUILD_DIR}/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}/${CONTENTS_FOLDER_PATH}\"\ncp -R $builtpath \"${PROJECT_DIR}/tvOS/Package/Applications/\"\n\n# Sign with entitlements\necho \"Signing with entitlements.xml...\"\nif type \"${iOSOpenDevPath}/bin/ldid2\" > /dev/null;\nthen\n${iOSOpenDevPath}/bin/ldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelif type \"/usr/bin/ldid2\" > /dev/null;\nthen\n/usr/bin/ldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelif type \"/usr/local/bin/ldid2\" > /dev/null;\nthen\n/usr/local/bin/ldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelif type \"ldid2\" > /dev/null;\nthen\nldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelse\necho \"Could not find ldid2 on your system (searched /usr/bin, /usr/local/bin, ${iOSOpenDevPath}/bin/)\"\nexit 1\nfi\n\n# Build package!\n${iOSOpenDevPath}/bin/iosod build -p \"${PROJECT_DIR}/tvOS/PackageVersion.plist\" \"${PROJECT_DIR}/tvOS/Package\" \"${PROJECT_DIR}/tvOS/NitoPackages\"";
+		};
+		CF9E59E6270CF34300757D3B /* Firebase */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = Firebase;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
+		};
+		CF9E59E8270D016900757D3B /* Change the version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${TEMP_DIR}/Preprocessed-Info.plist",
+			);
+			name = "Change the version";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "MAJOR_VERSION=`(/usr/libexec/PlistBuddy -c \"Print :Major\" \"${PROJECT_DIR}/iOS/PackageVersion.plist\")`\nMINOR_VERSION=`(/usr/libexec/PlistBuddy -c \"Print :Minor\" \"${PROJECT_DIR}/iOS/PackageVersion.plist\")`\nBUGFIX_VERSION=`(/usr/libexec/PlistBuddy -c \"Print :BugFix\" \"${PROJECT_DIR}/iOS/PackageVersion.plist\")`\n\nexport MARKETING_VERSION=`(printf \"%d.%d.%d\" ${MAJOR_VERSION} ${MINOR_VERSION} ${BUGFIX_VERSION})`\nexport VERSION_SUFFIX=`(/usr/libexec/PlistBuddy -c \"Print :Stage\" \"${PROJECT_DIR}/iOS/PackageVersion.plist\")`\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString ${MARKETING_VERSION}${VERSION_SUFFIX}\" \"${TEMP_DIR}/Preprocessed-Info.plist\"\n";
 		};
 		E2B46DEA621ED4BB8F11BBD0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2540,6 +2683,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
 					"${PROJECT_DIR}/iOS/Headers/**",
@@ -2549,6 +2693,7 @@
 					"${PROJECT_DIR}/Shared/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
+				INFOPLIST_PREPROCESS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -2583,6 +2728,7 @@
 					"${PROJECT_DIR}/Shared/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
+				INFOPLIST_PREPROCESS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
