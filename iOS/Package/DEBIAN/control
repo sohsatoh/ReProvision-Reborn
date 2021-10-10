@@ -5,8 +5,7 @@ Description: Re-sign applications on your device
 Section: Utilities
 Depends: firmware (>= 9.0)
 Priority: optional
-Replaces: com.matchstic.Extender-Installer, com.matchstic.reprovision
-Provides: com.matchstic.Extender-Installer, com.matchstic.reprovision
+Conflicts: com.matchstic.reprovision
 Architecture: iphoneos-arm
 Author: Soh Satoh, Matt Clarke
 dev: Matt Clarke
