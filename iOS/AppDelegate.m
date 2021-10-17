@@ -513,7 +513,9 @@
     }];
     [av addAction:action];
 
-    [self.window.rootViewController presentViewController:av animated:YES completion:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.window.rootViewController presentViewController:av animated:YES completion:nil];
+    });
 
     NSLog(@"*** [ReProvision] :: ERROR :: Failed to setup daemon connection: %@", self.daemonConnection);
 }
