@@ -61,7 +61,10 @@
         return [candidates firstObject];
     }];
 
-    return [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:nil];
+    NSDictionary *dict = @{};
+    if (data) dict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:nil];
+
+    return dict;
 }
 
 - (UIImage *)_loadApplicationIconFromURL:(NSURL *)url withInfoPlist:(NSDictionary *)infoPlist {
@@ -155,7 +158,8 @@
     @try {
         NSBundle *mobileIconsBundle = [NSBundle bundleWithIdentifier:@"com.apple.mobileicons.framework"];
         if (mobileIconsBundle) {
-            if (IS_IPAD) maskImage = [UIImage imageNamed:@"AppIconMask~ipad" inBundle:mobileIconsBundle compatibleWithTraitCollection:nil];
+            if (IS_IPAD)
+                maskImage = [UIImage imageNamed:@"AppIconMask~ipad" inBundle:mobileIconsBundle compatibleWithTraitCollection:nil];
             else
                 maskImage = [UIImage imageNamed:@"AppIconMask~iphone" inBundle:mobileIconsBundle compatibleWithTraitCollection:nil];
         }

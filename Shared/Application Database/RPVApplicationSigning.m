@@ -68,14 +68,14 @@ static RPVApplicationSigning *sharedInstance;
 
 - (void)_resignApplicationsArray:(NSArray *)applications withTeamID:(NSString *)teamID username:(NSString *)username password:(NSString *)password {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        for (id<RPVApplicationSigningProtocol> observer in self.observers) {
+        for (id<RPVApplicationSigningProtocol> observer in [self.observers reverseObjectEnumerator]) {
             [observer applicationSigningDidStart];
         }
 
         if (self.undertakingResignPipeline) {
             NSError *error = [self _errorFromString:@"Already undertaking the re-sign pipeline!" errorCode:RPVErrorAlreadyUndertakingPipeline];
 
-            for (id<RPVApplicationSigningProtocol> observer in self.observers) {
+            for (id<RPVApplicationSigningProtocol> observer in [self.observers reverseObjectEnumerator]) {
                 [observer applicationSigningCompleteWithError:error];
             }
             return;
@@ -100,7 +100,7 @@ static RPVApplicationSigning *sharedInstance;
         if (self.installQueue.count == 0) {
             self.undertakingResignPipeline = NO;
             NSError *error = [self _errorFromString:@"No applications need re-signing" errorCode:RPVErrorNoSigningRequired];
-            for (id<RPVApplicationSigningProtocol> observer in self.observers) {
+            for (id<RPVApplicationSigningProtocol> observer in [self.observers reverseObjectEnumerator]) {
                 [observer applicationSigningCompleteWithError:error];
             }
             return;
@@ -119,8 +119,8 @@ static RPVApplicationSigning *sharedInstance;
         self.currentBackgroundTaskIdentifier = bgTask;
 
         // Update progress handler to 0% for all applications.
-        for (RPVApplication *app in self.installQueue) {
-            for (id<RPVApplicationSigningProtocol> observer in self.observers) {
+        for (RPVApplication *app in [self.installQueue reverseObjectEnumerator]) {
+            for (id<RPVApplicationSigningProtocol> observer in [self.observers reverseObjectEnumerator]) {
                 [observer applicationSigningUpdateProgress:0 forBundleIdentifier:app.bundleIdentifier];
             }
         }
@@ -166,7 +166,7 @@ static RPVApplicationSigning *sharedInstance;
 /**
  For the given RPVApplication, this method copies its .app bundle into a directory structure of
  an extracted IPA, in a temporary directory.
- 
+
  @param extractedArchiveURL Output URL of where the root directory structure is located
  @param applicationBundleURL Output URL of where the application's bundle is located
  @param error If non-null, any arising error.
@@ -414,7 +414,7 @@ static RPVApplicationSigning *sharedInstance;
     }
 
     // Update progress to 30% for this application.
-    for (id<RPVApplicationSigningProtocol> observer in self.observers) {
+    for (id<RPVApplicationSigningProtocol> observer in [self.observers reverseObjectEnumerator]) {
         [observer applicationSigningUpdateProgress:30 forBundleIdentifier:[application bundleIdentifier]];
     }
 

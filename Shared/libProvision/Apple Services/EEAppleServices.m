@@ -64,9 +64,9 @@ NSString *const REProtocolVersion = @"QH65B2";
         @"Accept-Language": @"en-us",
         @"Connection": @"keep-alive",
         @"X-Xcode-Version": @"11.2 (11B52)",
-        @"X-Apple-I-Identity-Id": [[self.credentials user] componentsSeparatedByString:@"|"][0],
-        @"X-Apple-GS-Token": [self.credentials password],
-        @"X-Mme-Device-Id": [currentDevice uniqueDeviceIdentifier],
+        @"X-Apple-I-Identity-Id": [[self.credentials user] componentsSeparatedByString:@"|"][0] ?: 0,
+        @"X-Apple-GS-Token": [self.credentials password] ?: 0,
+        @"X-Mme-Device-Id": [currentDevice uniqueDeviceIdentifier] ?: 0,
         @"X-HTTP-Method-Override": method,
     };
 
@@ -112,11 +112,10 @@ NSString *const REProtocolVersion = @"QH65B2";
 }
 
 - (void)_sendRawServiceRequestWithName:(NSString *)name method:(NSString *)method systemType:(EESystemType)systemType extraDictionary:(NSDictionary *)extra andCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
-    
     NSString *urlStr = [NSString stringWithFormat:@"%@%@", self.servicesBaseURL, name];
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
-    
-    
+
+
     NSLog(@"Service request to URL: %@", urlStr);
 
 
@@ -128,17 +127,15 @@ NSString *const REProtocolVersion = @"QH65B2";
     }
 
     [self _sendRequest:request method:method data:data andCompletionHandler:completionHandler];
-    
 }
 
 - (void)_sendServiceRequestWithName:(NSString *)name method:(NSString *)method systemType:(EESystemType)systemType extraDictionary:(NSDictionary *)extra andCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
-    
     // Now, body. (thanks altsign)
     NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
     [extra enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
         [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
     }];
-    
+
     NSURLComponents *components = [[NSURLComponents alloc] init];
     components.queryItems = queryItems;
 
@@ -486,7 +483,7 @@ NSString *const REProtocolVersion = @"QH65B2";
 
     // Features - assume caller has correctly set "on", "off", "whatever"
     for (NSString *key in [enabledFeatures allKeys]) {
-        [extra setObject:[enabledFeatures objectForKey:key] forKey:key];
+        if ([enabledFeatures objectForKey:key]) [extra setObject:[enabledFeatures objectForKey:key] forKey:key];
     }
 
     [extra setObject:entitlements forKey:@"entitlements"];
@@ -651,16 +648,16 @@ NSString *const REProtocolVersion = @"QH65B2";
     [extra setObject:stringifiedCSR forKey:@"csrContent"];
     [extra setObject:machineID forKey:@"machineId"];
     [extra setObject:machineName forKey:@"machineName"];
-    
+
     NSDictionary *obj = @{
         @"data": @{
-                @"attributes": extra,
-                @"type": @"certificates"
+            @"attributes": extra,
+            @"type": @"certificates"
         },
     };
     //[self _doActionWithName:@"submitDevelopmentCSR.action" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
-    
-    [self _sendRawServiceRequestWithName:@"certificates" method:@"post" systemType:systemType extraDictionary:obj andCompletionHandler:completionHandler ];
+
+    [self _sendRawServiceRequestWithName:@"certificates" method:@"post" systemType:systemType extraDictionary:obj andCompletionHandler:completionHandler];
     // use post to make existing code to use json
 }
 
