@@ -72,30 +72,19 @@
     // data sauce.
     NSMutableArray *items = [NSMutableArray array];
 
+    NSMutableArray *onlineHelp = [NSMutableArray array];
+    [onlineHelp addObject:@"Online Help"];
+    [onlineHelp addObject:@"Online help page provides the latest information about ReProvision Reboorn."];
+    [onlineHelp addObject:@"Go to Online Help Page"];
+
+    [items addObject:onlineHelp];
+
     NSMutableArray *submitDevelopmentCSR = [NSMutableArray array];
     [submitDevelopmentCSR addObject:@"submitDevelopmentCSR"];
     [submitDevelopmentCSR addObject:@"This error usually occurs when the same Apple ID is logged in more than twice to applications like Cydia Impactor and ReProvision.\n\nEach application creates a certificate to sign applications with, but free accounts are limited to only two certificates.\n\nTo resolve this, tap below to remove the extra certificates."];
     [submitDevelopmentCSR addObject:@"Manage Certificates"];
 
     [items addObject:submitDevelopmentCSR];
-
-    NSMutableArray *certRevoked = [NSMutableArray array];
-    [certRevoked addObject:@"Could not launch apps signed with ReProvision"];
-    [certRevoked addObject:@"This usually occurs when the certificate has been revoked. Revokes occur mainly in the following situations.\n\n1. The certificate has been revoked by Apple.\n2. The certificate has been revoked by other software.\n\nPlease note that you cannot use ReProvision with other apps to resign apps. If you use them with same Apple ID, the certificate of the last app used for signing will overwrite the certificate of the app used for signing before that.\nBy default, ReProvision allows you to switch other certificates to ReProvision certificates.\n\nIf for some reason you do not wish ReProvision to overwrite your AltStore certificate, go to Settings, select Advanced and turn off Force Re-sign."];
-
-    [items addObject:certRevoked];
-
-    NSMutableArray *noBackgroundSigning = [NSMutableArray array];
-    [noBackgroundSigning addObject:@"No background signing"];
-    [noBackgroundSigning addObject:@"Automatic background signing may fail sometimes. This is usually caused by the background daemon not running.\n\nTo resolve this, try re-installing ReProvision to kickstart the daemon, and ensure that you've not disabled it via iCleaner Pro."];
-
-    [items addObject:noBackgroundSigning];
-
-    NSMutableArray *pkcs12 = [NSMutableArray array];
-    [pkcs12 addObject:@"No valid PKCS12 certificate"];
-    [pkcs12 addObject:@"This error occurs when the certificate used for signing applications is out-of-sync with the certificate on Apple's servers.\n\nTo resolve, tap 'Manage Certificates' above, and remove the certificate for this device."];
-
-    [items addObject:pkcs12];
 
 #if !TARGET_OS_TV
     NSMutableArray *devices = [NSMutableArray array];
@@ -105,18 +94,6 @@
 
     [items addObject:devices];
 #endif
-
-    NSMutableArray *dotAppInfoPlist = [NSMutableArray array];
-    [dotAppInfoPlist addObject:@".app/Info.plist"];
-    [dotAppInfoPlist addObject:@"This error may occur when ReProvision attempts to create an IPA for an application.\n\nTo resolve, simply try again another time."];
-
-    [items addObject:dotAppInfoPlist];
-
-    NSMutableArray *archive = [NSMutableArray array];
-    [archive addObject:@"Could not extract archive"];
-    [archive addObject:@"This error may occur when an IPA is signed, but not repackaged correctly.\n\nTo resolve, simply try again another time."];
-
-    [items addObject:archive];
 
     self.dataSource = items;
 }
@@ -273,9 +250,17 @@
 
     if (indexPath.row == 2) {
         // This is a link.
-
         switch (indexPath.section) {
             case 0: {
+                // Online Help Page
+                if (@available(iOS 10.0, *)) {
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/reprovision-reborn-frequently-asked-questions/"] options:[NSDictionary dictionary] completionHandler:nil];
+                } else {
+                    // Fallback on earlier versions
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/reprovision-reborn-frequently-asked-questions/"]];
+                }
+            }
+            case 1: {
                 // Jump to the certificate management panel.
                 RPVTroubleshootingCertificatesViewController *certsController = [[RPVTroubleshootingCertificatesViewController alloc] init];
 
@@ -283,7 +268,7 @@
 
                 break;
             }
-            case 1: {
+            case 2: {
                 // Register active Apple Watch
                 if ([RPVResources hasActivePairedWatch])
                     [[RPVAccountChecker sharedInstance] registerCurrentWatchForTeamID:[RPVResources getTeamID] withIdentity:[RPVResources getUsername] gsToken:[RPVResources getPassword] andCompletionHandler:^(NSError *error) {
