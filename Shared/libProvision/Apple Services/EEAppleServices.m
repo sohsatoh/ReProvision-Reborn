@@ -64,9 +64,9 @@ NSString *const REProtocolVersion = @"QH65B2";
         @"Accept-Language": @"en-us",
         @"Connection": @"keep-alive",
         @"X-Xcode-Version": @"11.2 (11B52)",
-        @"X-Apple-I-Identity-Id": [[self.credentials user] componentsSeparatedByString:@"|"][0] ?: 0,
-        @"X-Apple-GS-Token": [self.credentials password] ?: 0,
-        @"X-Mme-Device-Id": [currentDevice uniqueDeviceIdentifier] ?: 0,
+        @"X-Apple-I-Identity-Id": [[self.credentials user] componentsSeparatedByString:@"|"][0] ?: @"",
+        @"X-Apple-GS-Token": [self.credentials password] ?: @"",
+        @"X-Mme-Device-Id": [currentDevice uniqueDeviceIdentifier] ?: @"",
         @"X-HTTP-Method-Override": method,
     };
 
@@ -476,9 +476,9 @@ NSString *const REProtocolVersion = @"QH65B2";
 
 - (void)addApplicationId:(NSString *)applicationIdentifier name:(NSString *)applicationName enabledFeatures:(NSDictionary *)enabledFeatures teamID:(NSString *)teamID entitlements:(NSDictionary *)entitlements systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
-    [extra setObject:teamID forKey:@"teamId"];
-    [extra setObject:applicationIdentifier forKey:@"identifier"];
-    [extra setObject:applicationName forKey:@"name"];
+    [extra setObject:teamID ?: @"" forKey:@"teamId"];
+    [extra setObject:applicationIdentifier ?: @"" forKey:@"identifier"];
+    [extra setObject:applicationName ?: @"" forKey:@"name"];
     [extra setObject:@"explicit" forKey:@"type"];
 
     // Features - assume caller has correctly set "on", "off", "whatever"
@@ -535,9 +535,9 @@ NSString *const REProtocolVersion = @"QH65B2";
 
 - (void)assignApplicationGroup:(NSString *)applicationGroup toApplicationIdId:(NSString *)appIdId teamID:(NSString *)teamID systemType:(EESystemType)systemType withCompletionHandler:(void (^)(NSError *, NSDictionary *))completionHandler {
     NSMutableDictionary *extra = [NSMutableDictionary dictionary];
-    [extra setObject:teamID forKey:@"teamId"];
-    [extra setObject:appIdId forKey:@"appIdId"];
-    [extra setObject:applicationGroup forKey:@"applicationGroups"];
+    [extra setObject:teamID ?: @"" forKey:@"teamId"];
+    [extra setObject:appIdId ?: @"" forKey:@"appIdId"];
+    [extra setObject:applicationGroup ?: @"" forKey:@"applicationGroups"];
 
     [self _doActionWithName:@"assignApplicationGroupToAppId.action" systemType:systemType extraDictionary:extra andCompletionHandler:completionHandler];
 }

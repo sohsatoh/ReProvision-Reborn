@@ -267,7 +267,7 @@
     // Fill from data source
     NSDictionary *dictionary = [self.dataSource objectAtIndex:indexPath.row][@"attributes"];
 
-    NSString *machineName = [dictionary objectForKey:@"machineName"];
+    NSString *machineName = [dictionary objectForKey:@"machineName"] ?: @"Unknown";
     NSString *applicationName = @"Unknown";
 
     if (machineName) {
