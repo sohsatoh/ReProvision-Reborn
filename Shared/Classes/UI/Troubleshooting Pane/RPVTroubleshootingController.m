@@ -254,10 +254,10 @@
             case 0: {
                 // Online Help Page
                 if (@available(iOS 10.0, *)) {
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/reprovision-reborn-frequently-asked-questions/"] options:[NSDictionary dictionary] completionHandler:nil];
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/category/help/reprovision-reborn/"] options:[NSDictionary dictionary] completionHandler:nil];
                 } else {
                     // Fallback on earlier versions
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/reprovision-reborn-frequently-asked-questions/"]];
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/category/help/reprovision-reborn/"]];
                 }
             }
             case 1: {

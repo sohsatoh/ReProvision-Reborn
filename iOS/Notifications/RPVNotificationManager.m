@@ -182,10 +182,10 @@ HOOK_MESSAGE(id, UNUserNotificationCenter, initWithBundleIdentifier_, NSString *
     if (title != nil) {
         if ([title isEqualToString:@"Error"]) {
             if (@available(iOS 10.0, *)) {
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/reprovision-reborn-frequently-asked-questions/"] options:[NSDictionary dictionary] completionHandler:nil];
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/category/help/reprovision-reborn/"] options:[NSDictionary dictionary] completionHandler:nil];
             } else {
                 // Fallback on earlier versions
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/reprovision-reborn-frequently-asked-questions/"]];
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://satoh.dev/blog/category/help/reprovision-reborn/"]];
             }
         }
     }
