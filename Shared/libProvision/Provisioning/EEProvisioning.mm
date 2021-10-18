@@ -316,6 +316,8 @@
             NSString *machineId = dict[@"attributes"][@"machineId"];
             NSString *machineName = dict[@"attributes"][@"machineName"];
 
+            if (!machineName) continue;
+
             BOOL shouldCheckForAltStore = [machineName isEqualToString:@"AltStore"] && [RPVResources shouldForceResign];
 
             if ([machineId isEqualToString:[self _identifierForCurrentMachine]] || shouldCheckForAltStore) {
@@ -748,13 +750,13 @@ free_all:
             if (!isFreeUser) {
                 // TODO: Add the other entitlements that paid accounts can use.
                 /*
-                   * Apple Pay                                                        -> OM633U5T5G
-                   * Associated Domains                                               -> SKC3T5S89Y
-                   * iCloud                                                           -> iCloud
-                   * In-App Purchase                                                  -> inAppPurchase
-                   * Push Notifications                                               -> push
-                   * Wallet/Passbook                                                  -> pass
-                   */
+                 * Apple Pay                                                        -> OM633U5T5G
+                 * Associated Domains                                               -> SKC3T5S89Y
+                 * iCloud                                                           -> iCloud
+                 * In-App Purchase                                                  -> inAppPurchase
+                 * Push Notifications                                               -> push
+                 * Wallet/Passbook                                                  -> pass
+                 */
 
                 NSDictionary *paidEntitlementsToFeatures = @{
                     @"com.apple.developer.networking.networkextension": @"NWEXT04537",
@@ -805,13 +807,13 @@ free_all:
             }
 
             /*
-               * A free (and paid) development account is also allowed the following entitlements:
-               * com.apple.security.application-groups                            -> (handled later)
-               * keychain-access-groups                                           -> (implicit)
-               * application-identifier                                           -> (implicit)
-               * com.apple.developer.team-identifier                              -> (implicit)
-               * get-task-allow                                                   -> (to be removed later)
-               */
+             * A free (and paid) development account is also allowed the following entitlements:
+             * com.apple.security.application-groups                            -> (handled later)
+             * keychain-access-groups                                           -> (implicit)
+             * application-identifier                                           -> (implicit)
+             * com.apple.developer.team-identifier                              -> (implicit)
+             * get-task-allow                                                   -> (to be removed later)
+             */
 
             if (isFreeUser) {
                 // We should strip out entitlements the user should not have.
@@ -989,10 +991,10 @@ free_all:
         // entitlements dictionary.
 
         /*
-          * The idea here is that we check if a group containing the applicationGroupIdentifier string
-          * in its own identifier without the "group." suffix exists. If it does, grab the full identifier
-          * and roll with that. If not, we create one.
-          */
+         * The idea here is that we check if a group containing the applicationGroupIdentifier string
+         * in its own identifier without the "group." suffix exists. If it does, grab the full identifier
+         * and roll with that. If not, we create one.
+         */
 
         BOOL groupExists = NO;
 
