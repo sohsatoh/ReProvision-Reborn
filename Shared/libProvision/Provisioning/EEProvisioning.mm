@@ -316,30 +316,30 @@
             NSString *machineId = dict[@"attributes"][@"machineId"];
             NSString *machineName = dict[@"attributes"][@"machineName"];
 
-            if (!machineName) continue;
+            if (machineName != [NSNull null] && [machineName length] > 0) {
+                BOOL shouldCheckForAltStore = [machineName isEqualToString:@"AltStore"] && [RPVResources shouldForceResign];
 
-            BOOL shouldCheckForAltStore = [machineName isEqualToString:@"AltStore"] && [RPVResources shouldForceResign];
+                if ([machineId isEqualToString:[self _identifierForCurrentMachine]] || shouldCheckForAltStore) {
+                    // Alright cool. Now, we check to see if it has expired.
+                    certificate = dict[@"attributes"];
+                    certId = dict[@"id"];
 
-            if ([machineId isEqualToString:[self _identifierForCurrentMachine]] || shouldCheckForAltStore) {
-                // Alright cool. Now, we check to see if it has expired.
-                certificate = dict[@"attributes"];
-                certId = dict[@"id"];
+                    // Compare expirationDate to now. If passed, then certificate is not valid.
+                    hasValidCertificate = YES;
 
-                // Compare expirationDate to now. If passed, then certificate is not valid.
-                hasValidCertificate = YES;
+                    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                    dateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+                    dateFormatter.dateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
+                    dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
 
-                NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-                dateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
-                dateFormatter.dateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
-                dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+                    NSDate *certificateExpiryDate = [dateFormatter dateFromString:dict[@"attributes"][@"expirationDate"]];
+                    if ([now compare:certificateExpiryDate] == NSOrderedDescending || shouldCheckForAltStore) {
+                        // Certificate has passed its expiry date.
+                        hasValidCertificate = NO;
+                    }
 
-                NSDate *certificateExpiryDate = [dateFormatter dateFromString:dict[@"attributes"][@"expirationDate"]];
-                if ([now compare:certificateExpiryDate] == NSOrderedDescending || shouldCheckForAltStore) {
-                    // Certificate has passed its expiry date.
-                    hasValidCertificate = NO;
+                    break;
                 }
-
-                break;
             }
         }
 

@@ -224,28 +224,30 @@
             NSString *machineName = [dictionary objectForKey:@"machineName"] ?: @"Unknown";
             NSString *applicationName = @"Unknown";
 
-            machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
+            if (machineName != [NSNull null] && [machineName length] > 0) {
+                machineName = [machineName stringByReplacingOccurrencesOfString:@"RPV- " withString:@""];
 
-            if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
-                applicationName = @"ReProvision";
-            else if ([(NSString *)[dictionary objectForKey:@"machineName"] isEqualToString:@"AltStore"])
-                applicationName = @"AltStore";
-            else if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"Cydia"])
-                applicationName = @"Cydia Impactor or Extender";
-            else
-                applicationName = @"Xcode";
+                if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"RPV"])
+                    applicationName = @"ReProvision";
+                else if ([(NSString *)[dictionary objectForKey:@"machineName"] isEqualToString:@"AltStore"])
+                    applicationName = @"AltStore";
+                else if ([(NSString *)[dictionary objectForKey:@"machineName"] containsString:@"Cydia"])
+                    applicationName = @"Cydia Impactor or Extender";
+                else
+                    applicationName = @"Xcode";
 
-            cell.textLabel.text = [NSString stringWithFormat:@"Device: %@", machineName];
+                cell.textLabel.text = [NSString stringWithFormat:@"Device: %@", machineName];
 
-            if (@available(iOS 13.0, *)) {
-                cell.textLabel.textColor = [UIColor labelColor];
-            } else {
-                cell.textLabel.textColor = [UIColor darkTextColor];
+                if (@available(iOS 13.0, *)) {
+                    cell.textLabel.textColor = [UIColor labelColor];
+                } else {
+                    cell.textLabel.textColor = [UIColor darkTextColor];
+                }
+
+                cell.textLabel.textAlignment = NSTextAlignmentNatural;
+
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"Application: %@", applicationName];
             }
-
-            cell.textLabel.textAlignment = NSTextAlignmentNatural;
-
-            cell.detailTextLabel.text = [NSString stringWithFormat:@"Application: %@", applicationName];
         }
     } else {
         if (indexPath.row == 0) {

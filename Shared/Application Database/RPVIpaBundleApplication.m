@@ -85,51 +85,56 @@
                 icons = [infoPlist objectForKey:@"CFBundleIcons"];
         }
 
-        NSString *iconFileName = [[[icons objectForKey:@"CFBundlePrimaryIcon"] objectForKey:@"CFBundleIconFiles"] lastObject];
+        BOOL iconExists = [icons.allKeys containsObject:@"CFBundlePrimaryIcon"] &&  [[[icons objectForKey:@"CFBundlePrimaryIcon"] allKeys] containsObject:@"CFBundleIconFiles"];
+        NSData *data = nil;
 
-        // Add suffix as needed.
+        if (iconExists) {
+            NSString *iconFileName = [[[icons objectForKey:@"CFBundlePrimaryIcon"] objectForKey:@"CFBundleIconFiles"] lastObject];
 
-        // Now load this from the .ipa file
-        NSString *fileFormat = [NSString stringWithFormat:@"Payload/*/%@", iconFileName];
+            // Add suffix as needed.
 
-        NSData *data = [self _loadFileWithFormat:fileFormat fromIPA:url multipleCandiateChooser:^NSString *(NSArray *candidates) {
-            NSArray *suffixPreferences = @[@"@3x", @"@2x", @""];
+            // Now load this from the .ipa file
+            NSString *fileFormat = [NSString stringWithFormat:@"Payload/*/%@", iconFileName];
 
-            // Choose which candidate is best for the current device, and fallback as needed.
-            NSString *currentBest = @"";
-            int currentBestRank = 2;
+            data = [self _loadFileWithFormat:fileFormat fromIPA:url multipleCandiateChooser:^NSString *(NSArray *candidates) {
+                NSArray *suffixPreferences = @[@"@3x", @"@2x", @""];
 
-            BOOL anyHaveIpadSuffix = NO;
-            for (NSString *item in candidates) {
-                if ([item containsString:@"~ipad"]) {
-                    anyHaveIpadSuffix = YES;
-                    break;
-                }
-            }
+                // Choose which candidate is best for the current device, and fallback as needed.
+                NSString *currentBest = @"";
+                int currentBestRank = 2;
 
-            for (NSString *item in candidates) {
-                if (IS_IPAD && anyHaveIpadSuffix && ![item containsString:@"~ipad"])
-                    continue;
-
-                // Alright, maybe this one.
-
-                // Base case
-                if ([currentBest isEqualToString:@""]) {
-                    currentBest = item;
-                    currentBestRank = [self _rankItem:item forSuffixes:suffixPreferences];
+                BOOL anyHaveIpadSuffix = NO;
+                for (NSString *item in candidates) {
+                    if ([item containsString:@"~ipad"]) {
+                        anyHaveIpadSuffix = YES;
+                        break;
+                    }
                 }
 
-                // Go through the suffix preferences, and rank the currentBest and the new item.
-                int itemRank = [self _rankItem:item forSuffixes:suffixPreferences];
+                for (NSString *item in candidates) {
+                    if (IS_IPAD && anyHaveIpadSuffix && ![item containsString:@"~ipad"])
+                        continue;
 
-                if (itemRank < currentBestRank) {
-                    currentBest = item;
-                    currentBestRank = itemRank;
+                    // Alright, maybe this one.
+
+                    // Base case
+                    if ([currentBest isEqualToString:@""]) {
+                        currentBest = item;
+                        currentBestRank = [self _rankItem:item forSuffixes:suffixPreferences];
+                    }
+
+                    // Go through the suffix preferences, and rank the currentBest and the new item.
+                    int itemRank = [self _rankItem:item forSuffixes:suffixPreferences];
+
+                    if (itemRank < currentBestRank) {
+                        currentBest = item;
+                        currentBestRank = itemRank;
+                    }
                 }
-            }
 
-            return currentBest;
-        }];
+                return currentBest;
+            }];
+        }
 
         if (data)
             return [self _maskApplicationIcon:[UIImage imageWithData:data]];
