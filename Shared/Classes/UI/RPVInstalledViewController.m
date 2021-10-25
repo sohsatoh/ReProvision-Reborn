@@ -847,6 +847,7 @@
 }
 
 - (void)applicationSigningUpdateProgress:(int)progress forBundleIdentifier:(NSString *)bundleIdentifier {
+    if ([bundleIdentifier length] == 0) return;
     [self.currentSigningProgress setObject:[NSNumber numberWithInt:progress] forKey:bundleIdentifier];
 
     if (progress == 100) {
