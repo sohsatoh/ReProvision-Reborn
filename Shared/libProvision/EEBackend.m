@@ -152,9 +152,10 @@
         BOOL isInstalledWithAnotherID = NO;
 
         NSString *profileString = [NSString stringWithContentsOfFile:embeddedPath encoding:NSISOLatin1StringEncoding error:nil];
-        NSRange rangeOfTeamId = [profileString rangeOfString:teamId];
+        NSRange rangeOfTeamId = [profileString rangeOfString:teamId ?: @""];
         NSRange rangeOfXC = [profileString rangeOfString:@"XC "];
-        if (rangeOfTeamId.location != NSNotFound && rangeOfXC.location != NSNotFound) isInstalledFromXcode = YES;
+        if (rangeOfTeamId.location != NSNotFound && rangeOfXC.location != NSNotFound)
+            isInstalledFromXcode = YES;
         else if (![applicationId hasSuffix:teamId]) {
             // application is installed with another apple id
             isInstalledWithAnotherID = YES;

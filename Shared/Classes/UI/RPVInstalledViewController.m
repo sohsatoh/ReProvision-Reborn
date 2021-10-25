@@ -758,17 +758,17 @@
 
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle ID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                                      UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-                                     pasteboard.string = bundleIdentifierForSelectedApp;
+                                     pasteboard.string = bundleIdentifierForSelectedApp ?: @"";
                                  }]];
 
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Bundle Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                                      UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-                                     pasteboard.string = bundleLocation;
+                                     pasteboard.string = bundleLocation ?: @"";
                                  }]];
 
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Copy Data Location" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                                      UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-                                     pasteboard.string = dataLocation;
+                                     pasteboard.string = dataLocation ?: @"";
                                  }]];
 
                 [alertController addAction:[UIAlertAction actionWithTitle:@"Show Entitlements" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
@@ -847,6 +847,7 @@
 }
 
 - (void)applicationSigningUpdateProgress:(int)progress forBundleIdentifier:(NSString *)bundleIdentifier {
+    if ([bundleIdentifier length] == 0) return;
     [self.currentSigningProgress setObject:[NSNumber numberWithInt:progress] forKey:bundleIdentifier];
 
     if (progress == 100) {

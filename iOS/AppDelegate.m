@@ -295,9 +295,11 @@
 - (void)applicationSigningUpdateProgress:(int)percent forBundleIdentifier:(NSString *)bundleIdentifier {
     NSLog(@"'%@' at %d%%", bundleIdentifier, percent);
 
+    if (!bundleIdentifier) bundleIdentifier = @"";
+
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     [userInfo setObject:bundleIdentifier forKey:@"bundleIdentifier"];
-    [userInfo setObject:[NSNumber numberWithInt:percent] forKey:@"percent"];
+    [userInfo setObject:[NSNumber numberWithInt:percent] ?: @0 forKey:@"percent"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"jp.soh.reprovision/signingUpdate" object:nil userInfo:userInfo];
 
@@ -513,7 +515,9 @@
     }];
     [av addAction:action];
 
-    [self.window.rootViewController presentViewController:av animated:YES completion:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.window.rootViewController presentViewController:av animated:YES completion:nil];
+    });
 
     NSLog(@"*** [ReProvision] :: ERROR :: Failed to setup daemon connection: %@", self.daemonConnection);
 }
