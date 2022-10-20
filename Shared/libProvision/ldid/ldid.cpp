@@ -47,6 +47,7 @@
 #include <openssl/pem.h>
 #include <openssl/cms.h>
 #include <openssl/pkcs12.h>
+#include <openssl/conf.h>
 #endif
 
 #ifdef __APPLE__
@@ -89,6 +90,8 @@
 
 #include "ldid.hpp"
 
+#define __FILENAME__ strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__
+
 #define _assert___(line) \
     #line
 #define _assert__(line) \
@@ -97,14 +100,15 @@
 #ifdef __EXCEPTIONS
 #define _assert_(expr, format, ...) \
     do if (!(expr)) { \
-        fprintf(stderr, "%s(%u): _assert(): " format "\n", __FILE__, __LINE__, ## __VA_ARGS__); \
-        throw __FILE__ "(" _assert__(__LINE__) "): _assert(" #expr ")"; \
+        char errorMessage[1024]; \
+        sprintf(errorMessage, "%s(%u): _assert(): " format "\n", __FILE__, __LINE__, ## __VA_ARGS__); \
+        throw std::runtime_error(errorMessage); \
     } while (false)
 #else
 // XXX: this is not acceptable
 #define _assert_(expr, format, ...) \
     do if (!(expr)) { \
-        fprintf(stderr, "%s(%u): _assert(): " format "\n", __FILE__, __LINE__, ## __VA_ARGS__); \
+        fprintf(stderr, "%s(%u): _assert(): " format "\n", __FILENAME__, __LINE__, ## __VA_ARGS__); \
         exit(-1); \
     } while (false)
 #endif
@@ -516,6 +520,38 @@ static inline void pad(std::streambuf &stream, size_t size) {
     put(stream, padding, size);
 }
 
+// Heavily based on zsign's _GenerateASN1Type(): https://github.com/zhlynn/zsign/blob/44f15cae53e4a5a000fa7486dd72f472a4c75ee4/openssl.cpp#L116
+static ASN1_TYPE *GenerateASN1Type(const std::string &value)
+{
+    std::string asn1String = "asn1=SEQUENCE:A\n[A]\nC=OBJECT:sha256\nB=FORMAT:HEX,OCT:" + value + "\n";
+    
+    BIO *bio = BIO_new(BIO_s_mem());
+    BIO_puts(bio, asn1String.c_str());
+    _scope({ BIO_free(bio); });
+    
+    CONF *conf = NCONF_new(NULL);
+    _scope({ NCONF_free(conf); });
+    
+    long line = -1;
+    int result = NCONF_load_bio(conf, bio, &line);
+    if (result <= 0)
+    {
+        printf("Error generating ASN1 Type: %d (Line %ld)\n", result, line);
+        ERR_print_errors_fp(stdout);
+        return NULL;
+    }
+    
+    char *string = NCONF_get_string(conf, "default", "asn1");
+    if (string == NULL)
+    {
+        ERR_print_errors_fp(stdout);
+        return NULL;
+    }
+    
+    ASN1_TYPE *type = ASN1_generate_nconf(string, conf);
+    return type;
+}
+
 template <typename Type_>
 Type_ Align(Type_ value, size_t align) {
     value += align - 1;
@@ -922,13 +958,27 @@ struct EntitlementBlob
     
     uint8_t totalLength()
     {
-        return this->length + 2;
+        if (this->length > CHAR_MAX)
+        {
+            return this->length + 3;
+        }
+        else
+        {
+            return this->length + 2;
+        }
     }
     
     std::string data()
     {
         std::stringbuf data;
         put(data, (char *)&this->padding, 1);
+        
+        if (this->length > CHAR_MAX)
+        {
+            uint32_t byte = 0x81;
+            put(data, (char *)&byte, 1);
+        }
+        
         put(data, (char *)&this->length, 1);
         put(data, this->key.data().data(), this->key.totalLength());
         
@@ -1635,15 +1685,40 @@ class Signature {
     CMS_ContentInfo *value_;
 
   public:
-    Signature(const Stuff &stuff, const Buffer &data)
+    // CMS signed attribute logic heavily based on zsign:
+    // https://github.com/zhlynn/zsign/blob/44f15cae53e4a5a000fa7486dd72f472a4c75ee4/openssl.cpp#L211
+    Signature(const Stuff &stuff, const Buffer &data, const std::string &xml, const std::vector<char>& alternateCDSHA256)
     {
         int flags = CMS_PARTIAL | CMS_DETACHED | CMS_NOSMIMECAP | CMS_BINARY;
         
         CMS_ContentInfo *stream = CMS_sign(NULL, NULL, stuff, NULL, flags);
+        CMS_SignerInfo *info = CMS_add1_signer(stream, stuff, stuff, EVP_sha256(), flags);        
         
-        // iOS 12 requires both SHA1 and SHA256 signing digests.
-        CMS_add1_signer(stream, stuff, stuff, EVP_sha256(), flags);
-        CMS_add1_signer(stream, stuff, stuff, EVP_sha1(), flags);
+        // Hash Agility
+        ASN1_OBJECT *obj = OBJ_txt2obj("1.2.840.113635.100.9.1", 1);
+        CMS_signed_add1_attr_by_OBJ(info, obj, 0x4, xml.c_str(), (int)xml.size());
+        
+        // CDHashes (iOS 15.1+)
+        std::string sha256;
+        for (size_t i = 0; i < alternateCDSHA256.size(); i++)
+        {
+            char buf[16] = {0};
+            sprintf(buf, "%02X", (uint8_t)alternateCDSHA256[i]);
+            sha256 += buf;
+        }
+        
+        X509_ATTRIBUTE *attribute = X509_ATTRIBUTE_new();
+        
+        ASN1_OBJECT *obj2 = OBJ_txt2obj("1.2.840.113635.100.9.2", 1);
+        X509_ATTRIBUTE_set1_object(attribute, obj2);
+        
+        ASN1_TYPE *type256 = GenerateASN1Type(sha256);
+        if (type256 != NULL)
+        {
+            X509_ATTRIBUTE_set1_data(attribute, V_ASN1_SEQUENCE, type256->value.asn1_string->data, type256->value.asn1_string->length);
+        }
+        
+        CMS_signed_add1_attr(info, attribute);
         
         CMS_final(stream, data, NULL, flags);
         
@@ -2085,13 +2160,46 @@ Hash Sign(const void *idata, size_t isize, std::streambuf &output, const std::st
 
 #ifndef LDID_NOSMIME
         if (!key.empty()) {
+            auto plist(plist_new_dict());
+            _scope({ plist_free(plist); });
+
+            auto cdhashes(plist_new_array());
+            plist_dict_set_item(plist, "cdhashes", cdhashes);
+            
+            std::vector<char> alternateCDSHA256;
+            
+            unsigned total(0);
+            for (Algorithm *pointer : GetAlgorithms()) {
+                Algorithm &algorithm(*pointer);
+                (void) algorithm;
+
+                const auto &blob(blobs[total == 0 ? CSSLOT_CODEDIRECTORY : CSSLOT_ALTERNATE + total - 1]);
+                ++total;
+
+                std::vector<char> hash;
+                algorithm(hash, blob.data(), blob.size());
+                hash.resize(20);
+                
+                if (algorithm.type_ == CS_HASHTYPE_SHA256_256)
+                {
+                    alternateCDSHA256 = hash;
+                }
+
+                plist_array_append_item(cdhashes, plist_new_data(hash.data(), hash.size()));
+            }
+
+            char *xml(NULL);
+            uint32_t size;
+            plist_to_xml(plist, &xml, &size);
+            _scope({ free(xml); });
+
             std::stringbuf data;
             const std::string &sign(blobs[CSSLOT_CODEDIRECTORY]);
 
             Stuff stuff(key);
             Buffer bio(sign);
 
-            Signature signature(stuff, sign);
+            Signature signature(stuff, sign, std::string(xml, size), alternateCDSHA256);
             Buffer result(signature);
             std::string value(result);
             put(data, value.data(), value.size());
@@ -2555,6 +2663,14 @@ Bundle Sign(const std::string &root, Folder &folder, const std::string &key, std
         // BundleDiskRep::adjustResources -> builder.addExclusion
         if (name == executable || Starts(name, directory) || Starts(name, "_MASReceipt/") || name == "CodeResources")
             return true;
+        
+        if (identifier.find("science.xnu.undecimus") != std::string::npos)
+        {
+            if (name == "jailbreakd" || name == "tar")
+            {
+                return true;
+            }
+        }
 
         for (const auto &bundle : bundles)
             if (Starts(name, bundle.first + "/")) {
@@ -2748,337 +2864,337 @@ Bundle Sign(const std::string &root, Folder &folder, const std::string &key, con
 #endif
 }
 
-/*#ifndef LDID_NOTOOLS
-int main(int argc, char *argv[]) {
-#ifndef LDID_NOSMIME
-    OpenSSL_add_all_algorithms();
-#endif
-
-    union {
-        uint16_t word;
-        uint8_t byte[2];
-    } endian = {1};
-
-    little_ = endian.byte[0];
-
-    bool flag_r(false);
-    bool flag_e(false);
-    bool flag_q(false);
-
-#ifndef LDID_NOFLAGT
-    bool flag_T(false);
-#endif
-
-    bool flag_S(false);
-    bool flag_s(false);
-
-    bool flag_D(false);
-
-    bool flag_A(false);
-    bool flag_a(false);
-
-    bool flag_u(false);
-
-    uint32_t flag_CPUType(_not(uint32_t));
-    uint32_t flag_CPUSubtype(_not(uint32_t));
-
-    const char *flag_I(NULL);
-
-#ifndef LDID_NOFLAGT
-    bool timeh(false);
-    uint32_t timev(0);
-#endif
-
-    Map entitlements;
-    Map requirement;
-    Map key;
-    ldid::Slots slots;
-
-    std::vector<std::string> files;
-
-    if (argc == 1) {
-        fprintf(stderr, "usage: %s -S[entitlements.xml] <binary>\n", argv[0]);
-        fprintf(stderr, "   %s -e MobileSafari\n", argv[0]);
-        fprintf(stderr, "   %s -S cat\n", argv[0]);
-        fprintf(stderr, "   %s -Stfp.xml gdb\n", argv[0]);
-        exit(0);
-    }
-
-    for (int argi(1); argi != argc; ++argi)
-        if (argv[argi][0] != '-')
-            files.push_back(argv[argi]);
-        else switch (argv[argi][1]) {
-            case 'r':
-                _assert(!flag_s);
-                _assert(!flag_S);
-                flag_r = true;
-            break;
-
-            case 'e': flag_e = true; break;
-
-            case 'E': {
-                const char *string = argv[argi] + 2;
-                const char *colon = strchr(string, ':');
-                _assert(colon != NULL);
-                Map file(colon + 1, O_RDONLY, PROT_READ, MAP_PRIVATE);
-                char *arge;
-                unsigned number(strtoul(string, &arge, 0));
-                _assert(arge == colon);
-                auto &slot(slots[number]);
-                for (Algorithm *algorithm : GetAlgorithms())
-                    (*algorithm)(slot, file.data(), file.size());
-            } break;
-
-            case 'q': flag_q = true; break;
-
-            case 'Q': {
-                const char *xml = argv[argi] + 2;
-                requirement.open(xml, O_RDONLY, PROT_READ, MAP_PRIVATE);
-            } break;
-
-            case 'D': flag_D = true; break;
-
-            case 'a': flag_a = true; break;
-
-            case 'A':
-                _assert(!flag_A);
-                flag_A = true;
-                if (argv[argi][2] != '\0') {
-                    const char *cpu = argv[argi] + 2;
-                    const char *colon = strchr(cpu, ':');
-                    _assert(colon != NULL);
-                    char *arge;
-                    flag_CPUType = strtoul(cpu, &arge, 0);
-                    _assert(arge == colon);
-                    flag_CPUSubtype = strtoul(colon + 1, &arge, 0);
-                    _assert(arge == argv[argi] + strlen(argv[argi]));
-                }
-            break;
-
-            case 's':
-                _assert(!flag_r);
-                _assert(!flag_S);
-                flag_s = true;
-            break;
-
-            case 'S':
-                _assert(!flag_r);
-                _assert(!flag_s);
-                flag_S = true;
-                if (argv[argi][2] != '\0') {
-                    const char *xml = argv[argi] + 2;
-                    entitlements.open(xml, O_RDONLY, PROT_READ, MAP_PRIVATE);
-                }
-            break;
-
-            case 'K':
-                if (argv[argi][2] != '\0')
-                    key.open(argv[argi] + 2, O_RDONLY, PROT_READ, MAP_PRIVATE);
-            break;
-
-#ifndef LDID_NOFLAGT
-            case 'T': {
-                flag_T = true;
-                if (argv[argi][2] == '-')
-                    timeh = true;
-                else {
-                    char *arge;
-                    timev = strtoul(argv[argi] + 2, &arge, 0);
-                    _assert(arge == argv[argi] + strlen(argv[argi]));
-                }
-            } break;
-#endif
-
-            case 'u': {
-                flag_u = true;
-            } break;
-
-            case 'I': {
-                flag_I = argv[argi] + 2;
-            } break;
-
-            default:
-                goto usage;
-            break;
-        }
-
-    _assert(flag_S || key.empty());
-    _assert(flag_S || flag_I == NULL);
-
-    if (files.empty()) usage: {
-        exit(0);
-    }
-
-    size_t filei(0), filee(0);
-    _foreach (file, files) try {
-        std::string path(file);
-
-        struct stat info;
-        _syscall(stat(path.c_str(), &info));
-
-        if (S_ISDIR(info.st_mode)) {
-#ifndef LDID_NOPLIST
-            _assert(!flag_r);
-            ldid::DiskFolder folder(path);
-            path += "/" + Sign("", folder, key, requirement, ldid::fun([&](const std::string &, const std::string &) -> std::string { return entitlements; })
-                , ldid::fun([&](const std::string &) {}), ldid::fun(dummy)
-            ).path;
-#else
-            _assert(false);
-#endif
-        } else if (flag_S || flag_r) {
-            Map input(path, O_RDONLY, PROT_READ, MAP_PRIVATE);
-
-            std::filebuf output;
-            Split split(path);
-            auto temp(Temporary(output, split));
-
-            if (flag_r)
-                ldid::Unsign(input.data(), input.size(), output, ldid::fun(dummy));
-            else {
-                std::string identifier(flag_I ?: split.base.c_str());
-                ldid::Sign(input.data(), input.size(), output, identifier, entitlements, requirement, key, slots, ldid::fun(dummy));
-            }
-
-            Commit(path, temp);
-        }
-
-        bool modify(false);
-#ifndef LDID_NOFLAGT
-        if (flag_T)
-            modify = true;
-#endif
-        if (flag_s)
-            modify = true;
-
-        Map mapping(path, modify);
-        FatHeader fat_header(mapping.data(), mapping.size());
-
-        _foreach (mach_header, fat_header.GetMachHeaders()) {
-            struct linkedit_data_command *signature(NULL);
-            struct encryption_info_command *encryption(NULL);
-
-            if (flag_A) {
-                if (mach_header.GetCPUType() != flag_CPUType)
-                    continue;
-                if (mach_header.GetCPUSubtype() != flag_CPUSubtype)
-                    continue;
-            }
-
-            if (flag_a)
-                printf("cpu=0x%x:0x%x\n", mach_header.GetCPUType(), mach_header.GetCPUSubtype());
-
-            _foreach (load_command, mach_header.GetLoadCommands()) {
-                uint32_t cmd(mach_header.Swap(load_command->cmd));
-
-                if (false);
-                else if (cmd == LC_CODE_SIGNATURE)
-                    signature = reinterpret_cast<struct linkedit_data_command *>(load_command);
-                else if (cmd == LC_ENCRYPTION_INFO || cmd == LC_ENCRYPTION_INFO_64)
-                    encryption = reinterpret_cast<struct encryption_info_command *>(load_command);
-                else if (cmd == LC_LOAD_DYLIB) {
-                    volatile struct dylib_command *dylib_command(reinterpret_cast<struct dylib_command *>(load_command));
-                    const char *name(reinterpret_cast<const char *>(load_command) + mach_header.Swap(dylib_command->dylib.name));
-
-                    if (strcmp(name, "/System/Library/Frameworks/UIKit.framework/UIKit") == 0) {
-                        if (flag_u) {
-                            Version version;
-                            version.value = mach_header.Swap(dylib_command->dylib.current_version);
-                            printf("uikit=%u.%u.%u\n", version.major, version.minor, version.patch);
-                        }
-                    }
-                }
-#ifndef LDID_NOFLAGT
-                else if (cmd == LC_ID_DYLIB) {
-                    volatile struct dylib_command *dylib_command(reinterpret_cast<struct dylib_command *>(load_command));
-
-                    if (flag_T) {
-                        uint32_t timed;
-
-                        if (!timeh)
-                            timed = timev;
-                        else {
-                            dylib_command->dylib.timestamp = 0;
-                            timed = hash(reinterpret_cast<uint8_t *>(mach_header.GetBase()), mach_header.GetSize(), timev);
-                        }
-
-                        dylib_command->dylib.timestamp = mach_header.Swap(timed);
-                    }
-                }
-#endif
-            }
-
-            if (flag_D) {
-                _assert(encryption != NULL);
-                encryption->cryptid = mach_header.Swap(0);
-            }
-
-            if (flag_e) {
-                _assert(signature != NULL);
-
-                uint32_t data = mach_header.Swap(signature->dataoff);
-
-                uint8_t *top = reinterpret_cast<uint8_t *>(mach_header.GetBase());
-                uint8_t *blob = top + data;
-                struct SuperBlob *super = reinterpret_cast<struct SuperBlob *>(blob);
-
-                for (size_t index(0); index != Swap(super->count); ++index)
-                    if (Swap(super->index[index].type) == CSSLOT_ENTITLEMENTS) {
-                        uint32_t begin = Swap(super->index[index].offset);
-                        struct Blob *entitlements = reinterpret_cast<struct Blob *>(blob + begin);
-                        fwrite(entitlements + 1, 1, Swap(entitlements->length) - sizeof(*entitlements), stdout);
-                    }
-            }
-
-            if (flag_q) {
-                _assert(signature != NULL);
-
-                uint32_t data = mach_header.Swap(signature->dataoff);
-
-                uint8_t *top = reinterpret_cast<uint8_t *>(mach_header.GetBase());
-                uint8_t *blob = top + data;
-                struct SuperBlob *super = reinterpret_cast<struct SuperBlob *>(blob);
-
-                for (size_t index(0); index != Swap(super->count); ++index)
-                    if (Swap(super->index[index].type) == CSSLOT_REQUIREMENTS) {
-                        uint32_t begin = Swap(super->index[index].offset);
-                        struct Blob *requirement = reinterpret_cast<struct Blob *>(blob + begin);
-                        fwrite(requirement, 1, Swap(requirement->length), stdout);
-                    }
-            }
-
-            if (flag_s) {
-                _assert(signature != NULL);
-
-                uint32_t data = mach_header.Swap(signature->dataoff);
-
-                uint8_t *top = reinterpret_cast<uint8_t *>(mach_header.GetBase());
-                uint8_t *blob = top + data;
-                struct SuperBlob *super = reinterpret_cast<struct SuperBlob *>(blob);
-
-                for (size_t index(0); index != Swap(super->count); ++index)
-                    if (Swap(super->index[index].type) == CSSLOT_CODEDIRECTORY) {
-                        uint32_t begin = Swap(super->index[index].offset);
-                        struct CodeDirectory *directory = reinterpret_cast<struct CodeDirectory *>(blob + begin + sizeof(Blob));
-
-                        uint8_t (*hashes)[LDID_SHA1_DIGEST_LENGTH] = reinterpret_cast<uint8_t (*)[LDID_SHA1_DIGEST_LENGTH]>(blob + begin + Swap(directory->hashOffset));
-                        uint32_t pages = Swap(directory->nCodeSlots);
-
-                        if (pages != 1)
-                            for (size_t i = 0; i != pages - 1; ++i)
-                                LDID_SHA1(top + PageSize_ * i, PageSize_, hashes[i]);
-                        if (pages != 0)
-                            LDID_SHA1(top + PageSize_ * (pages - 1), ((data - 1) % PageSize_) + 1, hashes[pages - 1]);
-                    }
-            }
-        }
-
-        ++filei;
-    } catch (const char *) {
-        ++filee;
-        ++filei;
-    }
-
-    return filee;
-}
-#endif*/
+// #ifndef LDID_NOTOOLS
+// int main(int argc, char *argv[]) {
+// #ifndef LDID_NOSMIME
+//     OpenSSL_add_all_algorithms();
+// #endif
+
+//     union {
+//         uint16_t word;
+//         uint8_t byte[2];
+//     } endian = {1};
+
+//     little_ = endian.byte[0];
+
+//     bool flag_r(false);
+//     bool flag_e(false);
+//     bool flag_q(false);
+
+// #ifndef LDID_NOFLAGT
+//     bool flag_T(false);
+// #endif
+
+//     bool flag_S(false);
+//     bool flag_s(false);
+
+//     bool flag_D(false);
+
+//     bool flag_A(false);
+//     bool flag_a(false);
+
+//     bool flag_u(false);
+
+//     uint32_t flag_CPUType(_not(uint32_t));
+//     uint32_t flag_CPUSubtype(_not(uint32_t));
+
+//     const char *flag_I(NULL);
+
+// #ifndef LDID_NOFLAGT
+//     bool timeh(false);
+//     uint32_t timev(0);
+// #endif
+
+//     Map entitlements;
+//     Map requirement;
+//     Map key;
+//     ldid::Slots slots;
+
+//     std::vector<std::string> files;
+
+//     if (argc == 1) {
+//         fprintf(stderr, "usage: %s -S[entitlements.xml] <binary>\n", argv[0]);
+//         fprintf(stderr, "   %s -e MobileSafari\n", argv[0]);
+//         fprintf(stderr, "   %s -S cat\n", argv[0]);
+//         fprintf(stderr, "   %s -Stfp.xml gdb\n", argv[0]);
+//         exit(0);
+//     }
+
+//     for (int argi(1); argi != argc; ++argi)
+//         if (argv[argi][0] != '-')
+//             files.push_back(argv[argi]);
+//         else switch (argv[argi][1]) {
+//             case 'r':
+//                 _assert(!flag_s);
+//                 _assert(!flag_S);
+//                 flag_r = true;
+//             break;
+
+//             case 'e': flag_e = true; break;
+
+//             case 'E': {
+//                 const char *string = argv[argi] + 2;
+//                 const char *colon = strchr(string, ':');
+//                 _assert(colon != NULL);
+//                 Map file(colon + 1, O_RDONLY, PROT_READ, MAP_PRIVATE);
+//                 char *arge;
+//                 unsigned number(strtoul(string, &arge, 0));
+//                 _assert(arge == colon);
+//                 auto &slot(slots[number]);
+//                 for (Algorithm *algorithm : GetAlgorithms())
+//                     (*algorithm)(slot, file.data(), file.size());
+//             } break;
+
+//             case 'q': flag_q = true; break;
+
+//             case 'Q': {
+//                 const char *xml = argv[argi] + 2;
+//                 requirement.open(xml, O_RDONLY, PROT_READ, MAP_PRIVATE);
+//             } break;
+
+//             case 'D': flag_D = true; break;
+
+//             case 'a': flag_a = true; break;
+
+//             case 'A':
+//                 _assert(!flag_A);
+//                 flag_A = true;
+//                 if (argv[argi][2] != '\0') {
+//                     const char *cpu = argv[argi] + 2;
+//                     const char *colon = strchr(cpu, ':');
+//                     _assert(colon != NULL);
+//                     char *arge;
+//                     flag_CPUType = strtoul(cpu, &arge, 0);
+//                     _assert(arge == colon);
+//                     flag_CPUSubtype = strtoul(colon + 1, &arge, 0);
+//                     _assert(arge == argv[argi] + strlen(argv[argi]));
+//                 }
+//             break;
+
+//             case 's':
+//                 _assert(!flag_r);
+//                 _assert(!flag_S);
+//                 flag_s = true;
+//             break;
+
+//             case 'S':
+//                 _assert(!flag_r);
+//                 _assert(!flag_s);
+//                 flag_S = true;
+//                 if (argv[argi][2] != '\0') {
+//                     const char *xml = argv[argi] + 2;
+//                     entitlements.open(xml, O_RDONLY, PROT_READ, MAP_PRIVATE);
+//                 }
+//             break;
+
+//             case 'K':
+//                 if (argv[argi][2] != '\0')
+//                     key.open(argv[argi] + 2, O_RDONLY, PROT_READ, MAP_PRIVATE);
+//             break;
+
+// #ifndef LDID_NOFLAGT
+//             case 'T': {
+//                 flag_T = true;
+//                 if (argv[argi][2] == '-')
+//                     timeh = true;
+//                 else {
+//                     char *arge;
+//                     timev = strtoul(argv[argi] + 2, &arge, 0);
+//                     _assert(arge == argv[argi] + strlen(argv[argi]));
+//                 }
+//             } break;
+// #endif
+
+//             case 'u': {
+//                 flag_u = true;
+//             } break;
+
+//             case 'I': {
+//                 flag_I = argv[argi] + 2;
+//             } break;
+
+//             default:
+//                 goto usage;
+//             break;
+//         }
+
+//     _assert(flag_S || key.empty());
+//     _assert(flag_S || flag_I == NULL);
+
+//     if (files.empty()) usage: {
+//         exit(0);
+//     }
+
+//     size_t filei(0), filee(0);
+//     _foreach (file, files) try {
+//         std::string path(file);
+
+//         struct stat info;
+//         _syscall(stat(path.c_str(), &info));
+
+//         if (S_ISDIR(info.st_mode)) {
+// #ifndef LDID_NOPLIST
+//             _assert(!flag_r);
+//             ldid::DiskFolder folder(path);
+//             path += "/" + Sign("", folder, key, requirement, ldid::fun([&](const std::string &, const std::string &) -> std::string { return entitlements; })
+//                 , ldid::fun([&](const std::string &) {}), ldid::fun(dummy)
+//             ).path;
+// #else
+//             _assert(false);
+// #endif
+//         } else if (flag_S || flag_r) {
+//             Map input(path, O_RDONLY, PROT_READ, MAP_PRIVATE);
+
+//             std::filebuf output;
+//             Split split(path);
+//             auto temp(Temporary(output, split));
+
+//             if (flag_r)
+//                 ldid::Unsign(input.data(), input.size(), output, ldid::fun(dummy));
+//             else {
+//                 std::string identifier(flag_I ?: split.base.c_str());
+//                 ldid::Sign(input.data(), input.size(), output, identifier, entitlements, requirement, key, slots, ldid::fun(dummy));
+//             }
+
+//             Commit(path, temp);
+//         }
+
+//         bool modify(false);
+// #ifndef LDID_NOFLAGT
+//         if (flag_T)
+//             modify = true;
+// #endif
+//         if (flag_s)
+//             modify = true;
+
+//         Map mapping(path, modify);
+//         FatHeader fat_header(mapping.data(), mapping.size());
+
+//         _foreach (mach_header, fat_header.GetMachHeaders()) {
+//             struct linkedit_data_command *signature(NULL);
+//             struct encryption_info_command *encryption(NULL);
+
+//             if (flag_A) {
+//                 if (mach_header.GetCPUType() != flag_CPUType)
+//                     continue;
+//                 if (mach_header.GetCPUSubtype() != flag_CPUSubtype)
+//                     continue;
+//             }
+
+//             if (flag_a)
+//                 printf("cpu=0x%x:0x%x\n", mach_header.GetCPUType(), mach_header.GetCPUSubtype());
+
+//             _foreach (load_command, mach_header.GetLoadCommands()) {
+//                 uint32_t cmd(mach_header.Swap(load_command->cmd));
+
+//                 if (false);
+//                 else if (cmd == LC_CODE_SIGNATURE)
+//                     signature = reinterpret_cast<struct linkedit_data_command *>(load_command);
+//                 else if (cmd == LC_ENCRYPTION_INFO || cmd == LC_ENCRYPTION_INFO_64)
+//                     encryption = reinterpret_cast<struct encryption_info_command *>(load_command);
+//                 else if (cmd == LC_LOAD_DYLIB) {
+//                     volatile struct dylib_command *dylib_command(reinterpret_cast<struct dylib_command *>(load_command));
+//                     const char *name(reinterpret_cast<const char *>(load_command) + mach_header.Swap(dylib_command->dylib.name));
+
+//                     if (strcmp(name, "/System/Library/Frameworks/UIKit.framework/UIKit") == 0) {
+//                         if (flag_u) {
+//                             Version version;
+//                             version.value = mach_header.Swap(dylib_command->dylib.current_version);
+//                             printf("uikit=%u.%u.%u\n", version.major, version.minor, version.patch);
+//                         }
+//                     }
+//                 }
+// #ifndef LDID_NOFLAGT
+//                 else if (cmd == LC_ID_DYLIB) {
+//                     volatile struct dylib_command *dylib_command(reinterpret_cast<struct dylib_command *>(load_command));
+
+//                     if (flag_T) {
+//                         uint32_t timed;
+
+//                         if (!timeh)
+//                             timed = timev;
+//                         else {
+//                             dylib_command->dylib.timestamp = 0;
+//                             timed = hash(reinterpret_cast<uint8_t *>(mach_header.GetBase()), mach_header.GetSize(), timev);
+//                         }
+
+//                         dylib_command->dylib.timestamp = mach_header.Swap(timed);
+//                     }
+//                 }
+// #endif
+//             }
+
+//             if (flag_D) {
+//                 _assert(encryption != NULL);
+//                 encryption->cryptid = mach_header.Swap(0);
+//             }
+
+//             if (flag_e) {
+//                 _assert(signature != NULL);
+
+//                 uint32_t data = mach_header.Swap(signature->dataoff);
+
+//                 uint8_t *top = reinterpret_cast<uint8_t *>(mach_header.GetBase());
+//                 uint8_t *blob = top + data;
+//                 struct SuperBlob *super = reinterpret_cast<struct SuperBlob *>(blob);
+
+//                 for (size_t index(0); index != Swap(super->count); ++index)
+//                     if (Swap(super->index[index].type) == CSSLOT_ENTITLEMENTS) {
+//                         uint32_t begin = Swap(super->index[index].offset);
+//                         struct Blob *entitlements = reinterpret_cast<struct Blob *>(blob + begin);
+//                         fwrite(entitlements + 1, 1, Swap(entitlements->length) - sizeof(*entitlements), stdout);
+//                     }
+//             }
+
+//             if (flag_q) {
+//                 _assert(signature != NULL);
+
+//                 uint32_t data = mach_header.Swap(signature->dataoff);
+
+//                 uint8_t *top = reinterpret_cast<uint8_t *>(mach_header.GetBase());
+//                 uint8_t *blob = top + data;
+//                 struct SuperBlob *super = reinterpret_cast<struct SuperBlob *>(blob);
+
+//                 for (size_t index(0); index != Swap(super->count); ++index)
+//                     if (Swap(super->index[index].type) == CSSLOT_REQUIREMENTS) {
+//                         uint32_t begin = Swap(super->index[index].offset);
+//                         struct Blob *requirement = reinterpret_cast<struct Blob *>(blob + begin);
+//                         fwrite(requirement, 1, Swap(requirement->length), stdout);
+//                     }
+//             }
+
+//             if (flag_s) {
+//                 _assert(signature != NULL);
+
+//                 uint32_t data = mach_header.Swap(signature->dataoff);
+
+//                 uint8_t *top = reinterpret_cast<uint8_t *>(mach_header.GetBase());
+//                 uint8_t *blob = top + data;
+//                 struct SuperBlob *super = reinterpret_cast<struct SuperBlob *>(blob);
+
+//                 for (size_t index(0); index != Swap(super->count); ++index)
+//                     if (Swap(super->index[index].type) == CSSLOT_CODEDIRECTORY) {
+//                         uint32_t begin = Swap(super->index[index].offset);
+//                         struct CodeDirectory *directory = reinterpret_cast<struct CodeDirectory *>(blob + begin + sizeof(Blob));
+
+//                         uint8_t (*hashes)[LDID_SHA1_DIGEST_LENGTH] = reinterpret_cast<uint8_t (*)[LDID_SHA1_DIGEST_LENGTH]>(blob + begin + Swap(directory->hashOffset));
+//                         uint32_t pages = Swap(directory->nCodeSlots);
+
+//                         if (pages != 1)
+//                             for (size_t i = 0; i != pages - 1; ++i)
+//                                 LDID_SHA1(top + PageSize_ * i, PageSize_, hashes[i]);
+//                         if (pages != 0)
+//                             LDID_SHA1(top + PageSize_ * (pages - 1), ((data - 1) % PageSize_) + 1, hashes[pages - 1]);
+//                     }
+//             }
+//         }
+
+//         ++filei;
+//     } catch (const char *) {
+//         ++filee;
+//         ++filei;
+//     }
+
+//     return filee;
+// }
+// #endif
