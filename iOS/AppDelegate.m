@@ -138,8 +138,9 @@
 
         // Incoming URL is a fileURL!
         [self _showApplicationDetailControllerFromFileURL:url];
-        [self dismissLoadingAlert];
 
+    } else if ([[url scheme] isEqualToString:@"file"]) {
+        [self _showApplicationDetailControllerFromFileURL:url];
     } else if ([[url scheme] isEqualToString:@"reprovision"] && [[url host] containsString:@"install"] && [url query]) {
         // For other applications
 
@@ -180,6 +181,8 @@
 
         [task resume];
     }
+
+    [self dismissLoadingAlert];
 
     return YES;
 }
