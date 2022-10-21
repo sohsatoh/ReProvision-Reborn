@@ -700,6 +700,9 @@ free_all:
         // Strip non-alphanumerical characters
         NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
         name = [[name componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@" "];
+        // Strip multibyte characters
+        NSData *nameData = [name dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
+        name = [[NSString alloc] initWithData:nameData encoding:NSASCIIStringEncoding];
 
         NSString *identifier = applicationIdentifier;
 
@@ -707,6 +710,7 @@ free_all:
 
         // Grab entitlements and update them from the binary.
         NSMutableDictionary *entitlements = [[EESigning updateEntitlementsForBinaryAtLocation:binaryLocation bundleIdentifier:identifier teamID:[[EEAppleServices sharedInstance] currentTeamID]] mutableCopy];
+        NSLog(@"old entitlements: %@ / location: %@", entitlements, binaryLocation);
 
         // Set application-identifier to be the identifier we have here.
         [entitlements setObject:[NSString stringWithFormat:@"%@.%@", [[EEAppleServices sharedInstance] currentTeamID], identifier] forKey:@"application-identifier"];
@@ -854,6 +858,8 @@ free_all:
                 wantsApplicationGroups = YES;
                 applicationGroups = [[entitlements objectForKey:@"com.apple.security.application-groups"] mutableCopy];
             }
+
+            NSLog(@"new entitlements: %@ / enabledFeatures:%@ / location: %@", entitlements, enabledFeatures, binaryLocation);
 
             if (!appIdExists) {
                 // /addAppId
