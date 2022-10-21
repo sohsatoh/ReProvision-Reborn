@@ -88,7 +88,7 @@ static auto dummy([](double) {});
     [keychainAccessGroups addObject:applicationident];
 
     [plist setValue:keychainAccessGroups forKey:@"keychain-access-groups"];
-    //[plist setValue:@YES forKey:@"get-task-allow"];
+    [plist setValue:@YES forKey:@"get-task-allow"];
 
     return plist;
 }
@@ -108,7 +108,7 @@ static auto dummy([](double) {});
     NSLog(@"Entitlements are:\n%s", entitlementsString.c_str());
 
     std::string requirementsString = [self _createRequirementsBlobWithKey:_privateKey certificate:(NSData *)_certificate andBundleIdentifier:bundleIdentifier];
-    //std::string requirementsString = "";
+    // std::string requirementsString = "";
 
     // We can now sign!
 
@@ -308,62 +308,62 @@ static auto dummy([](double) {});
 
     /*OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
-    
+
     EVP_PKEY   *cert_privkey;
     BIO        *bio_privkey;
     X509       *cert;
-    
+
     bio_privkey = BIO_new(BIO_s_mem());
     BIO_puts(bio_privkey, [key cStringUsingEncoding:NSUTF8StringEncoding]);
-    
+
     if (!(cert_privkey = PEM_read_bio_PrivateKey(bio_privkey, NULL, NULL, NULL))) {
         NSLog(@"Error loading certificate private key content.");
         return "";
     }
-    
+
     const unsigned char *input = (unsigned char*)[certificate bytes];
     cert = d2i_X509(NULL, &input, (int)[certificate length]);
     if (!cert) {
         NSLog(@"Error loading cert into memory.");
         return "";
     }
-    
+
     // Build the requirements string
     NSString *requirementsString = [NSString stringWithFormat:@"identifier \"%@\" and anchor apple generic and certificate leaf[subject.CN] = \"%s\" and certificate 1[field.1.2.840.113635.100.6.2.1]",
                                     identifier,
                                     [self _commonNameForCert:cert].c_str()];
-    
+
     SecRequirementRef requirementRef = NULL;
     OSStatus status = SecRequirementCreateWithString((__bridge CFStringRef)requirementsString, kSecCSDefaultFlags, &requirementRef);
-    
+
     if (status != noErr) {
         NSLog(@"Error: Failed to create requirements! %d", (int)status);
-        
+
         return "";
     }
-    
+
     std::string result;
     CFDataRef data;
     status = SecRequirementCopyData(requirementRef, kSecCSDefaultFlags, &data);
-    
+
     if (status != noErr) {
         NSLog(@"Error: Failed to copy requirements! %d", (int)status);
-        
+
         return "";
     }
-    
+
     auto buffer = reinterpret_cast<const char*>(CFDataGetBytePtr(data));
     auto buffer_length = static_cast<std::size_t>(CFDataGetLength(data));
-    
+
     result.resize(buffer_length);
     memcpy((char*)result.data(), buffer, buffer_length);
-    
+
     //free req reference
     if (requirementRef != NULL) {
         CFRelease(requirementRef);
         requirementRef = NULL;
     }
-    
+
     return result;*/
 }
 
