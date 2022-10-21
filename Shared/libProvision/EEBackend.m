@@ -48,7 +48,7 @@
     }];
 }
 
-+ (void)signBundleAtPath:(NSString *)path identity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId withCompletionHandler:(void (^)(NSError *error))completionHandler {
++ (void)signBundleAtPath:(NSString *)path isSubBundle:(BOOL)isSubBundle identity:(NSString *)identity gsToken:(NSString *)gsToken priorChosenTeamID:(NSString *)teamId withCompletionHandler:(void (^)(NSError *error))completionHandler {
     // We need to handle application extensions, e.g. watchOS applications and VPN plugins etc.
     // These are stored in the bundle's root directory at the following locations:
     // - /Plugins
@@ -70,7 +70,7 @@
             NSLog(@"Handling sub-bundle: %@", subBundlePath);
 
             // Sign the bundle
-            [self signBundleAtPath:subBundlePath identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
+            [self signBundleAtPath:subBundlePath isSubBundle:YES identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
                 if (error)
                     [subBundleErrors addObject:error];
 
@@ -79,6 +79,30 @@
             }];
         }
     }
+
+    // if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/Frameworks", path]]) {
+    //     // Recurse through the plugins.
+
+    //     for (NSString *subBundle in [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@/Frameworks", path] error:nil]) {
+    //         if ([subBundle containsString:@".framework"]) {
+    //             NSString *__block subBundlePath = [NSString stringWithFormat:@"%@/Frameworks/%@", path, subBundle];
+
+    //             // Enter the dispatch group
+    //             dispatch_group_enter(dispatch_group);
+
+    //             NSLog(@"Handling sub-bundle: %@", subBundlePath);
+
+    //             // Sign the bundle
+    //             [self signBundleAtPath:subBundlePath isSubBundle:YES identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
+    //                 if (error)
+    //                     [subBundleErrors addObject:error];
+
+    //                 NSLog(@"Finished sub-bundle: %@", subBundlePath);
+    //                 dispatch_group_leave(dispatch_group);
+    //             }];
+    //         }
+    //     }
+    // }
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/Watch", path]]) {
         // Recurse through the watchOS stuff.
@@ -92,7 +116,7 @@
             NSLog(@"Handling sub-bundle: %@", subBundlePath);
 
             // Sign the bundle
-            [self signBundleAtPath:subBundlePath identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
+            [self signBundleAtPath:subBundlePath isSubBundle:YES identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *error) {
                 if (error)
                     [subBundleErrors addObject:error];
 
@@ -177,6 +201,12 @@
         applicationId = [infoplist objectForKey:@"REBundleIdentifier"];
     else
         [infoplist setObject:applicationId forKey:@"REBundleIdentifier"];
+
+    if (isSubBundle) {
+        NSMutableArray *applicationIdItems = (NSMutableArray *)[applicationId componentsSeparatedByString:@"."];
+        [applicationIdItems insertObject:teamId atIndex:[applicationIdItems count] - 1];
+        applicationId = (NSMutableString *)[applicationIdItems componentsJoinedByString:@"."];
+    }
 
     applicationId = [applicationId stringByAppendingFormat:@".%@", teamId];
     [infoplist setObject:applicationId forKey:@"CFBundleIdentifier"];
@@ -299,7 +329,7 @@
 
     NSLog(@"Signing bundle at path '%@'", bundleDirectory);
 
-    [self signBundleAtPath:bundleDirectory identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *err) {
+    [self signBundleAtPath:bundleDirectory isSubBundle:NO identity:identity gsToken:gsToken priorChosenTeamID:teamId withCompletionHandler:^(NSError *err) {
         if (err) {
             completionHandler(err);
             return;

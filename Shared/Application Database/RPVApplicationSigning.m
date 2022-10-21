@@ -422,7 +422,7 @@ static RPVApplicationSigning *sharedInstance;
     // 2. Use libProvision to sign the .app
     //////////////////////////////////////////////////////////////////////////////////////
 
-    [EEBackend signBundleAtPath:[applicationBundleURL path] identity:username gsToken:password priorChosenTeamID:teamID withCompletionHandler:^(NSError *error) {
+    [EEBackend signBundleAtPath:[applicationBundleURL path] isSubBundle:NO identity:username gsToken:password priorChosenTeamID:teamID withCompletionHandler:^(NSError *error) {
         if (error) {
             // Callback to say we done "goofed".
             for (id<RPVApplicationSigningProtocol> observer in [self.observers reverseObjectEnumerator]) {
