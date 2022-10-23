@@ -7,6 +7,7 @@
 //
 
 #import "RPVSettingsController.h"
+#import <spawn.h>
 #import "RPVAdvancedController.h"
 #import "RPVResources.h"
 
@@ -357,6 +358,21 @@
     NSString *notification = specifier.properties[@"PostNotification"];
 
     [RPVResources setPreferenceValue:value forKey:key withNotification:notification];
+
+    // Edit Info.plist for disable background persistence of the app
+    if ([key isEqual:@"resign"]) {
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Respring Required" message:@"Changing this setting requires respring and relaunch the app.\nIf you stil be able to see ReProvision persists even though you turned off the background signing, please reboot your device." preferredStyle:UIAlertControllerStyleAlert];
+        [alertController addAction:[UIAlertAction actionWithTitle:@"Respring" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                             pid_t pid;
+                             const char *args[] = { "killall", "-9", "SpringBoard", "ReProvision", NULL };
+                             posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
+                         }]];
+
+        [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
+                                   }]];
+
+        [self presentViewController:alertController animated:YES completion:nil];
+    }
 }
 
 @end

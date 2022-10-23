@@ -9,8 +9,16 @@
 #import "RPVDaemonListener.h"
 #import <mach/mach_error.h>
 #import <notify.h>
+#import <spawn.h>
 #import "Headers/IOKit/pwr_mgt/IOPMLibPrivate.h"
 #import "RPVApplicationProtocol.h"
+
+@interface LSApplicationWorkspace : NSObject
++ (instancetype)defaultWorkspace;
+- (void)registerApplicationDictionary:(id)arg1;
+- (void)unregisterApplication:(NSURL *)url;
+- (void)registerApplication:(NSURL *)url;
+@end
 
 #if TARGET_OS_TV
 #define APPLICATION_IDENTIFIER "jp.soh.reprovision.tvos"
@@ -111,8 +119,53 @@ typedef enum : NSUInteger {
 
         self.settings = [(__bridge NSDictionary *)dictionary copy];
 
+        if ([self getPreferenceKey:@"resign"] != nil) [self changeAppPlist:[[self getPreferenceKey:@"resign"] boolValue]];
+
         CFRelease(dictionary);
         CFRelease(keyList);
+    }
+}
+
+- (void)changeAppPlist:(BOOL)resignEnabled {
+    NSString *appPath = @"/Applications/ReProvision.app";
+    NSString *appPlistPath = [NSString stringWithFormat:@"%@/Info.plist", appPath];
+    NSDictionary *infoDict = [NSDictionary dictionaryWithContentsOfFile:appPlistPath];
+    NSError *getAttrErr;
+    NSDictionary<NSFileAttributeKey, id> *originalAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:appPlistPath error:&getAttrErr];
+
+    NSMutableDictionary *newInfoDict = [infoDict mutableCopy];
+
+    NSMutableArray *backgroundModes = [@[] mutableCopy];
+    if (resignEnabled) {
+        backgroundModes = [@[@"continuous", @"unboundedTaskCompletion"] mutableCopy];
+    }
+    [newInfoDict setObject:backgroundModes forKey:@"UIBackgroundModes"];
+
+    if (![infoDict isEqualToDictionary:[newInfoDict copy]]) {
+        BOOL success = [newInfoDict writeToFile:appPlistPath atomically:YES];
+        if (success & !getAttrErr) {
+            NSError *setAttrErr;
+            [[NSFileManager defaultManager] setAttributes:originalAttributes ofItemAtPath:appPlistPath error:&setAttrErr];
+            NSString *message = @"could not overwrite Info.plist";
+            if (!setAttrErr) message = @"successfully overwrite Info.plist";
+            NSLog(@"reprovisiond :: %@ / new = %@", message, newInfoDict);
+            [self updateAppPlistCache:newInfoDict path:appPath];
+        }
+    }
+}
+
+- (void)updateAppPlistCache:(NSDictionary *)newInfoDict path:(NSString *)path {
+    LSApplicationWorkspace *workspace = [LSApplicationWorkspace defaultWorkspace];
+    if (workspace != nil) {
+        [workspace unregisterApplication:[NSURL fileURLWithPath:path]];
+        if ([workspace respondsToSelector:@selector(registerApplicationDictionary:)]) {
+            [workspace registerApplicationDictionary:newInfoDict];
+        } else {
+            [workspace registerApplication:[NSURL fileURLWithPath:path]];
+        }
+        pid_t pid;
+        const char *args[] = { "uicache", NULL };
+        posix_spawn(&pid, "/usr/bin/uicache", NULL, NULL, (char *const *)args, NULL);
     }
 }
 
