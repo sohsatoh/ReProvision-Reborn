@@ -104,7 +104,7 @@
     [group setProperty:@"Set how many days away from an application's expiration date a re-sign will occur." forKey:@"footerText"];
     [array addObject:group];
 
-    PSSpecifier *resign = [PSSpecifier preferenceSpecifierNamed:@"Automatically Re-sign" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+    PSSpecifier *resign = [PSSpecifier preferenceSpecifierNamed:@"Automatically Re-sign (Changing this invoke Respring)" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
     [resign setProperty:@"resign" forKey:@"key"];
     [resign setProperty:@1 forKey:@"default"];
 
@@ -361,17 +361,9 @@
 
     // Edit Info.plist for disable background persistence of the app
     if ([key isEqual:@"resign"]) {
-        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Respring Required" message:@"Changing this setting requires respring and relaunch the app.\nIf you stil be able to see ReProvision persists even though you turned off the background signing, please reboot your device." preferredStyle:UIAlertControllerStyleAlert];
-        [alertController addAction:[UIAlertAction actionWithTitle:@"Respring" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                             pid_t pid;
-                             const char *args[] = { "killall", "-9", "SpringBoard", "ReProvision", NULL };
-                             posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
-                         }]];
-
-        [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){
-                                   }]];
-
-        [self presentViewController:alertController animated:YES completion:nil];
+        pid_t pid;
+        const char *args[] = { "killall", "-9", "SpringBoard", "ReProvision", NULL };
+        posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
     }
 }
 
