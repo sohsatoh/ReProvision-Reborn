@@ -18,6 +18,8 @@
 - (void)registerApplicationDictionary:(id)arg1;
 - (void)unregisterApplication:(NSURL *)url;
 - (void)registerApplication:(NSURL *)url;
+- (BOOL)openApplicationWithBundleID:(NSString *)bundleID;
+- (void)openApplicationWithBundleIdentifier:(id)arg1 configuration:(id)arg2 completionHandler:(/*^block*/ id)arg3;
 @end
 
 #if TARGET_OS_TV
@@ -163,9 +165,20 @@ typedef enum : NSUInteger {
         } else {
             [workspace registerApplication:[NSURL fileURLWithPath:path]];
         }
-        pid_t pid;
-        const char *args[] = { "uicache", NULL };
-        posix_spawn(&pid, "/usr/bin/uicache", NULL, NULL, (char *const *)args, NULL);
+
+        [workspace openApplicationWithBundleIdentifier:@"com.apple.springboard" configuration:nil completionHandler:^() {
+            NSLog(@"reprovisiond :: start completion handler");
+
+            int status;
+            pid_t pid;
+            const char *args[] = { "uicache", "-p", [path UTF8String], NULL };
+            posix_spawn(&pid, "/usr/bin/uicache", NULL, NULL, (char *const *)args, NULL);
+            waitpid(pid, &status, WEXITED);
+
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                [workspace openApplicationWithBundleID:@"jp.soh.reprovision.ios"];
+            });
+        }];
     }
 }
 

@@ -104,9 +104,9 @@
     [group setProperty:@"Set how many days away from an application's expiration date a re-sign will occur." forKey:@"footerText"];
     [array addObject:group];
 
-    PSSpecifier *resign = [PSSpecifier preferenceSpecifierNamed:@"Automatically Re-sign (Changing this invoke Respring)" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+    PSSpecifier *resign = [PSSpecifier preferenceSpecifierNamed:@"Automatically Re-sign" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
     [resign setProperty:@"resign" forKey:@"key"];
-    [resign setProperty:@1 forKey:@"default"];
+    [resign setProperty:@0 forKey:@"default"];
 
     [array addObject:resign];
 
@@ -358,13 +358,6 @@
     NSString *notification = specifier.properties[@"PostNotification"];
 
     [RPVResources setPreferenceValue:value forKey:key withNotification:notification];
-
-    // Edit Info.plist for disable background persistence of the app
-    if ([key isEqual:@"resign"]) {
-        pid_t pid;
-        const char *args[] = { "killall", "-9", "SpringBoard", "ReProvision", NULL };
-        posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
-    }
 }
 
 @end
