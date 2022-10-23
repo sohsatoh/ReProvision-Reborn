@@ -21,10 +21,7 @@ fi
 # Check if old daemon exists
 {
 	if [ -f "/usr/bin/reprovisiond" ]; then
-		echo "Why are you install ReProvision from pirate repo although it is free?"
-		echo "If you don't know the official repository, maybe you don't even know that there is a great service in this world called Google."
 		echo "Uninstall ReProvision first, and then install ReProvision Reborn from official repo."
-		echo "Good bye."
 		exit 1
 	fi
 }
