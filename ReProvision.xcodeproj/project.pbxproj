@@ -287,7 +287,9 @@
 		CF42CC922609F1B200D36129 /* apple-ios-g3.pem in Resources */ = {isa = PBXBuildFile; fileRef = CF42CC912609F1B200D36129 /* apple-ios-g3.pem */; };
 		CF70B4D9270D7823009B98A8 /* IOKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CF70B4D8270D7812009B98A8 /* IOKit.tbd */; };
 		CF7C2CEA25F7A68500083AB2 /* RPVAppID.m in Sources */ = {isa = PBXBuildFile; fileRef = CF7C2CE925F7A68500083AB2 /* RPVAppID.m */; };
-		CF84E6EF2904F949001A1D09 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF84E6EE2904F949001A1D09 /* CoreServices.framework */; };
+		CF84E6F529052640001A1D09 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9E7C2BC20EE296500FDF3B0 /* Foundation.framework */; };
+		CF84E70129052640001A1D09 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CF84E70029052640001A1D09 /* main.m */; };
+		CF84E7062905333E001A1D09 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF84E6EE2904F949001A1D09 /* CoreServices.framework */; };
 		CFE0CBFB26C984DE0033B63E /* RPVAppIDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */; };
 		CFE0CBFE26C999910033B63E /* RPVEntitlementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE0CBFD26C999910033B63E /* RPVEntitlementsViewController.m */; };
 		CFFBA88825F574FE00C93D9F /* RPVAppIdsLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CFFBA88725F574FE00C93D9F /* RPVAppIdsLabel.m */; };
@@ -315,6 +317,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = C9E7C2BB20EE296400FDF3B0;
 			remoteInfo = "iOS Daemon";
+		};
+		CF84E70729053360001A1D09 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C9C6EA3A2004257E00211FDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CF84E6F329052640001A1D09;
+			remoteInfo = reprovision.postinst;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -668,6 +677,9 @@
 		CF7C2CE925F7A68500083AB2 /* RPVAppID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppID.m; sourceTree = "<group>"; };
 		CF7C2CEB25F7A69500083AB2 /* RPVAppID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppID.h; sourceTree = "<group>"; };
 		CF84E6EE2904F949001A1D09 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
+		CF84E6F429052640001A1D09 /* PostInstall */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PostInstall; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF84E70029052640001A1D09 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		CF84E70A2905392A001A1D09 /* entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = entitlements.plist; sourceTree = "<group>"; };
 		CFE0CBF926C984BC0033B63E /* RPVAppIDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVAppIDViewController.h; sourceTree = "<group>"; };
 		CFE0CBFA26C984DE0033B63E /* RPVAppIDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RPVAppIDViewController.m; sourceTree = "<group>"; };
 		CFE0CBFC26C9997D0033B63E /* RPVEntitlementsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RPVEntitlementsViewController.h; sourceTree = "<group>"; };
@@ -745,11 +757,19 @@
 				CF70B4D9270D7823009B98A8 /* IOKit.tbd in Frameworks */,
 				87BDA7062378225300EA4540 /* AuthKitUI.tbd in Frameworks */,
 				C9C5922321206F0300DF2E19 /* BackBoardServices.tbd in Frameworks */,
-				CF84E6EF2904F949001A1D09 /* CoreServices.framework in Frameworks */,
 				C9C5922421206F0300DF2E19 /* SpringBoardServices.tbd in Frameworks */,
 				87BDA7052378225300EA4540 /* AuthKit.tbd in Frameworks */,
 				C9F3FA6920EE6A48002AD7B9 /* CoreFoundation.framework in Frameworks */,
 				C9E7C2BD20EE296500FDF3B0 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CF84E6F129052640001A1D09 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF84E6F529052640001A1D09 /* Foundation.framework in Frameworks */,
+				CF84E7062905333E001A1D09 /* CoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1132,6 +1152,7 @@
 				C9C6EB352004282A00211FDD /* macOS */,
 				C9C6EA742004280A00211FDD /* Shared */,
 				C96CCE32211A2838008A249A /* tvOS */,
+				CF84E6F629052640001A1D09 /* PostInstall */,
 				C9C6EA432004257E00211FDD /* Products */,
 				25B27802FF2D573B29DEC669 /* Frameworks */,
 				86F814B5FE5DC8539CBAEBB4 /* Pods */,
@@ -1146,6 +1167,7 @@
 				C96CCE31211A2838008A249A /* ReProvision.app */,
 				C964EA2221207FE100AC98E6 /* reprovisiond */,
 				C974027F23B2377F00BA9B25 /* Share.appex */,
+				CF84E6F429052640001A1D09 /* PostInstall */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1601,6 +1623,15 @@
 			path = "App ID";
 			sourceTree = "<group>";
 		};
+		CF84E6F629052640001A1D09 /* PostInstall */ = {
+			isa = PBXGroup;
+			children = (
+				CF84E70029052640001A1D09 /* main.m */,
+				CF84E70A2905392A001A1D09 /* entitlements.plist */,
+			);
+			path = PostInstall;
+			sourceTree = "<group>";
+		};
 		CFFBA88625F574D700C93D9F /* Others */ = {
 			isa = PBXGroup;
 			children = (
@@ -1695,6 +1726,7 @@
 			buildPhases = (
 				4F9F3F388D1E2014CB8FEC52 /* [CP] Check Pods Manifest.lock */,
 				C996746A20EE32D500EEFBD2 /* Move daemon binary into Package */,
+				CF84E7092905353F001A1D09 /* Copy postinst */,
 				CF9E59E8270D016900757D3B /* Change the version */,
 				C9C6EA3E2004257E00211FDD /* Sources */,
 				C9C6EA3F2004257E00211FDD /* Frameworks */,
@@ -1707,6 +1739,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				CF84E70829053360001A1D09 /* PBXTargetDependency */,
 				C996746820EE32BE00EEFBD2 /* PBXTargetDependency */,
 				C974028923B2378000BA9B25 /* PBXTargetDependency */,
 			);
@@ -1748,6 +1781,22 @@
 			name = "iOS Daemon";
 			productName = iosdaemon;
 			productType = "com.apple.product-type.library.dynamic";
+		};
+		CF84E6F329052640001A1D09 /* PostInstall */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CF84E70329052640001A1D09 /* Build configuration list for PBXNativeTarget "PostInstall" */;
+			buildPhases = (
+				CF84E6F029052640001A1D09 /* Sources */,
+				CF84E6F129052640001A1D09 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PostInstall;
+			productName = reprovision.postinst;
+			productReference = CF84E6F429052640001A1D09 /* PostInstall */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -1792,6 +1841,10 @@
 						CreatedOnToolsVersion = 9.1;
 						ProvisioningStyle = Automatic;
 					};
+					CF84E6F329052640001A1D09 = {
+						CreatedOnToolsVersion = 13.1;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = C9C6EA3D2004257E00211FDD /* Build configuration list for PBXProject "ReProvision" */;
@@ -1813,6 +1866,7 @@
 				C96CCE30211A2838008A249A /* tvOS */,
 				C964EA1321207FE100AC98E6 /* tvOS Daemon */,
 				C974027E23B2377F00BA9B25 /* iOS Share Extension */,
+				CF84E6F329052640001A1D09 /* PostInstall */,
 			);
 		};
 /* End PBXProject section */
@@ -2030,6 +2084,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "echo \"Copying application into Package\"\n\n# Clean out existing .app\nrm -rf \"${PROJECT_DIR}/tvOS/Package/Applications/${CONTENTS_FOLDER_PATH}\"\n\nbuiltpath=\"${BUILD_DIR}/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}/${CONTENTS_FOLDER_PATH}\"\ncp -R $builtpath \"${PROJECT_DIR}/tvOS/Package/Applications/\"\n\n# Sign with entitlements\necho \"Signing with entitlements.xml...\"\nif type \"${iOSOpenDevPath}/bin/ldid2\" > /dev/null;\nthen\n${iOSOpenDevPath}/bin/ldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelif type \"/usr/bin/ldid2\" > /dev/null;\nthen\n/usr/bin/ldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelif type \"/usr/local/bin/ldid2\" > /dev/null;\nthen\n/usr/local/bin/ldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelif type \"ldid2\" > /dev/null;\nthen\nldid2 -S\"${PROJECT_DIR}/Shared/entitlements.xml\" \"${PROJECT_DIR}/tvOS/Package/Applications/${EXECUTABLE_PATH}\"\nelse\necho \"Could not find ldid2 on your system (searched /usr/bin, /usr/local/bin, ${iOSOpenDevPath}/bin/)\"\nexit 1\nfi\n\n# Build package!\n${iOSOpenDevPath}/bin/iosod build -p \"${PROJECT_DIR}/tvOS/PackageVersion.plist\" \"${PROJECT_DIR}/tvOS/Package\" \"${PROJECT_DIR}/tvOS/NitoPackages\"";
+		};
+		CF84E7092905353F001A1D09 /* Copy postinst */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy postinst";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo \"Copying postinst\"\nbuiltpath=\"${BUILD_DIR}/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}/PostInstall\"\nchmod +x $buildpath\ncp $builtpath \"${PROJECT_DIR}/iOS/Package/DEBIAN/postinst\"\n\n# We now need to sign the daemon with appropriate entitlements via ldid2\necho \"Signing with entitlements.plist...\"\n${PROJECT_DIR}/bin/ldid2 -S\"${PROJECT_DIR}/PostInstall/entitlements.plist\" \"${PROJECT_DIR}/iOS/Package/DEBIAN/postinst\"\n";
 		};
 		CF9E59E6270CF34300757D3B /* Firebase */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2343,6 +2415,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CF84E6F029052640001A1D09 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF84E70129052640001A1D09 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2360,6 +2440,11 @@
 			isa = PBXTargetDependency;
 			target = C9E7C2BB20EE296400FDF3B0 /* iOS Daemon */;
 			targetProxy = C996746720EE32BE00EEFBD2 /* PBXContainerItemProxy */;
+		};
+		CF84E70829053360001A1D09 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CF84E6F329052640001A1D09 /* PostInstall */;
+			targetProxy = CF84E70729053360001A1D09 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2891,6 +2976,71 @@
 			};
 			name = Release;
 		};
+		CF84E70429052640001A1D09 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2X98FX3N65;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "*.nib *.lproj *.gch (*) .DS_Store CVS .svn .git .hg *.xcodeproj *.xcode *.pbproj *.pbxproj";
+				FRAMEWORK_SEARCH_PATHS = "$(SDKROOT)/System/Library/PrivateFrameworks";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				HEADER_SEARCH_PATHS = "$(THEOS)/vendor/include/**";
+				INSTALL_PATH = /usr/bin;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LIBRARY_SEARCH_PATHS = "$(THEOS)/vendor/lib/**";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				THEOS = /opt/theos;
+				VALIDATE_PRODUCT = NO;
+				iOSOpenDevBuildPackageOnAnyBuild = NO;
+				iOSOpenDevCopyOnBuild = NO;
+				iOSOpenDevDevice = 192.168.0.0;
+				iOSOpenDevInstallOnAnyBuild = NO;
+				iOSOpenDevInstallOnProfiling = NO;
+				iOSOpenDevRespringOnInstall = YES;
+				iOSOpenDevUsePackageVersionPList = YES;
+			};
+			name = Debug;
+		};
+		CF84E70529052640001A1D09 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = 2X98FX3N65;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "*.nib *.lproj *.gch (*) .DS_Store CVS .svn .git .hg *.xcodeproj *.xcode *.pbproj *.pbxproj";
+				FRAMEWORK_SEARCH_PATHS = "$(SDKROOT)/System/Library/PrivateFrameworks";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				HEADER_SEARCH_PATHS = "$(THEOS)/vendor/include/**";
+				INSTALL_PATH = /usr/bin;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LIBRARY_SEARCH_PATHS = "$(THEOS)/vendor/lib/**";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				THEOS = /opt/theos;
+				iOSOpenDevBuildPackageOnAnyBuild = NO;
+				iOSOpenDevCopyOnBuild = NO;
+				iOSOpenDevDevice = 192.168.0.0;
+				iOSOpenDevInstallOnAnyBuild = NO;
+				iOSOpenDevInstallOnProfiling = NO;
+				iOSOpenDevRespringOnInstall = YES;
+				iOSOpenDevUsePackageVersionPList = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2953,6 +3103,15 @@
 			buildConfigurations = (
 				C9E7C2CD20EE296500FDF3B0 /* Debug */,
 				C9E7C2CE20EE296500FDF3B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CF84E70329052640001A1D09 /* Build configuration list for PBXNativeTarget "PostInstall" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF84E70429052640001A1D09 /* Debug */,
+				CF84E70529052640001A1D09 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
